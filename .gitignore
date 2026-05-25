@@ -1,7 +1,3 @@
-node_modules
-dist
-.netlify
-*.local
-.env
+node_modules/
+.netlify/
 .DS_Store
-npm-debug.log*

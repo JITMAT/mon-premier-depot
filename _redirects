@@ -1,0 +1,3 @@
+/api/auth/*  /.netlify/functions/auth/:splat  200
+/api/*  /.netlify/functions/creajit/:splat  200
+/*  /index.html  200
