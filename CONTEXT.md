@@ -210,3 +210,12 @@ Articles : Chaise Cartel ×75 @730 ; Tableau 120/80 ×25 @730 ; Tableau 40/40 ×
   l'instant données figées en instantané) ; le détail **par ouvrier** n'existe pas dans
   le MCP (CONTEXT §6) → viendra avec l'agent Hanane qui affecte. **Prochain : §8.3 —
   Agent OUVRIER** (file de travail, chrono, pause+motif, fini).
+- **2026-05-29 — Réalignement sur les maquettes validées.** Driss a fourni ses écrans
+  déjà construits/testés avec Claude chat. On **abandonne la version générique** et on
+  intègre ces maquettes telles quelles : `public/ecrans/` (ouvrier.html = agentyoussefv4,
+  hanane.html, cockpit.html = creajitmesv2, banc-test.html = creajitflux, ouvrier-v2.html).
+  Après connexion, un **lanceur** (`pages/Lanceur.jsx`) ouvre l'écran adapté au rôle.
+  Pages génériques supprimées (TableauDeBord, Commandes, Référentiel, Layout). Build OK,
+  écrans inclus dans `dist/ecrans/`. En ligne : https://velvety-marshmallow-df2ac9.netlify.app/
+  **Reste :** wirer les écrans entre eux + aux vraies données ; choisir lesquels sont la
+  référence définitive (cockpit vs banc de test).
