@@ -219,3 +219,20 @@ Articles : Chaise Cartel ×75 @730 ; Tableau 120/80 ×25 @730 ; Tableau 40/40 ×
   écrans inclus dans `dist/ecrans/`. En ligne : https://velvety-marshmallow-df2ac9.netlify.app/
   **Reste :** wirer les écrans entre eux + aux vraies données ; choisir lesquels sont la
   référence définitive (cockpit vs banc de test).
+
+---
+
+## 12. Vision détaillée de Driss (précisions, point par point)
+
+> Driss explique sa vision point par point ; on note ici au fur et à mesure,
+> puis on construit. **À respecter pour la construction finale.**
+
+**Point 1 — Chaque ouvrier est EN MÊME TEMPS un agent IA.**
+L'ouvrier n'est pas un simple écran qui affiche des infos : c'est un véritable
+**agent intelligent**. Pour chaque ouvrier, son IA doit :
+- **réfléchir** (raisonner sur sa situation de travail) ;
+- **anticiper** (voir venir les problèmes : rupture matière, retard, manque d'info…) ;
+- **calculer** (temps, coût main d'œuvre, matière, prime/paie…) ;
+- **analyser** (son rendement, sa production, sa rentabilité) ;
+- **aider à produire** (le guider concrètement dans sa fabrication).
+→ L'ouvrier + son IA = **un seul agent**, actif et proactif, pas un formulaire passif.
