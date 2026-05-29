@@ -195,14 +195,15 @@ function av(key,fb,cls,col){return PH[key]?`<img class="${cls}" src="${PH[key]}"
 const DIR=[
  {nm:'Kenza',role:'Responsable commerciale',ini:'K',col:'#a78bfa',mv:'20',ml:'commandes en cours'},
  {nm:'Mohamed Sabiri',role:'Comptable / Finance',photo:'sabiri',mv:'333 289',ml:'avances ce mois (DH)'},
- {nm:'Hanane Ajdi',role:'Responsable exploitation',ini:'HA',col:'#C4714F',mv:'20',ml:'en fabrication'},
+ {nm:'Hanane Ajdi',role:'Responsable exploitation',ini:'HA',col:'#C4714F',mv:'20',ml:'en fabrication',link:'hanane.html'},
  {nm:'Said Chnitifa',role:'Chef de tous les ateliers',ini:'SC',col:'#2fbd74',mv:'9',ml:'ateliers'},
  {nm:'Fatima Ezzahra',role:'Contrôle qualité & Logistique',ini:'FE',col:'#5b9bf3',mv:'26',ml:'livrés ce mois'},
 ];
-function renderDir(){document.getElementById('direction').innerHTML=DIR.map(d=>`<div class="dcard" onclick="toast('Agent ${d.nm} — bientôt cliquable')">
+function renderDir(){document.getElementById('direction').innerHTML=DIR.map(d=>`<div class="dcard" ${d.link?`onclick="location.href='${d.link}'" style="cursor:pointer"`:`onclick="toast('Agent ${d.nm} — bientôt cliquable')"`}>
   ${d.photo&&PH[d.photo]?`<img src="${PH[d.photo]}">`:`<div class="av" style="background:${d.col}">${d.ini}</div>`}
   <div class="nm">${d.nm}</div><div class="rl">${d.role}</div>
-  <div class="mtr"><span class="mv">${d.mv}</span><span class="ml">${d.ml}</span></div></div>`).join('');
+  <div class="mtr"><span class="mv">${d.mv}</span><span class="ml">${d.ml}</span></div>
+  ${d.link?`<div class="rl" style="color:var(--orange-b);margin-top:6px;font-weight:600">Ouvrir son agent →</div>`:''}</div>`).join('');
   document.getElementById('boardKpis').innerHTML=[
     ['🏭','20','commandes en fabrication'],['✅','26','livrées ce mois'],['⏰','10','en retard'],
     ['🧱','1','rupture matière'],['👷','3','ouvriers en retard'],['💸','333 289','avances (DH)']
@@ -283,7 +284,8 @@ function openWorker(k){const w=TEAM.find(x=>x.k===k);const reste=w.sal-w.ac;
       <div class="r"><span class="k">Salaire du mois</span><span class="v">${nb(w.sal)} DH</span></div>
       <div class="r"><span class="k">Acompte déjà versé</span><span class="v minus">− ${nb(w.ac)} DH</span></div>
       <div class="r net"><span class="k">Reste à payer</span><span class="v">${nb(reste)} DH</span></div>
-    </div>`;
+    </div>
+    <button onclick="location.href='ouvrier.html'" style="width:100%;margin-top:14px;border:none;font-family:Fraunces;font-weight:700;font-size:14px;padding:13px;border-radius:13px;cursor:pointer;background:var(--orange);color:#1a0f08">👷 Ouvrir son mini-site (agent ouvrier) →</button>`;
   document.getElementById('ov').classList.add('on');
 }
 function closeMod(){document.getElementById('ov').classList.remove('on');}
