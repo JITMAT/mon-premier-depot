@@ -5,6 +5,11 @@ Chaque salarié est un *agent* avec son interface et une IA qui l'assiste ; le p
 pilote depuis un *cockpit*. Voir **[CONTEXT.md](./CONTEXT.md)** — le fichier maître
 du projet, à lire en entier avant toute session de code.
 
+## En ligne
+
+Aperçu déployé (Netlify) : **https://velvety-marshmallow-df2ac9.netlify.app/**
+Connexion : choisir un compte, code `0000`.
+
 ## Démarrer
 
 ```bash
