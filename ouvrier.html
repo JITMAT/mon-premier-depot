@@ -243,7 +243,14 @@ function togglePause(){const p=document.getElementById('motifPanel');if(!p)retur
   if(p.style.display==='none'){p.innerHTML='<div class="ml">Pourquoi tu mets en pause ?</div>'+MOTIFS.map(m=>`<button onclick="pickMotif('${m}')">${m}</button>`).join('');p.style.display='flex';}
   else p.style.display='none';}
 function pickMotif(m){const t=cur();if(!t)return;let motif=m;if(m.indexOf('Autre')>=0){const v=prompt('Motif de la pause ?');if(v)motif='✏️ '+v;}
-  t.el=curEl(t);t.state='pause';t.motif=motif;renderWork();toast('⏸ Pause — '+motif);}
+  t.el=curEl(t);t.state='pause';t.motif=motif;renderWork();toast('⏸ Pause — '+motif);
+  if(m.indexOf('Rupture')>=0){
+    logMsg('HA','Hanane + Service Achat',`⚠️ Rupture matière signalée par Youssef sur « ${t.nm} ». Merci de commander la matière manquante.`);
+    const p=document.getElementById('motifPanel');
+    if(p){p.innerHTML='<div class="ml">🔔 Notification envoyée à <b>Hanane + Service Achat</b>. Tu sais commander toi-même ?</div><button onclick="selfOrder()">✅ Oui, je passe le bon</button><button onclick="closeMotif()">Non, Hanane s\u0027en occupe</button>';p.style.display='flex';}
+  }}
+function closeMotif(){const p=document.getElementById('motifPanel');if(p)p.style.display='none';}
+function selfOrder(){show('bon');toast('📝 Passe ton bon de commande au magasin');}
 function startTask(i){const a=cur();if(a&&a!==TASKS[i]){a.el=curEl(a);a.state='pause';a.motif=a.motif||"🔄 Changement d'article";}
   const t=TASKS[i];const was=t.state;t.state='en_cours';t.t0=Date.now();t.el=t.el||0;renderWork();
   toast(was==='pause'?`▶ Reprise : ${t.nm}`:`▶ Démarré : ${t.nm}`);}
