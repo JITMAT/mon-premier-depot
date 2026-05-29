@@ -1,10 +1,4 @@
-# Déploiement Netlify (CONTEXT.md §7)
+# Déploiement Netlify — site statique (les pages HTML de Driss).
+# Pas d'étape de build : on publie directement les fichiers à la racine.
 [build]
-  command = "npm run build"
-  publish = "dist"
-
-# App web unique (SPA) : toutes les routes renvoient vers index.html
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
+  publish = "."

@@ -1,41 +1,32 @@
 # CREAJIT IA
 
 Application de pilotage d'atelier pour **CREAJIT** (meubles sur mesure, Marrakech).
-Chaque salarié est un *agent* avec son interface et une IA qui l'assiste ; le patron
-pilote depuis un *cockpit*. Voir **[CONTEXT.md](./CONTEXT.md)** — le fichier maître
-du projet, à lire en entier avant toute session de code.
+Voir **[CONTEXT.md](./CONTEXT.md)** — le fichier maître du projet.
 
 ## En ligne
 
 Aperçu déployé (Netlify) : **https://velvety-marshmallow-df2ac9.netlify.app/**
-Connexion : choisir un compte, code `0000`.
 
-## Démarrer
+## Les pages (maquettes validées avec Driss)
 
-```bash
-npm install
-npm run dev      # serveur de développement (Vite)
-npm run build    # build de production -> dist/
-```
+Site statique — chaque écran est une page HTML autonome :
 
-Connexion (Module 1 / Socle) : choisir un compte de direction, code par défaut `0000`.
+| Fichier | Écran |
+|---|---|
+| `index.html`     | 🏠 Page d'accueil — **Cockpit Patron** (board, fil d'actualité, équipe, ouvriers en retard, rentabilité, alertes, assistant IA) |
+| `ouvrier.html`   | 👷 Agent **Ouvrier** (file de travail, chrono, pauses, fabriqués, paie) |
+| `hanane.html`    | 🗂️ Agent **Hanane** (vérifier et affecter les étapes) |
+| `cockpit.html`   | 👁️ Cockpit (version creajitmesv2) |
+| `banc-test.html` | 🔀 Banc de test des agents |
+| `ouvrier-v2.html`| Ancienne version de l'agent ouvrier |
 
-## Où on en est
+## Déploiement
 
-Construction **un module à la fois** (CONTEXT §8). Voir le *Journal de construction*
-en bas de `CONTEXT.md`.
+Site statique, sans build. Déposer le dossier sur Netlify, ou laisser Netlify
+publier la racine du dépôt (voir `netlify.toml`).
 
-- ✅ **Module 1 — Socle** : structure du projet, système de design (thème sombre),
-  modèle de données (`src/lib/schema.js`), règles de calcul (`src/lib/calculs.js`),
-  données de référence (ateliers, équipe), authentification simple.
+## Archives
 
-## Structure
-
-```
-src/
-  data/        Données de référence (ateliers, équipe/rôles)
-  lib/         Modèle de données (schema) + règles de calcul + base locale
-  pages/       Écrans (Login, Accueil)
-  store.js     Auth + base de données locale (Zustand, persistée navigateur)
-legacy/        Ancienne app « CREAJIT MES v2 » conservée pour référence
-```
+- `legacy/` — ancienne app « CREAJIT MES v2 ».
+- `legacy-react/` — échafaudage React du Socle (auth, modèle de données, calculs)
+  conservé pour réutilisation éventuelle.
