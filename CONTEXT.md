@@ -321,3 +321,14 @@ statut partagé (vert = reçu), tracé par **client + article**.
 > **55–73 DH/h** par département, alors que §4 indiquait **22–29 DH/h**. Décisif pour le
 > **coût de revient (but n°1)** → savoir quel taux utiliser (et s'il inclut charges/salaires).
 > Les **tenues de couleur par atelier** peuvent servir à coder visuellement les ouvriers.
+
+**Point 4 — Driss parle aux agents IA et leur donne des consignes (pilotage par la parole).**
+Depuis le cockpit, Driss peut **communiquer avec les agents IA** et leur **donner des consignes** :
+- **Diffusion à TOUS les agents** (consigne générale) → ex. « priorité sur la commande
+  2A WEDDING » → chaque agent concerné **applique** et **la rappelle à son ouvrier**, puis confirme.
+- **Message à UN agent précis** (un ouvrier, Hanane, Mohamed…) → ex. « Youssef, vérifie
+  accoudoirs gauche/droite » → seul cet agent reçoit et applique.
+- **Bidirectionnel** : les agents **remontent** aussi vers Driss (questions, anomalies, retards).
+→ Objectif : Driss **pilote l'atelier en parlant aux agents**, pas en courant après chacun.
+*Besoin technique :* chaque agent = une **conversation IA** (system prompt par rôle) + un
+**canal de consignes** patron → agents (diffusion + ciblé) et remontées agents → patron.
