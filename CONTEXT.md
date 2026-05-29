@@ -279,3 +279,29 @@ L'ouvrier n'est pas un simple écran qui affiche des infos : c'est un véritable
 *Effets attendus :* fin du « c'est pas moi » (traçabilité complète) ; le client valide
 **avant** fabrication ; coût de revient calculé sur une **base fiable** (la fiche technique).
 *Besoin technique noté :* capacité **génération d'image / dessin par IA** + **validation client**.
+
+**Point 3 — Gestion de la matière première (Hanane ↔ Mohamed ↔ Hassan), avec chrono d'appro.**
+
+*Problème :* une fois la fiche de production faite, **la fabrication ne démarre pas / prend
+du retard car la matière première n'est pas disponible.**
+
+*Solution voulue :*
+1. Référentiel **matière première : ~500 articles**, classés **par fournisseur** et **par
+   nature de produit** (Driss l'a déjà listé dans une version précédente → **à récupérer**,
+   peut-être dans `legacy/`).
+2. **Avant de lancer une commande, Hanane consulte le magasin** et **bloque / réserve** la
+   matière nécessaire à cet article.
+3. Si **pas en stock** → Hanane **passe une commande** qui arrive chez **Mohamed**.
+4. **Au moment de passer la commande, un CHRONO se déclenche** à côté de la commande
+   (mesure le temps d'approvisionnement).
+5. **Mohamed** : soit **retrait du magasin**, soit (si indispo) **commande chez les
+   fournisseurs** (tous voisins, le plus loin à **2 km**). **Le chrono continue.**
+6. La commande **s'affiche chez l'agent réception : Hassan** (🆕 nouvel agent).
+7. Quand **Hassan reçoit la marchandise → la commande devient VERTE** chez **Mohamed**,
+   **Hanane** et **l'ouvrier** qui a commandé.
+8. On garde **toujours dans le processus : pour quel client et pour quel article.**
+
+*Effets :* plus de fabrication lancée sans matière ; le chrono **mesure les retards d'appro** ;
+statut partagé (vert = reçu), tracé par **client + article**.
+*Nouvel agent :* **Hassan = agent réception** (réceptionne → passe au vert).
+*À faire :* récupérer la **liste des 500 matières premières** (fournisseur / nature).
