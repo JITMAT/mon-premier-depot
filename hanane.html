@@ -2,7 +2,6 @@
 <script src="creajit-matieres.js"></script>
 <script src="creajit-ateliers.js"></script>
 <script src="creajit-data.js"></script>
-<script src="creajit-flux.js"></script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,800&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -205,6 +204,7 @@ function assign(aid,wid){
   const a=ARTICLES.find(x=>x.id===aid);const w=WMAP[wid];if(!a||!w)return;
   a.assignedTo=wid;selected=null;openMenu=null;render();
   toast(`✓ « ${a.nm} » affecté à ${w.nm} — WhatsApp envoyé au chef ${ATN[w.at]} (simulé)`);
+  if(window.CJ){CJ.affecterDetail({articleId:a.id,ouvrierId:w.id,atelierCode:w.at,nom:a.nm,qty:a.qty,pu:a.pu,ref:"26040019",client:"2A MARIAGE"});CJ.evenement("info","Hanane",`Hanane a affecté « ${a.nm} » à ${w.nm} (${ATN[w.at]}).`,"→ "+w.nm);}
 }
 function undo(aid){const a=ARTICLES.find(x=>x.id===aid);a.assignedTo=null;render();}
 let tt;

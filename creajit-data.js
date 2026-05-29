@@ -79,6 +79,15 @@
       return res;
     },
     majAffectation: (articleId, ch) => { if (etat.affectations[articleId]) { Object.assign(etat.affectations[articleId], ch); sauver(); } },
+    // Affectation avec détails de l'article (utilisée par l'écran Hanane existant)
+    affecterDetail: (d) => {
+      etat.affectations[d.articleId] = {
+        ouvrierId: d.ouvrierId, atelierCode: d.atelierCode, ordre: d.ordre || 1,
+        verifie: true, statut: 'affecte',
+        nom: d.nom, qty: d.qty, pu: d.pu, ref: d.ref, client: d.client,
+      };
+      sauver();
+    },
 
     // Consignes patron -> agents
     consigne: (cible, texte, par) => {
