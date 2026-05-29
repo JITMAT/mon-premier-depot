@@ -1,12 +1,25 @@
 import React from 'react'
+import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from './store'
 import Login from './pages/Login'
-import Accueil from './pages/Accueil'
+import Layout from './components/Layout'
+import TableauDeBord from './pages/TableauDeBord'
+import Commandes from './pages/Commandes'
+import Referentiel from './pages/Referentiel'
 
-// Module 1 (Socle) : porte d'authentification simple.
-// Tant qu'aucun utilisateur n'est connecté, on affiche l'écran de connexion.
+// Porte d'authentification + routage (menu de gauche).
 export default function App() {
   const { user } = useAuth()
   if (!user) return <Login />
-  return <Accueil />
+
+  return (
+    <Layout>
+      <Routes>
+        <Route path="/" element={<TableauDeBord />} />
+        <Route path="/commandes" element={<Commandes />} />
+        <Route path="/referentiel" element={<Referentiel />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </Layout>
+  )
 }

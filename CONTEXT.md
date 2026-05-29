@@ -198,3 +198,15 @@ Articles : Chaise Cartel ×75 @730 ; Tableau 120/80 ×25 @730 ; Tableau 40/40 ×
   choix d'une vraie base persistante partagée (pour l'instant stockage navigateur) ;
   comptes ouvriers (un par atelier). **Prochain module : §8.2 — branchement CreaJit MCP**
   (vraies commandes + tableau « Tous les ouvriers »).
+- **2026-05-29 — Auth.** Code d'accès unique partagé (`CODE_ACCES`, choix de Driss) ;
+  prêt à évoluer vers un code par personne.
+- **2026-05-29 — Module 2 (Données réelles CreaJit).** Instantané des vraies données
+  récupéré via le connecteur CreaJit (`src/data/snapshot.js` : 20 cmd en fabrication,
+  10 en retard, 26 livrées, 60 employés, 333 289 DH d'avances, commande réf. 26040019
+  2A WEDDING). Nouvelle navigation à menu de gauche (`components/Layout.jsx`) + écrans
+  **Tableau de bord** (chiffres du jour + alertes retard) et **Commandes** (liste +
+  détail commande réf.). Page **Référentiel** (ateliers/règles/équipe). Build OK.
+  **Reste :** brancher le temps réel (fonction serveur Netlify qui proxy le MCP — pour
+  l'instant données figées en instantané) ; le détail **par ouvrier** n'existe pas dans
+  le MCP (CONTEXT §6) → viendra avec l'agent Hanane qui affecte. **Prochain : §8.3 —
+  Agent OUVRIER** (file de travail, chrono, pause+motif, fini).
