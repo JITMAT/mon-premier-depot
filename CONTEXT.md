@@ -236,3 +236,17 @@ L'ouvrier n'est pas un simple écran qui affiche des infos : c'est un véritable
 - **analyser** (son rendement, sa production, sa rentabilité) ;
 - **aider à produire** (le guider concrètement dans sa fabrication).
 → L'ouvrier + son IA = **un seul agent**, actif et proactif, pas un formulaire passif.
+
+**Point 1 (suite) — L'ouvrier et son IA ne font qu'un (assistant personnel).**
+- L'ouvrier **fabrique avec ses mains** (savoir-faire métier qu'il maîtrise) ;
+  l'IA apporte **l'organisation** : elle **conseille, anticipe, rappelle**.
+- **Contexte humain crucial (Maroc) :** beaucoup d'ouvriers **ne sont pas allés à
+  l'école**. Ils maîtrisent **la fabrication** mais **pas l'organisation ni la
+  structuration**. L'IA doit donc **combler ce manque** : structurer, organiser,
+  calculer, rappeler, **écrire à leur place** — l'ouvrier garde son savoir-faire,
+  l'IA gère le reste. (Pensé comme une **égalité des chances**.)
+- **Côté patron :** Driss **pilote en discutant avec les agents IA des ouvriers**.
+  Ce sont les agents qui **surveillent, conseillent et analysent** chaque ouvrier ;
+  Driss parle aux agents plutôt que de courir après chaque personne.
+- Implication d'interface : prévoir **peu de texte / langage très simple / vocal &
+  visuel** côté ouvrier (darija ?), et une **conversation patron ↔ agents** côté Driss.
