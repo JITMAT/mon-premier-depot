@@ -345,6 +345,14 @@ statut partagé (vert = reçu), tracé par **client + article**.
 *Nouvel agent :* **Hassan = agent réception** (réceptionne → passe au vert).
 *À faire :* récupérer la **liste des 500 matières premières** (fournisseur / nature).
 
+**Connexion CreaJit (MCP) — vérifiée le 29/05/2026.** Accès lecture en direct (côté Claude) à :
+commandes/production, **catalogue produits (130 produits finis)** + **stock** (67 en rupture,
+52 en stock bas) par catégories (SALONS, CHAISES, TABLES, CHAMBRE, TRAVERTIN SELECTION,
+DECORATIONS, JARDIN, MATELAS, Cuivre Signature, PROMO), clients, finances, RH.
+⚠️ **Ne pas confondre** : (1) **catalogue produits finis** = CreaJit ; (2) **559 matières
+premières** (fabrication) = fichier Driss. L'app déployée n'est pas encore branchée live sur
+CreaJit (= Module J) → en attendant on injecte des instantanés réels.
+
 **Données reçues de Driss (29/05/2026) — fichiers dans `donnees/` :**
 - `donnees/matieres-premieres-559.html` + `.csv` → **559 références** de matière première,
   colonnes : Référence · Désignation · Unité · **Fournisseur** · P.U. HT · P.U. TTC.
