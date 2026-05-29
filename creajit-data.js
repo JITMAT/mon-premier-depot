@@ -78,6 +78,7 @@
       }
       return res;
     },
+    majAffectation: (articleId, ch) => { if (etat.affectations[articleId]) { Object.assign(etat.affectations[articleId], ch); sauver(); } },
 
     // Consignes patron -> agents
     consigne: (cible, texte, par) => {
