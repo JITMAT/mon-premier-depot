@@ -248,7 +248,7 @@ function bub(role,txt,push=true){const box=document.getElementById('chat');if(bo
   const d=document.createElement('div');d.className='bub '+(role==='user'?'me':'ai');d.textContent=txt;box.appendChild(d);box.scrollTop=box.scrollHeight;if(push)conv.push({role:role==='user'?'user':'assistant',content:txt});}
 async function send(){const inp=document.getElementById('inp');const txt=inp.value.trim();if(!txt)return;inp.value='';document.getElementById('sendb').disabled=true;bub('user',txt);
   const box=document.getElementById('chat');const t=document.createElement('div');t.className='typ';t.innerHTML='<i></i><i></i><i></i>';box.appendChild(t);box.scrollTop=box.scrollHeight;
-  try{const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,system:SYS,messages:conv})});
+  try{const r=await fetch("/api/claude",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,system:SYS,messages:conv})});
     const data=await r.json();t.remove();bub('assistant',(data.content||[]).filter(x=>x.type==='text').map(x=>x.text).join('\n').trim()||'(vide)');
   }catch(e){t.remove();const d=document.createElement('div');d.className='bub ai err';d.textContent="Connexion à Claude indisponible dans cet aperçu. Dans la vraie app, l'assistant répond via ta clé API.";box.appendChild(d);}
   document.getElementById('sendb').disabled=false;inp.focus();}

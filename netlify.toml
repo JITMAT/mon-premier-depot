@@ -1,4 +1,13 @@
-# Déploiement Netlify — site statique (les pages HTML de Driss).
-# Pas d'étape de build : on publie directement les fichiers à la racine.
+# Déploiement Netlify — site statique (pages HTML) + serveur Claude (functions).
 [build]
   publish = "."
+
+# Le serveur sécurisé qui parle à Claude (clé cachée côté serveur).
+[functions]
+  directory = "netlify/functions"
+
+# URL plus simple : /api/claude  →  la fonction
+[[redirects]]
+  from = "/api/claude"
+  to = "/.netlify/functions/claude"
+  status = 200

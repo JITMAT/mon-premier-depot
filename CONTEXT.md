@@ -219,6 +219,19 @@ Articles : Chaise Cartel ×75 @730 ; Tableau 120/80 ×25 @730 ; Tableau 40/40 ×
   écrans inclus dans `dist/ecrans/`. En ligne : https://velvety-marshmallow-df2ac9.netlify.app/
   **Reste :** wirer les écrans entre eux + aux vraies données ; choisir lesquels sont la
   référence définitive (cockpit vs banc de test).
+- **2026-05-29 — Pivot site statique + serveur Claude.** Le site = les pages de Driss
+  (`index.html` = page d'accueil/cockpit, `ouvrier.html`, `hanane.html`, `cockpit.html`,
+  `banc-test.html`). Échafaudage React rangé dans `legacy-react/`. **Cockpit : Hanane
+  cliquable → son agent ; fiche ouvrier → bouton « ouvrir le mini-site ».**
+  **Serveur Claude sécurisé** ajouté (`netlify/functions/claude.js`) : les pages appellent
+  `/api/claude` (plus d'appel direct au navigateur) ; la clé reste cachée côté serveur via
+  `ANTHROPIC_API_KEY`. `netlify.toml` configuré (publish=".", functions).
+  ⚠️ **Le glisser-déposer Netlify NE fait PAS tourner les functions** → pour activer Claude
+  il faut un **déploiement Netlify connecté à GitHub** (ou via l'outil Netlify) + coller une
+  **clé API neuve** dans les variables d'env Netlify. **Reste à construire (gros morceaux) :**
+  fiche technique (commercial+Hanane), dessin IA validé client, flux matière
+  (Hanane↔Mohamed↔Hassan + chrono + 559 réf.), QC par étape + détection anomalies,
+  consignes patron→agents (diffusion/ciblé), vrai temps réel.
 
 ---
 
