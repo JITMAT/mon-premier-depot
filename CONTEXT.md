@@ -250,3 +250,32 @@ L'ouvrier n'est pas un simple écran qui affiche des infos : c'est un véritable
   Driss parle aux agents plutôt que de courir après chaque personne.
 - Implication d'interface : prévoir **peu de texte / langage très simple / vocal &
   visuel** côté ouvrier (darija ?), et une **conversation patron ↔ agents** côté Driss.
+
+**Point 2 — But + problème central + solution (fiche technique, dessin IA validé, QC par étape).**
+
+*But de Driss :*
+1. **Maîtriser le coût de revient** de chaque article.
+2. **Maîtriser le processus de fabrication** avec **contrôle qualité**.
+
+*Problème actuel (à résoudre) :*
+- Chaîne : commercial vend (ex. canapé) → donne à **Hanane** → Hanane donne aux **ouvriers**.
+- **Beaucoup de retours / réclamations clients.**
+- En cas de problème, **chacun rejette la faute sur l'autre** (aucune traçabilité).
+- **Pas de photo avec mesures**, **pas de fiche de production**.
+- Erreurs typiques : **mauvais tissu**, **accoudoirs gauche/droite inversés**,
+  **façon de coudre** (sur-mesure).
+- Les clients envoient des **photos Pinterest** → le résultat **ne correspond pas**.
+
+*Solution voulue :*
+1. **Fiche technique** remplie par **le commercial AVEC Hanane** : tout ce qui a été vu
+   avec le client, tous les détails (dimensions, tissu, sens accoudoirs, coutures…).
+2. **Refaire le dessin avec l'IA** (génération d'image) → **validation par le client**
+   → **puis seulement** on **lance la fabrication**.
+3. **L'agent IA de chaque ouvrier contrôle**, **pose les bonnes questions** et **détecte
+   les anomalies**.
+4. **Contrôle qualité par ouvrier ET par étape** : l'IA **compare** (fiche technique
+   validée ↔ travail réel, via photos/mesures) et **signale les anomalies**.
+
+*Effets attendus :* fin du « c'est pas moi » (traçabilité complète) ; le client valide
+**avant** fabrication ; coût de revient calculé sur une **base fiable** (la fiche technique).
+*Besoin technique noté :* capacité **génération d'image / dessin par IA** + **validation client**.
