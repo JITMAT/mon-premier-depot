@@ -49,7 +49,7 @@ export default function Login() {
         <button className="btn btn-primaire btn-block" type="submit">Se connecter</button>
 
         <p className="faible" style={{ fontSize: 12, marginTop: 16, marginBottom: 0 }}>
-          Module 1 (Socle) — code par défaut : 0000
+          Code d'accès partagé : 0000
         </p>
       </form>
     </div>

@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { DIRECTION } from './data/equipe.js'
+import { DIRECTION, CODE_ACCES } from './data/equipe.js'
 import { COLLECTIONS_VIDES } from './lib/schema.js'
 
 // ─── Authentification (Socle, simple) ───────────────────────────
@@ -10,9 +10,9 @@ export const useAuth = create(persist(
   (set, get) => ({
     user: null,
 
-    login: (id, pin) => {
+    login: (id, code) => {
       const compte = DIRECTION.find(d => d.id === id)
-      if (!compte || compte.pin !== pin) {
+      if (!compte || code !== CODE_ACCES) {
         throw new Error('Identifiant ou code incorrect')
       }
       const user = { id: compte.id, nom: compte.nom, role: compte.role, fonction: compte.fonction }

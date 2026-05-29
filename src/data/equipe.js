@@ -1,7 +1,11 @@
 // ─── Les utilisateurs / rôles (CONTEXT.md §2) ───────────────────
 // Auth simple du Socle : un compte direction + (plus tard) un compte
-// par ouvrier rattaché à un atelier. Le PIN est volontairement basique
-// pour le Module 1 ; il sera durci quand on branchera un vrai backend.
+// par ouvrier rattaché à un atelier.
+//
+// CODE D'ACCÈS : pour l'instant un seul code simple, partagé par tout le
+// monde (choix de Driss). Pour passer à un code par personne plus tard, il
+// suffira de remplacer cette constante par un champ par compte.
+export const CODE_ACCES = '0000'
 
 // Rôles applicatifs
 export const ROLES = {
@@ -15,15 +19,15 @@ export const ROLES = {
   OUVRIER:     'ouvrier',      // un agent chacun
 }
 
-// Équipe de direction (CONTEXT §2). PIN par défaut « 0000 » pour le Socle.
+// Équipe de direction (CONTEXT §2). Tous se connectent avec CODE_ACCES.
 export const DIRECTION = [
-  { id: 'driss',   nom: 'Driss',          fonction: 'Patron',                          role: ROLES.PATRON,        pin: '0000' },
-  { id: 'kenza',   nom: 'Kenza',          fonction: 'Responsable commerciale',         role: ROLES.COMMERCIAL,    pin: '0000' },
-  { id: 'sabiri',  nom: 'Mohamed Sabiri', fonction: 'Comptable / Finance',             role: ROLES.COMPTABLE,     pin: '0000' },
-  { id: 'hanane',  nom: 'Hanane Ajdi',    fonction: 'Exploitation & production',       role: ROLES.EXPLOITATION,  pin: '0000' },
-  { id: 'said',    nom: 'Said Chnitifa',  fonction: 'Chef de tous les ateliers',       role: ROLES.CHEF_ATELIER,  pin: '0000' },
-  { id: 'fatima',  nom: 'Fatima Ezzahra', fonction: 'Contrôle qualité & Logistique',   role: ROLES.QC_LOGISTIQUE, pin: '0000' },
-  { id: 'magasin', nom: 'Mohamed',        fonction: 'Magasin / Achat',                 role: ROLES.MAGASIN,       pin: '0000' },
+  { id: 'driss',   nom: 'Driss',          fonction: 'Patron',                          role: ROLES.PATRON },
+  { id: 'kenza',   nom: 'Kenza',          fonction: 'Responsable commerciale',         role: ROLES.COMMERCIAL },
+  { id: 'sabiri',  nom: 'Mohamed Sabiri', fonction: 'Comptable / Finance',             role: ROLES.COMPTABLE },
+  { id: 'hanane',  nom: 'Hanane Ajdi',    fonction: 'Exploitation & production',       role: ROLES.EXPLOITATION },
+  { id: 'said',    nom: 'Said Chnitifa',  fonction: 'Chef de tous les ateliers',       role: ROLES.CHEF_ATELIER },
+  { id: 'fatima',  nom: 'Fatima Ezzahra', fonction: 'Contrôle qualité & Logistique',   role: ROLES.QC_LOGISTIQUE },
+  { id: 'magasin', nom: 'Mohamed',        fonction: 'Magasin / Achat',                 role: ROLES.MAGASIN },
 ]
 
 // Libellés lisibles pour l'UI
