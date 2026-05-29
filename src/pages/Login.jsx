@@ -1,123 +1,57 @@
 import React, { useState } from 'react'
 import { useAuth } from '../store'
+import { DIRECTION, LIBELLE_ROLE } from '../data/equipe.js'
 
+// Écran de connexion (Socle). Sélection du compte + code PIN simple.
 export default function Login() {
   const { login } = useAuth()
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [showPass, setShowPass] = useState(false)
+  const [id, setId] = useState(DIRECTION[0].id)
+  const [pin, setPin] = useState('')
+  const [err, setErr] = useState('')
 
-  const handleSubmit = async (e) => {
+  const onSubmit = (e) => {
     e.preventDefault()
-    setError('')
-    setLoading(true)
+    setErr('')
     try {
-      await login(email.trim(), password)
-    } catch(err) {
-      setError(err.message)
-    } finally {
-      setLoading(false)
+      login(id, pin)
+    } catch (e) {
+      setErr(e.message)
     }
   }
 
   return (
-    <div style={{
-      minHeight: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center',
-      background: 'var(--bg)', padding: '20px'
-    }}>
-      <div style={{
-        width: '100%', maxWidth: 400,
-        background: 'var(--c1)', border: '1px solid var(--bd)', borderRadius: 16,
-        padding: 36, boxShadow: 'var(--shadow)'
-      }}>
-        {/* Logo */}
-        <div style={{ textAlign: 'center', marginBottom: 32 }}>
-          <div style={{ fontSize: 11, color: 'var(--mu)', letterSpacing: '.15em', textTransform: 'uppercase', marginBottom: 8 }}>
-            Système de Gestion
-          </div>
-          <div style={{ fontSize: 32, fontWeight: 900, letterSpacing: '-1px' }}>
-            CREA<span style={{ color: 'var(--or)' }}>JIT</span>
-          </div>
-          <div style={{ fontSize: 12, color: 'var(--mu)', marginTop: 4 }}>
-            Manufacturing Execution System
-          </div>
-        </div>
+    <div style={{ minHeight: '100%', display: 'grid', placeItems: 'center', padding: 20 }}>
+      <form className="carte" onSubmit={onSubmit} style={{ width: 360, maxWidth: '100%' }}>
+        <h1 style={{ fontSize: 30, marginBottom: 4 }}>CREAJIT <span style={{ color: 'var(--orange)' }}>IA</span></h1>
+        <p className="muet" style={{ marginTop: 0, marginBottom: 22 }}>Pilotage d'atelier — connexion</p>
 
-        <form onSubmit={handleSubmit}>
-          {/* Email */}
-          <div style={{ marginBottom: 16 }}>
-            <label style={{ display: 'block', fontSize: 10, fontWeight: 700, letterSpacing: '.08em', color: 'var(--mu)', textTransform: 'uppercase', marginBottom: 6 }}>
-              Email
-            </label>
-            <input
-              type="email" value={email} onChange={e => setEmail(e.target.value)}
-              placeholder="votre@email.com" required autoComplete="email"
-              style={{
-                width: '100%', background: 'var(--c2)', border: '1.5px solid var(--bd)',
-                borderRadius: 8, padding: '11px 14px', color: 'var(--tx)', fontSize: 14,
-                outline: 'none', fontFamily: 'inherit', transition: 'border-color .2s'
-              }}
-              onFocus={e => e.target.style.borderColor = 'var(--or)'}
-              onBlur={e => e.target.style.borderColor = 'var(--bd)'}
-            />
-          </div>
+        <label className="label">Compte</label>
+        <select className="champ" value={id} onChange={e => setId(e.target.value)} style={{ marginBottom: 14 }}>
+          {DIRECTION.map(d => (
+            <option key={d.id} value={d.id}>{d.nom} — {LIBELLE_ROLE[d.role]}</option>
+          ))}
+        </select>
 
-          {/* Password */}
-          <div style={{ marginBottom: 24, position: 'relative' }}>
-            <label style={{ display: 'block', fontSize: 10, fontWeight: 700, letterSpacing: '.08em', color: 'var(--mu)', textTransform: 'uppercase', marginBottom: 6 }}>
-              Mot de passe
-            </label>
-            <input
-              type={showPass ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)}
-              placeholder="••••••••" required autoComplete="current-password"
-              style={{
-                width: '100%', background: 'var(--c2)', border: '1.5px solid var(--bd)',
-                borderRadius: 8, padding: '11px 44px 11px 14px', color: 'var(--tx)', fontSize: 14,
-                outline: 'none', fontFamily: 'inherit', transition: 'border-color .2s'
-              }}
-              onFocus={e => e.target.style.borderColor = 'var(--or)'}
-              onBlur={e => e.target.style.borderColor = 'var(--bd)'}
-            />
-            <button type="button" onClick={() => setShowPass(!showPass)}
-              style={{ position: 'absolute', right: 12, top: 30, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--mu)', fontSize: 16 }}>
-              {showPass ? '🙈' : '👁'}
-            </button>
-          </div>
+        <label className="label">Code</label>
+        <input
+          className="champ"
+          type="password"
+          inputMode="numeric"
+          placeholder="••••"
+          value={pin}
+          onChange={e => setPin(e.target.value)}
+          style={{ marginBottom: 14 }}
+          autoFocus
+        />
 
-          {/* Error */}
-          {error && (
-            <div style={{
-              background: 'rgba(231,76,60,.1)', border: '1px solid rgba(231,76,60,.3)',
-              borderRadius: 8, padding: '10px 14px', marginBottom: 16,
-              fontSize: 13, color: 'var(--rd)', textAlign: 'center'
-            }}>
-              ⚠️ {error}
-            </div>
-          )}
+        {err && <p style={{ color: 'var(--rouge)', margin: '0 0 12px' }}>{err}</p>}
 
-          {/* Submit */}
-          <button type="submit" disabled={loading} style={{
-            width: '100%', padding: '13px', borderRadius: 8, border: 'none',
-            background: loading ? 'var(--bd)' : 'var(--or)', color: '#fff',
-            fontSize: 14, fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer',
-            fontFamily: 'inherit', transition: 'opacity .2s',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8
-          }}>
-            {loading ? (
-              <>
-                <span style={{ display: 'inline-block', width: 16, height: 16, border: '2px solid rgba(255,255,255,.3)', borderTopColor: '#fff', borderRadius: '50%' }} className="spin"/>
-                Connexion...
-              </>
-            ) : '🔐 Se connecter'}
-          </button>
-        </form>
+        <button className="btn btn-primaire btn-block" type="submit">Se connecter</button>
 
-        <div style={{ textAlign: 'center', marginTop: 24, fontSize: 11, color: 'var(--mu)' }}>
-          CREAJIT MES v2.0 — Marrakech 🇲🇦
-        </div>
-      </div>
+        <p className="faible" style={{ fontSize: 12, marginTop: 16, marginBottom: 0 }}>
+          Module 1 (Socle) — code par défaut : 0000
+        </p>
+      </form>
     </div>
   )
 }

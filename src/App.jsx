@@ -1,20 +1,12 @@
-import React, { useEffect } from 'react'
-import { useAuth, useApp } from './store'
+import React from 'react'
+import { useAuth } from './store'
 import Login from './pages/Login'
-import Main from './pages/Main'
+import Accueil from './pages/Accueil'
 
+// Module 1 (Socle) : porte d'authentification simple.
+// Tant qu'aucun utilisateur n'est connecté, on affiche l'écran de connexion.
 export default function App() {
-  const { user, token } = useAuth()
-  const { fetchOrders } = useApp()
-
-  // Auto-sync orders every 5 minutes
-  useEffect(() => {
-    if (!token) return
-    fetchOrders(token)
-    const interval = setInterval(() => fetchOrders(token), 5 * 60 * 1000)
-    return () => clearInterval(interval)
-  }, [token])
-
+  const { user } = useAuth()
   if (!user) return <Login />
-  return <Main />
+  return <Accueil />
 }
