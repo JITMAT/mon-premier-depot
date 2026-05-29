@@ -323,7 +323,10 @@ Rentabilité articles : Chaise Cartel marge 36864 (67%), Tableau 40/40 marge 148
 Commandes en retard livraison (jours) : Soufiane 25, Yazid 25, 2A WEDDING 24, Benjamin 21, Azzozi 21, Expresse Beuty 21, Youssef Ajdir 20, Ilhame 14, Anisa 13, Nazha 11.`;
 const SYS="Tu es l'assistant IA du patron de CREAJIT (Driss), atelier de meubles sur mesure à Marrakech. Tu as une vue temps réel (ci-dessous). Réponds en français, court et concret, comme à un patron pressé : chiffres clés, qui/quoi, et une reco d'action.\n\n"+SNAP;
 let conv=[];
+function cleIA(){let k=localStorage.getItem('creajit_cle_ia');if(!k){k=prompt("Colle ta clé API Anthropic (commence par sk-ant-).\n\nElle reste UNIQUEMENT sur cet appareil — jamais envoyée ailleurs que chez Claude.");if(k){k=k.trim();if(k)localStorage.setItem('creajit_cle_ia',k);}}return k||'';}
+function resetCleIA(){localStorage.removeItem('creajit_cle_ia');const k=cleIA();if(typeof toast==='function')toast(k?'Clé IA enregistrée ✅':'Clé IA effacée');}
 function renderChat(){const box=document.getElementById('chat');if(!conv.length){box.innerHTML=`<div class="cempty">Pose ta question — l'assistant voit tout.
+  <div class="sg"><button onclick="resetCleIA()">🔑 Saisir / changer ma clé IA</button></div>
   <div class="sg"><button onclick="quick(this)">Qui est le plus rentable aujourd'hui ?</button>
   <button onclick="quick(this)">Qui est en retard et qui je dois recadrer ?</button>
   <button onclick="quick(this)">Quel article je devrais pousser à la vente ?</button>
@@ -332,9 +335,13 @@ function quick(b){document.getElementById('inp').value=b.textContent;send();}
 function bub(role,txt,push=true){const box=document.getElementById('chat');if(box.querySelector('.cempty'))box.innerHTML='';const d=document.createElement('div');d.className='bub '+(role==='user'?'me':'ai');d.textContent=txt;box.appendChild(d);box.scrollTop=box.scrollHeight;if(push)conv.push({role:role==='user'?'user':'assistant',content:txt});}
 async function send(){const inp=document.getElementById('inp');const txt=inp.value.trim();if(!txt)return;inp.value='';document.getElementById('sendb').disabled=true;bub('user',txt);
   const box=document.getElementById('chat');const t=document.createElement('div');t.className='typ';t.innerHTML='<i></i><i></i><i></i>';box.appendChild(t);box.scrollTop=box.scrollHeight;
-  try{const r=await fetch("/api/claude",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,system:SYS,messages:conv})});
-    const data=await r.json();t.remove();bub('assistant',(data.content||[]).filter(x=>x.type==='text').map(x=>x.text).join('\n').trim()||'(vide)');
-  }catch(e){t.remove();const d=document.createElement('div');d.className='bub ai err';d.textContent="Connexion à Claude indisponible dans cet aperçu. Dans la vraie app, l'assistant répond via ta clé API.";box.appendChild(d);}
+  try{
+    let cle=cleIA(); if(!cle){t.remove();bub('assistant',"Aucune clé IA enregistrée sur cet appareil. Clique sur 🔑 pour la coller (elle reste chez toi).",false);document.getElementById('sendb').disabled=false;inp.focus();return;}
+    const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"content-type":"application/json","x-api-key":cle,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:1000,system:SYS,messages:conv})});
+    const data=await r.json();t.remove();
+    if(data&&data.error){bub('assistant',"⚠️ "+(data.error.message||'Erreur IA')+"  (si la clé est mauvaise, clique sur 🔑 pour la re-saisir)",false);}
+    else bub('assistant',(data.content||[]).filter(x=>x.type==='text').map(x=>x.text).join('\n').trim()||'(vide)');
+  }catch(e){t.remove();const d=document.createElement('div');d.className='bub ai err';d.textContent="Impossible de joindre Claude (vérifie ta connexion internet).";box.appendChild(d);}
   document.getElementById('sendb').disabled=false;inp.focus();}
 
 function show(s){document.querySelectorAll('.mi').forEach(m=>m.classList.toggle('on',m.dataset.s===s));
