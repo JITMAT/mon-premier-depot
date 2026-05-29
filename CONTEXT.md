@@ -332,3 +332,14 @@ Depuis le cockpit, Driss peut **communiquer avec les agents IA** et leur **donne
 → Objectif : Driss **pilote l'atelier en parlant aux agents**, pas en courant après chacun.
 *Besoin technique :* chaque agent = une **conversation IA** (system prompt par rôle) + un
 **canal de consignes** patron → agents (diffusion + ciblé) et remontées agents → patron.
+
+**Point 5 — Claude = le cerveau de CHAQUE agent.**
+- L'IA de chaque agent (ouvrier, Hanane, Mohamed, Fatima…) est **Claude** (API Anthropic),
+  avec un **system prompt = rôle/personnalité** propre au métier.
+- **Prérequis : clé API Anthropic** (console.anthropic.com) — ⚠️ **différent** de l'abonnement
+  claude.ai. **À CONFIRMER : Driss a-t-il déjà une clé API ?** (sinon l'aider à en créer une).
+- **Coût à l'usage** (par message) → ~60 ouvriers : prévoir le budget. Optimisation possible :
+  **Haiku/Sonnet** (moins cher) pour les agents ouvriers, **Opus** pour l'assistant patron.
+- **Sécurité :** la clé API ne doit JAMAIS être dans le site public → la cacher dans une
+  **fonction serveur** (ex. Netlify Functions) qui appelle Claude. (Le bouton « Assistant IA »
+  des maquettes essaie déjà d'appeler Claude.)
