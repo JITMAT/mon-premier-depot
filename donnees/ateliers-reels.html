@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<!-- saved from url=(0068)file:///C:/Users/driss/Downloads/CREAJIT_Ateliers_A_B_C_D%20(2).html -->
+<html lang="fr"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CREAJIT — Tous les Ateliers</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Arial, sans-serif; background: #f0f0f0; padding: 16px; }
+
+  /* NAV */
+  .nav { display: flex; flex-wrap: wrap; gap: 8px; max-width: 900px; margin: 0 auto 20px auto; }
+  .nav-btn {
+    flex: 1; min-width: 140px; padding: 10px 12px; cursor: pointer;
+    border: 3px solid transparent; border-radius: 8px; background: white;
+    text-align: left; font-family: Arial, sans-serif; transition: all 0.15s;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+  }
+  .nav-btn .nb-code { font-size: 13px; font-weight: bold; display: block; }
+  .nav-btn .nb-chef { font-size: 10px; color: #555; display: block; margin-top: 2px; }
+  .nav-btn .nb-tenue { font-size: 10px; display: block; margin-top: 4px; font-weight: bold; }
+  .nav-btn.active { color: white; }
+  .nav-btn.active .nb-chef { color: rgba(255,255,255,0.8); }
+
+  /* PAGE */
+  .page { background: white; max-width: 900px; margin: 0 auto 30px auto; padding: 28px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-top: 6px solid; }
+  .page-resume { background: white; max-width: 900px; margin: 0 auto 30px auto; padding: 28px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-top: 6px solid; }
+
+  h1 { font-size: 20px; font-weight: bold; margin: 0 0 2px 0; padding-bottom: 8px; border-bottom: 2px solid #eee; }
+  .subtitle { font-size: 12px; color: #666; margin-bottom: 16px; }
+  .chef-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; color: white; margin-bottom: 16px; }
+  .tenue-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: bold; color: white; margin-left: 8px; margin-bottom: 16px; }
+
+  h2 { font-size: 13px; font-weight: bold; color: white; padding: 6px 12px; margin: 14px 0 8px 0; border-radius: 4px; }
+  .fab { font-size: 11px; margin: 3px 0; color: #444; }
+  .chef-dept { font-size: 11px; font-weight: bold; margin: 3px 0; color: #222; }
+  .equipe-title { font-size: 11px; font-weight: bold; margin: 8px 0 4px 0; }
+
+  table.equipe { width: 100%; border-collapse: collapse; margin-bottom: 6px; max-width: 400px; }
+  table.equipe td { font-size: 11px; padding: 5px 8px; border: 1px solid #ddd; }
+  table.equipe tr:nth-child(odd) { background: #fafafa; }
+  table.equipe td:last-child { text-align: right; font-weight: bold; }
+
+  .stats-row { display: flex; gap: 16px; margin-top: 4px; }
+  .stat { font-size: 11px; background: #f5f5f5; padding: 4px 10px; border-radius: 4px; }
+  .stat strong { font-weight: bold; }
+
+  .sep { border: none; border-top: 1px solid #eee; margin: 14px 0; }
+
+  h3 { font-size: 16px; font-weight: bold; padding-bottom: 8px; border-bottom: 2px solid; margin: 0 0 16px 0; }
+  table.resume { width: 100%; border-collapse: collapse; margin-bottom: 14px; }
+  table.resume td { font-size: 12px; padding: 8px 12px; border: 1px solid #ddd; }
+  table.resume tr:nth-child(odd) td:first-child { background: #f5f5f5; }
+  table.resume td:first-child { font-weight: bold; width: 40%; }
+  .spec-title { font-size: 12px; font-weight: bold; margin: 12px 0 6px 0; }
+  .spec { font-size: 11px; margin: 4px 0; padding-left: 4px; }
+
+  .atelier { display: none; }
+  .atelier.active { display: block; }
+</style>
+</head>
+<body>
+
+<div class="nav">
+  <button class="nav-btn" onclick="show(&#39;A&#39;,this)" style="border-color: rgb(59, 130, 246); background: white; color: rgb(0, 0, 0);" data-color="#3b82f6">
+    <span class="nb-code">🏭 Atelier A</span>
+    <span class="nb-chef">Chef : AYOUB EL YAGIZ</span>
+    <span class="nb-tenue" style="color:#3b82f6">● Tenue Bleue</span>
+  </button>
+  <button class="nav-btn" onclick="show(&#39;B&#39;,this)" style="border-color: rgb(249, 115, 22); background: white; color: rgb(0, 0, 0);" data-color="#f97316">
+    <span class="nb-code">🏭 Atelier B</span>
+    <span class="nb-chef">Chef : AHMED ARAJI</span>
+    <span class="nb-tenue" style="color:#f97316">● Tenue Orange</span>
+  </button>
+  <button class="nav-btn active" onclick="show(&#39;C&#39;,this)" style="border-color: rgb(139, 92, 246); background: rgb(139, 92, 246); color: white;" data-color="#8b5cf6">
+    <span class="nb-code">🏭 Atelier C</span>
+    <span class="nb-chef">Chef : BAHRI EL OTHMANI</span>
+    <span class="nb-tenue" style="color:#8b5cf6">● Tenue Violette</span>
+  </button>
+  <button class="nav-btn" onclick="show(&#39;D&#39;,this)" style="border-color: rgb(6, 182, 212); background: white; color: rgb(0, 0, 0);" data-color="#06b6d4">
+    <span class="nb-code">🏭 Atelier D</span>
+    <span class="nb-chef">Chef : ETTAIB BOUGATOUCH</span>
+    <span class="nb-tenue" style="color:#06b6d4">● Tenue Cyan</span>
+  </button>
+  <button class="nav-btn" onclick="show(&#39;E&#39;,this)" style="border-color: rgb(146, 64, 14); background: white; color: rgb(0, 0, 0);" data-color="#92400e">
+    <span class="nb-code">🏭 Atelier E</span>
+    <span class="nb-chef">Chef : DIT CHNITIFA</span>
+    <span class="nb-tenue" style="color:#92400e">● Tenue Marron</span>
+  </button>
+  <button class="nav-btn" onclick="show(&#39;F&#39;,this)" style="border-color: rgb(239, 68, 68); background: white; color: rgb(0, 0, 0);" data-color="#ef4444">
+    <span class="nb-code">🏭 Atelier F</span>
+    <span class="nb-chef">Chef : MOHAMED ELKARMANI</span>
+    <span class="nb-tenue" style="color:#ef4444">● Tenue Rouge</span>
+  </button>
+  <button class="nav-btn" onclick="show(&#39;G&#39;,this)" style="border-color: rgb(107, 114, 128); background: white; color: rgb(0, 0, 0);" data-color="#6b7280">
+    <span class="nb-code">🏭 Atelier G</span>
+    <span class="nb-chef">Chef : MOHAMED BOUALILI</span>
+    <span class="nb-tenue" style="color:#6b7280">● Tenue Grise</span>
+  </button>
+  <button class="nav-btn" onclick="show(&#39;H&#39;,this)" style="border-color: rgb(217, 119, 6); background: white; color: rgb(0, 0, 0);" data-color="#d97706">
+    <span class="nb-code">🏭 Atelier H</span>
+    <span class="nb-chef">Chef : MUSTAPHA AABABOU</span>
+    <span class="nb-tenue" style="color:#d97706">● Tenue Beige</span>
+  </button>
+  <button class="nav-btn" onclick="show(&#39;I&#39;,this)" style="border-color: rgb(180, 83, 9); background: white; color: rgb(0, 0, 0);" data-color="#b45309">
+    <span class="nb-code">🏭 Atelier I</span>
+    <span class="nb-chef">Chef : NOUREDDINE OUZZAT</span>
+    <span class="nb-tenue" style="color:#b45309">● Tenue Dorée</span>
+  </button>
+</div>
+
+<!-- ===== ATELIER A ===== -->
+<div id="atelier-A" class="atelier">
+  <div class="page" style="border-top-color:#3b82f6">
+    <h1 style="color:#3b82f6">■ CREAJIT — Atelier A</h1>
+    <div class="subtitle">6 Départements | Canapé • Fauteuil • Lit • Sommier • Méridienne</div>
+    <span class="chef-badge" style="background:#3b82f6">👤 Chef Général : AYOUB EL YAGIZ</span>
+    <span class="tenue-badge" style="background:#3b82f6">🧥 Tenue Bleue</span>
+
+    <h2 style="background:#3b82f6">DA01 ■ Tapisserie Canapés</h2>
+    <div class="fab">■ Fabrication : Canapé | Fauteuil | Méridienne</div>
+    <div class="chef-dept">■ Chef : AYOUB EL YAGIZ</div>
+    <div class="equipe-title">■ Équipe (3 ouvriers)</div>
+    <table class="equipe">
+      <tbody><tr><td>Ayoub El Yagiz</td><td>6 000 DH</td></tr>
+      <tr><td>Abdessamie El Yagiz</td><td>6 000 DH</td></tr>
+      <tr><td>Labiade De Mohssine</td><td>3 900 DH</td></tr>
+    </tbody></table>
+    <div class="stats-row">
+      <div class="stat">Salaires : <strong>15 900 DH</strong></div>
+      <div class="stat">Heures : <strong>528 h</strong></div>
+      <div class="stat">Coût : <strong>67 DH/h</strong></div>
+    </div>
+    <hr class="sep">
+
+    <h2 style="background:#3b82f6">DA02 ■ Menuiserie carcasse canapé</h2>
+    <div class="fab">■ Fabrication : Carcasse Canapé | Carcasse Fauteuil | Carcasse Méridienne</div>
+    <div class="chef-dept">■ Chef : SAID LAMGHARI</div>
+    <div class="equipe-title">■ Équipe (2 ouvriers)</div>
+    <table class="equipe">
+      <tbody><tr><td>Said Lamghari</td><td>5 000 DH</td></tr>
+      <tr><td>Abdelhadi Bouchfer</td><td>5 000 DH</td></tr>
+    </tbody></table>
+    <div class="stats-row">
+      <div class="stat">Salaires : <strong>10 000 DH</strong></div>
+      <div class="stat">Heures : <strong>352 h</strong></div>
+      <div class="stat">Coût : <strong>64 DH/h</strong></div>
+    </div>
+    <hr class="sep">
+
+    <h2 style="background:#3b82f6">DA03 ■ Tapisserie Lits</h2>
+    <div class="fab">■ Fabrication : Lit | Sommier</div>
+    <div class="chef-dept">■ Chef : MOHAMAD MARHOUB</div>
+    <div class="equipe-title">■ Équipe (2 ouvriers)</div>
+    <table class="equipe">
+      <tbody><tr><td>Mohamad Marhoub</td><td>6 000 DH</td></tr>
+      <tr><td>Hassan Labiad</td><td>3 900 DH</td></tr>
+    </tbody></table>
+    <div class="stats-row">
+      <div class="stat">Salaires : <strong>9 900 DH</strong></div>
+      <div class="stat">Heures : <strong>352 h</strong></div>
+      <div class="stat">Coût : <strong>64 DH/h</strong></div>
+    </div>
+    <hr class="sep">
+
+    <h2 style="background:#3b82f6">DA04 ■ Menuiserie carcasse lit</h2>
+    <div class="fab">■ Fabrication : Carcasse Lit | Sommier</div>
+    <div class="chef-dept">■ Chef : ABDELAATI LAFDILI</div>
+    <div class="equipe-title">■ Équipe (1 ouvrier)</div>
+    <table class="equipe"><tbody><tr><td>Abdelaati Lafdili</td><td>5 000 DH</td></tr></tbody></table>
+    <div class="stats-row">
+      <div class="stat">Salaires : <strong>5 000 DH</strong></div>
+      <div class="stat">Heures : <strong>176 h</strong></div>
+      <div class="stat">Coût : <strong>64 DH/h</strong></div>
+    </div>
+    <hr class="sep">
+
+    <h2 style="background:#3b82f6">DA05 ✂ Couture</h2>
+    <div class="fab">■ Fabrication : Canapé | Fauteuil | Lit | Sommier | Méridienne</div>
+    <div class="chef-dept">■ Chef : MOHAMED FADIL EL MOUADEN</div>
+    <div class="equipe-title">■ Équipe (1 ouvrier)</div>
+    <table class="equipe"><tbody><tr><td>Mohamed Fadil El Mouaden</td><td>6 000 DH</td></tr></tbody></table>
+    <div class="stats-row">
+      <div class="stat">Salaires : <strong>6 000 DH</strong></div>
+      <div class="stat">Heures : <strong>176 h</strong></div>
+      <div class="stat">Coût : <strong>71 DH/h</strong></div>
+    </div>
+    <hr class="sep">
+
+    <h2 style="background:#3b82f6">DA06 ■ Confection Rideaux</h2>
+    <div class="fab">■ Fabrication : Rideaux Canapé | Rideaux Fauteuil | Rideaux Lit | Rideaux Sommier | Rideaux Méridienne</div>
+    <div class="chef-dept">■ Chef : AYOUB EL YAGIZ</div>
+    <div class="equipe-title">■ Équipe (1 ouvrier)</div>
+    <table class="equipe"><tbody><tr><td>Ayoub El Yagiz</td><td>6 000 DH</td></tr></tbody></table>
+    <div class="stats-row">
+      <div class="stat">Salaires : <strong>6 000 DH</strong></div>
+      <div class="stat">Heures : <strong>176 h</strong></div>
+      <div class="stat">Coût : <strong>68 DH/h</strong></div>
+    </div>
+  </div>
+  <div class="page-resume" style="border-top-color:#3b82f6">
+    <h3 style="color:#3b82f6;border-bottom-color:#3b82f6">■ Résumé Atelier A - Fabrication</h3>
+    <table class="resume">
+      <tbody><tr><td>Départements</td><td>6 (DA01 à DA06)</td></tr>
+      <tr><td>Produits fabriqués</td><td>Canapé, Fauteuil, Lit, Sommier, Méridienne</td></tr>
+      <tr><td>Ouvriers total</td><td>10</td></tr>
+      <tr><td>Chefs</td><td>5</td></tr>
+      <tr><td>Salaires/mois</td><td>52 800 DH</td></tr>
+      <tr><td>Heures/mois</td><td>1 760 h</td></tr>
+      <tr><td>Coût horaire moyen</td><td>67 DH/h</td></tr>
+      <tr><td>Couleur tenue</td><td><span style="background:#3b82f6;color:white;padding:2px 10px;border-radius:12px;font-size:11px">🧥 Bleu</span></td></tr>
+    </tbody></table>
+    <div class="spec-title">Spécificités :</div>
+    <div class="spec">• DA01 : Tapisserie canapés, fauteuils, méridienne</div>
+    <div class="spec">• DA02 : Carcasses bois canapés, fauteuils, méridienne</div>
+    <div class="spec">• DA03 : Tapisserie lits et sommiers</div>
+    <div class="spec">• DA04 : Carcasses bois lits et sommiers</div>
+    <div class="spec">• DA05 : Couture tous produits</div>
+    <div class="spec">• DA06 : Rideaux et habillage textile tous produits</div>
+    <div class="spec">• AYOUB EL YAGIZ : Chef DA01 + DA06 (gère 2 départements)</div>
+  </div>
+</div>
+
+<!-- ===== ATELIER B ===== -->
+<div id="atelier-B" class="atelier">
+  <div class="page" style="border-top-color:#f97316">
+    <h1 style="color:#f97316">■ CREAJIT — Atelier B</h1>
+    <div class="subtitle">6 Départements | Chaise • Transat • ShowRoom • Standard</div>
+    <span class="chef-badge" style="background:#f97316">👤 Chef Général : AHMED ARAJI</span>
+    <span class="tenue-badge" style="background:#f97316">🧥 Tenue Orange</span>
+
+    <h2 style="background:#f97316">DB01 ■ Tapisserie</h2>
+    <div class="fab">■ Fabrication : Chaise tapissée | Transat | ShowRoom | Standard</div>
+    <div class="chef-dept">■ Chef : AHMED ARAJI</div>
+    <div class="equipe-title">■ Équipe (4 ouvriers)</div>
+    <table class="equipe">
+      <tbody><tr><td>Ahmed Araji</td><td>6 000 DH</td></tr>
+      <tr><td>Abdelilah Dakhama</td><td>6 000 DH</td></tr>
+      <tr><td>Le Boudrif De Mustapha</td><td>5 000 DH</td></tr>
+      <tr><td>Abdelmajid Anjar</td><td>5 000 DH</td></tr>
+    </tbody></table>
+    <div class="stats-row"><div class="stat">Salaires : <strong>22 000 DH</strong></div><div class="stat">Heures : <strong>704 h</strong></div><div class="stat">Coût : <strong>67 DH/h</strong></div></div>
+    <hr class="sep">
+
+    <h2 style="background:#f97316">DB02 ■ Carcasse Canapé &amp; Lit</h2>
+    <div class="fab">■ Fabrication : Carcasse canapé | Carcasse lit</div>
+    <div class="chef-dept">■ Chef : KHALID HOUFATI</div>
+    <div class="equipe-title">■ Équipe (1 ouvrier)</div>
+    <table class="equipe"><tbody><tr><td>Khalid Houfati</td><td>5 000 DH</td></tr></tbody></table>
+    <div class="stats-row"><div class="stat">Salaires : <strong>5 000 DH</strong></div><div class="stat">Heures : <strong>176 h</strong></div><div class="stat">Coût : <strong>64 DH/h</strong></div></div>
+    <hr class="sep">
+
+    <h2 style="background:#f97316">DB03 ✂ Couture</h2>
+    <div class="fab">■ Fabrication : Couture chaise | Finitions</div>
+    <div class="chef-dept">■ Chef : YOUSSEF ARGIBI</div>
+    <div class="equipe-title">■ Équipe (1 ouvrier)</div>
+    <table class="equipe"><tbody><tr><td>Youssef Argibi</td><td>5 000 DH</td></tr></tbody></table>
+    <div class="stats-row"><div class="stat">Salaires : <strong>5 000 DH</strong></div><div class="stat">Heures : <strong>176 h</strong></div><div class="stat">Coût : <strong>71 DH/h</strong></div></div>
+    <hr class="sep">
+
+    <h2 style="background:#f97316">DB04 ■ Ferronnerie</h2>
+    <div class="fab">■ Fabrication : Chaise métal | Transat structure | Assemblages</div>
+    <div class="chef-dept">■ Chef : YASSINE MADIDI</div>
+    <div class="equipe-title">■ Équipe (2 ouvriers)</div>
+    <table class="equipe">
+      <tbody><tr><td>Yassine Madidi</td><td>5 000 DH</td></tr>
+      <tr><td>Adil Rehaimine</td><td>5 500 DH</td></tr>
+    </tbody></table>
+    <div class="stats-row"><div class="stat">Salaires : <strong>10 500 DH</strong></div><div class="stat">Heures : <strong>352 h</strong></div><div class="stat">Coût : <strong>64 DH/h</strong></div></div>
+    <hr class="sep">
+
+    <h2 style="background:#f97316">DB05 ■ Carcasse Chaise Bois</h2>
+    <div class="fab">■ Fabrication : Carcasse chaise bois | Pièces bois</div>
+    <div class="chef-dept">■ Chef : SOUHAIL SAKAT</div>
+    <div class="equipe-title">■ Équipe (1 ouvrier)</div>
+    <table class="equipe"><tbody><tr><td>Souhail Sakat</td><td>5 000 DH</td></tr></tbody></table>
+    <div class="stats-row"><div class="stat">Salaires : <strong>5 000 DH</strong></div><div class="stat">Heures : <strong>176 h</strong></div><div class="stat">Coût : <strong>64 DH/h</strong></div></div>
+    <hr class="sep">
+
+    <h2 style="background:#f97316">DB06 ■ Peinture</h2>
+    <div class="fab">■ Fabrication : Peinture chaise | Peinture transat | Finitions</div>
+    <div class="chef-dept">■ Chef : YOUSSEF BEN ELARRADIA</div>
+    <div class="equipe-title">■ Équipe (1 ouvrier)</div>
+    <table class="equipe"><tbody><tr><td>Youssef Ben Elarradia</td><td>5 500 DH</td></tr></tbody></table>
+    <div class="stats-row"><div class="stat">Salaires : <strong>5 500 DH</strong></div><div class="stat">Heures : <strong>176 h</strong></div><div class="stat">Coût : <strong>68 DH/h</strong></div></div>
+  </div>
+  <div class="page-resume" style="border-top-color:#f97316">
+    <h3 style="color:#f97316;border-bottom-color:#f97316">■ Résumé Atelier B - Fabrication</h3>
+    <table class="resume">
+      <tbody><tr><td>Départements</td><td>6 (DB01 à DB06)</td></tr>
+      <tr><td>Produits fabriqués</td><td>Chaise, Transat, ShowRoom, Standard</td></tr>
+      <tr><td>Ouvriers total</td><td>10</td></tr>
+      <tr><td>Chefs</td><td>6</td></tr>
+      <tr><td>Salaires/mois</td><td>53 500 DH</td></tr>
+      <tr><td>Heures/mois</td><td>1 760 h</td></tr>
+      <tr><td>Coût horaire moyen</td><td>67 DH/h</td></tr>
+      <tr><td>Couleur tenue</td><td><span style="background:#f97316;color:white;padding:2px 10px;border-radius:12px;font-size:11px">🧥 Orange</span></td></tr>
+    </tbody></table>
+    <div class="spec-title">Spécificités :</div>
+    <div class="spec">• DB01 : Garnissage chaises, transats — ShowRoom + Standard</div>
+    <div class="spec">• DB02 : Structure bois canapé et lit</div>
+    <div class="spec">• DB03 : Finitions couture pour la chaise</div>
+    <div class="spec">• DB04 : Chaise métal + transat structure</div>
+    <div class="spec">• DB05 : Carcasse bois chaise</div>
+    <div class="spec">• DB06 : Finition peinture tous produits chaise</div>
+  </div>
+</div>
+
+<!-- ===== ATELIER C ===== -->
+<div id="atelier-C" class="atelier active">
+  <div class="page" style="border-top-color:#8b5cf6">
+    <h1 style="color:#8b5cf6">■ CREAJIT — Atelier C</h1>
+    <div class="subtitle">1 Département | Découpe Laser • Usinage CNC • Gravure</div>
+    <span class="chef-badge" style="background:#8b5cf6">👤 Chef : BAHRI EL OTHMANI</span>
+    <span class="tenue-badge" style="background:#8b5cf6">🧥 Tenue Violette</span>
+    <h2 style="background:#8b5cf6">DC01 ■ CNC &amp; Laser</h2>
+    <div class="fab">■ Fabrication : Découpe Laser | Usinage CNC | Gravure</div>
+    <div class="chef-dept">■ Chef : BAHRI EL OTHMANI</div>
+    <div class="equipe-title">■ Équipe (1 ouvrier)</div>
+    <table class="equipe"><tbody><tr><td>Bahri El Othmani</td><td>5 000 DH</td></tr></tbody></table>
+    <div class="stats-row"><div class="stat">Salaires : <strong>5 000 DH</strong></div><div class="stat">Heures : <strong>176 h</strong></div><div class="stat">Coût : <strong>28 DH/h</strong></div></div>
+  </div>
+  <div class="page-resume" style="border-top-color:#8b5cf6">
+    <h3 style="color:#8b5cf6;border-bottom-color:#8b5cf6">■ Résumé Atelier C - Fabrication</h3>
+    <table class="resume">
+      <tbody><tr><td>Départements</td><td>1 (DC01)</td></tr>
+      <tr><td>Produits fabriqués</td><td>Découpe Laser, Usinage CNC, Gravure</td></tr>
+      <tr><td>Ouvriers total</td><td>1</td></tr>
+      <tr><td>Chefs</td><td>1</td></tr>
+      <tr><td>Salaires/mois</td><td>5 000 DH</td></tr>
+      <tr><td>Heures/mois</td><td>176 h</td></tr>
+      <tr><td>Coût horaire moyen</td><td>28 DH/h</td></tr>
+      <tr><td>Couleur tenue</td><td><span style="background:#8b5cf6;color:white;padding:2px 10px;border-radius:12px;font-size:11px">🧥 Violette</span></td></tr>
+    </tbody></table>
+    <div class="spec-title">Spécificités :</div>
+    <div class="spec">• DC01 : Atelier haute précision — découpe laser + usinage CNC</div>
+    <div class="spec">• BAHRI EL OTHMANI : Opérateur unique — expertise mécanique précise</div>
+  </div>
+</div>
+
+<!-- ===== ATELIER D ===== -->
+<div id="atelier-D" class="atelier">
+  <div class="page" style="border-top-color:#06b6d4">
+    <h1 style="color:#06b6d4">■ CREAJIT — Atelier D</h1>
+    <div class="subtitle">1 Département | Moules Résine • Pièces Polystyrène • Moulage</div>
+    <span class="chef-badge" style="background:#06b6d4">👤 Chef : ETTAIB BOUGATOUCH</span>
+    <span class="tenue-badge" style="background:#06b6d4">🧥 Tenue Cyan</span>
+    <h2 style="background:#06b6d4">DD01 ■ Résine &amp; Polystyrène</h2>
+    <div class="fab">■ Fabrication : Moules Résine | Pièces Polystyrène | Moulage</div>
+    <div class="chef-dept">■ Chef : ETTAIB BOUGATOUCH</div>
+    <div class="equipe-title">■ Équipe (2 ouvriers)</div>
+    <table class="equipe">
+      <tbody><tr><td>Ettaib Bougatouch</td><td>5 000 DH</td></tr>
+      <tr><td>Rachid Ait Taleb</td><td>20 000 DH/mois *</td></tr>
+    </tbody></table>
+    <div class="stats-row"><div class="stat">Salaires : <strong>25 000 DH</strong></div><div class="stat">Heures : <strong>352 h</strong></div><div class="stat">Coût : <strong>71 DH/h</strong></div></div>
+    <p style="font-size:10px;color:#888;margin-top:6px">* Rachid payé à la semaine (5 000 DH/semaine)</p>
+  </div>
+  <div class="page-resume" style="border-top-color:#06b6d4">
+    <h3 style="color:#06b6d4;border-bottom-color:#06b6d4">■ Résumé Atelier D - Fabrication</h3>
+    <table class="resume">
+      <tbody><tr><td>Départements</td><td>1 (DD01)</td></tr>
+      <tr><td>Produits fabriqués</td><td>Moules Résine, Pièces Polystyrène, Moulage</td></tr>
+      <tr><td>Ouvriers total</td><td>2</td></tr>
+      <tr><td>Chefs</td><td>1</td></tr>
+      <tr><td>Salaires/mois</td><td>25 000 DH</td></tr>
+      <tr><td>Heures/mois</td><td>352 h</td></tr>
+      <tr><td>Coût horaire moyen</td><td>71 DH/h</td></tr>
+      <tr><td>Couleur tenue</td><td><span style="background:#06b6d4;color:white;padding:2px 10px;border-radius:12px;font-size:11px">🧥 Cyan</span></td></tr>
+    </tbody></table>
+    <div class="spec-title">Spécificités :</div>
+    <div class="spec">• DD01 : Moulage pièces complexes — finitions précises</div>
+    <div class="spec">• RACHID AIT TALEB : Payé à la semaine (5 000 DH/semaine)</div>
+  </div>
+</div>
+
+<!-- ===== ATELIER E ===== -->
+<div id="atelier-E" class="atelier">
+  <div class="page" style="border-top-color:#92400e">
+    <h1 style="color:#92400e">■ CREAJIT — Atelier E</h1>
+    <div class="subtitle">1 Département | Menuiserie • Bois • Structures</div>
+    <span class="chef-badge" style="background:#92400e">👤 Chef : DIT CHNITIFA</span>
+    <span class="tenue-badge" style="background:#92400e">🧥 Tenue Marron</span>
+    <h2 style="background:#92400e">DE01 ■ Menuiserie</h2>
+    <div class="fab">■ Fabrication : Meubles bois | Structures | Pièces sur mesure</div>
+    <div class="chef-dept">■ Chef : DIT CHNITIFA</div>
+    <div class="equipe-title">■ Équipe (5 ouvriers)</div>
+    <table class="equipe">
+      <tbody><tr><td>Dit Chnitifa</td><td>8 000 DH</td></tr>
+      <tr><td>Chaise Ayoub (Chef atelier)</td><td>6 000 DH</td></tr>
+      <tr><td>Mourad Zemit</td><td>5 000 DH</td></tr>
+      <tr><td>Redouan Houfati</td><td>5 000 DH</td></tr>
+      <tr><td>El Mahdi Bahaj</td><td>5 000 DH</td></tr>
+    </tbody></table>
+    <div class="stats-row"><div class="stat">Salaires : <strong>29 000 DH</strong></div><div class="stat">Heures : <strong>880 h</strong></div><div class="stat">Coût : <strong>70 DH/h</strong></div></div>
+  </div>
+  <div class="page-resume" style="border-top-color:#92400e">
+    <h3 style="color:#92400e;border-bottom-color:#92400e">■ Résumé Atelier E - Fabrication</h3>
+    <table class="resume">
+      <tbody><tr><td>Départements</td><td>1 (DE01)</td></tr>
+      <tr><td>Produits fabriqués</td><td>Meubles bois, Structures, Pièces sur mesure</td></tr>
+      <tr><td>Ouvriers total</td><td>5</td></tr>
+      <tr><td>Chefs</td><td>2</td></tr>
+      <tr><td>Salaires/mois</td><td>29 000 DH</td></tr>
+      <tr><td>Heures/mois</td><td>880 h</td></tr>
+      <tr><td>Coût horaire moyen</td><td>70 DH/h</td></tr>
+      <tr><td>Couleur tenue</td><td><span style="background:#92400e;color:white;padding:2px 10px;border-radius:12px;font-size:11px">🧥 Marron</span></td></tr>
+    </tbody></table>
+    <div class="spec-title">Spécificités :</div>
+    <div class="spec">• DE01 : Menuiserie générale — production polyvalente bois</div>
+    <div class="spec">• DIT CHNITIFA : Chef principal — salaire le plus élevé (8 000 DH)</div>
+  </div>
+</div>
+
+<!-- ===== ATELIER F ===== -->
+<div id="atelier-F" class="atelier">
+  <div class="page" style="border-top-color:#ef4444">
+    <h1 style="color:#ef4444">■ CREAJIT — Atelier F</h1>
+    <div class="subtitle">1 Département | Peinture • Laque • Finitions</div>
+    <span class="chef-badge" style="background:#ef4444">👤 Chef : MOHAMED ELKARMANI</span>
+    <span class="tenue-badge" style="background:#ef4444">🧥 Tenue Rouge</span>
+    <h2 style="background:#ef4444">DF01 ■ Peinture</h2>
+    <div class="fab">■ Fabrication : Peinture meubles | Laque | Finitions | Patine</div>
+    <div class="chef-dept">■ Chef : MOHAMED ELKARMANI</div>
+    <div class="equipe-title">■ Équipe (5 ouvriers)</div>
+    <table class="equipe">
+      <tbody><tr><td>Mohamed Elkarmani</td><td>5 500 DH</td></tr>
+      <tr><td>Abdelaaziz Ben Amer</td><td>5 000 DH</td></tr>
+      <tr><td>Mohamed Elmoussaoui</td><td>5 000 DH</td></tr>
+      <tr><td>Mouad Elmaamlem</td><td>4 000 DH</td></tr>
+      <tr><td>Milouda El Azaoui</td><td>3 500 DH</td></tr>
+    </tbody></table>
+    <div class="stats-row"><div class="stat">Salaires : <strong>23 000 DH</strong></div><div class="stat">Heures : <strong>880 h</strong></div><div class="stat">Coût : <strong>55 DH/h</strong></div></div>
+  </div>
+  <div class="page-resume" style="border-top-color:#ef4444">
+    <h3 style="color:#ef4444;border-bottom-color:#ef4444">■ Résumé Atelier F - Fabrication</h3>
+    <table class="resume">
+      <tbody><tr><td>Départements</td><td>1 (DF01)</td></tr>
+      <tr><td>Produits fabriqués</td><td>Peinture, Laque, Finitions, Patine</td></tr>
+      <tr><td>Ouvriers total</td><td>5</td></tr>
+      <tr><td>Chefs</td><td>1</td></tr>
+      <tr><td>Salaires/mois</td><td>23 000 DH</td></tr>
+      <tr><td>Heures/mois</td><td>880 h</td></tr>
+      <tr><td>Coût horaire moyen</td><td>55 DH/h</td></tr>
+      <tr><td>Couleur tenue</td><td><span style="background:#ef4444;color:white;padding:2px 10px;border-radius:12px;font-size:11px">🧥 Rouge</span></td></tr>
+    </tbody></table>
+    <div class="spec-title">Spécificités :</div>
+    <div class="spec">• DF01 : Finitions haute qualité — peinture, laque, patine</div>
+    <div class="spec">• MILOUDA EL AZAOUI : Seule femme en atelier de production</div>
+  </div>
+</div>
+
+<!-- ===== ATELIER G ===== -->
+<div id="atelier-G" class="atelier">
+  <div class="page" style="border-top-color:#6b7280">
+    <h1 style="color:#6b7280">■ CREAJIT — Atelier G</h1>
+    <div class="subtitle">1 Département | Ferronnerie • Soudure • Métal</div>
+    <span class="chef-badge" style="background:#6b7280">👤 Chef : MOHAMED BOUALILI</span>
+    <span class="tenue-badge" style="background:#6b7280">🧥 Tenue Grise</span>
+    <h2 style="background:#6b7280">DG01 ■ Ferronnerie &amp; Soudure</h2>
+    <div class="fab">■ Fabrication : Structures métal | Soudure | Ferronnerie décorative | Assemblages</div>
+    <div class="chef-dept">■ Chef : MOHAMED BOUALILI</div>
+    <div class="equipe-title">■ Équipe (2 ouvriers)</div>
+    <table class="equipe">
+      <tbody><tr><td>Mohamed Boualili</td><td>5 500 DH</td></tr>
+      <tr><td>Abdelghani Malih</td><td>5 000 DH</td></tr>
+    </tbody></table>
+    <div class="stats-row"><div class="stat">Salaires : <strong>10 500 DH</strong></div><div class="stat">Heures : <strong>352 h</strong></div><div class="stat">Coût : <strong>63 DH/h</strong></div></div>
+  </div>
+  <div class="page-resume" style="border-top-color:#6b7280">
+    <h3 style="color:#6b7280;border-bottom-color:#6b7280">■ Résumé Atelier G - Fabrication</h3>
+    <table class="resume">
+      <tbody><tr><td>Départements</td><td>1 (DG01)</td></tr>
+      <tr><td>Produits fabriqués</td><td>Structures métal, Soudure, Ferronnerie décorative</td></tr>
+      <tr><td>Ouvriers total</td><td>2</td></tr>
+      <tr><td>Chefs</td><td>1</td></tr>
+      <tr><td>Salaires/mois</td><td>10 500 DH</td></tr>
+      <tr><td>Heures/mois</td><td>352 h</td></tr>
+      <tr><td>Coût horaire moyen</td><td>63 DH/h</td></tr>
+      <tr><td>Couleur tenue</td><td><span style="background:#6b7280;color:white;padding:2px 10px;border-radius:12px;font-size:11px">🧥 Grise</span></td></tr>
+    </tbody></table>
+    <div class="spec-title">Spécificités :</div>
+    <div class="spec">• DG01 : Ferronnerie décorative + soudure structures</div>
+    <div class="spec">• MOHAMED BOUALILI : Chef soudeur — expertise structures complexes</div>
+  </div>
+</div>
+
+<!-- ===== ATELIER H ===== -->
+<div id="atelier-H" class="atelier">
+  <div class="page" style="border-top-color:#d97706">
+    <h1 style="color:#d97706">■ CREAJIT — Atelier H</h1>
+    <div class="subtitle">1 Département | Pierre • Marbre • Céramique</div>
+    <span class="chef-badge" style="background:#d97706">👤 Chef : MUSTAPHA AABABOU</span>
+    <span class="tenue-badge" style="background:#d97706">🧥 Tenue Beige</span>
+    <h2 style="background:#d97706">DH01 ■ Pierre &amp; Marbre</h2>
+    <div class="fab">■ Fabrication : Taille pierre | Marbre | Céramique | Mosaïque</div>
+    <div class="chef-dept">■ Chef : MUSTAPHA AABABOU</div>
+    <div class="equipe-title">■ Équipe (3 ouvriers)</div>
+    <table class="equipe">
+      <tbody><tr><td>Mustapha Aababou</td><td>8 000 DH</td></tr>
+      <tr><td>Anoir Touati</td><td>5 000 DH</td></tr>
+      <tr><td>Amine Samadi</td><td>5 000 DH</td></tr>
+    </tbody></table>
+    <div class="stats-row"><div class="stat">Salaires : <strong>18 000 DH</strong></div><div class="stat">Heures : <strong>528 h</strong></div><div class="stat">Coût : <strong>72 DH/h</strong></div></div>
+  </div>
+  <div class="page-resume" style="border-top-color:#d97706">
+    <h3 style="color:#d97706;border-bottom-color:#d97706">■ Résumé Atelier H - Fabrication</h3>
+    <table class="resume">
+      <tbody><tr><td>Départements</td><td>1 (DH01)</td></tr>
+      <tr><td>Produits fabriqués</td><td>Taille pierre, Marbre, Céramique, Mosaïque</td></tr>
+      <tr><td>Ouvriers total</td><td>3</td></tr>
+      <tr><td>Chefs</td><td>1</td></tr>
+      <tr><td>Salaires/mois</td><td>18 000 DH</td></tr>
+      <tr><td>Heures/mois</td><td>528 h</td></tr>
+      <tr><td>Coût horaire moyen</td><td>72 DH/h</td></tr>
+      <tr><td>Couleur tenue</td><td><span style="background:#d97706;color:white;padding:2px 10px;border-radius:12px;font-size:11px">🧥 Beige</span></td></tr>
+    </tbody></table>
+    <div class="spec-title">Spécificités :</div>
+    <div class="spec">• DH01 : Taille et finition pierre naturelle — marbre, granit, céramique</div>
+    <div class="spec">• MUSTAPHA AABABOU : Responsable atelier — salaire 8 000 DH</div>
+  </div>
+</div>
+
+<!-- ===== ATELIER I ===== -->
+<div id="atelier-I" class="atelier">
+  <div class="page" style="border-top-color:#b45309">
+    <h1 style="color:#b45309">■ CREAJIT — Atelier I</h1>
+    <div class="subtitle">1 Département | Cuivre • Laiton • Métaux précieux</div>
+    <span class="chef-badge" style="background:#b45309">👤 Chef : NOUREDDINE OUZZAT</span>
+    <span class="tenue-badge" style="background:#b45309">🧥 Tenue Dorée</span>
+    <h2 style="background:#b45309">DI01 ■ Cuivre &amp; Laiton</h2>
+    <div class="fab">■ Fabrication : Pièces cuivre | Laiton décoratif | Accessoires métal précieux</div>
+    <div class="chef-dept">■ Chef : NOUREDDINE OUZZAT</div>
+    <div class="equipe-title">■ Équipe (1 ouvrier)</div>
+    <table class="equipe"><tbody><tr><td>Noureddine Ouzzat</td><td>6 000 DH</td></tr></tbody></table>
+    <div class="stats-row"><div class="stat">Salaires : <strong>6 000 DH</strong></div><div class="stat">Heures : <strong>176 h</strong></div><div class="stat">Coût : <strong>73 DH/h</strong></div></div>
+  </div>
+  <div class="page-resume" style="border-top-color:#b45309">
+    <h3 style="color:#b45309;border-bottom-color:#b45309">■ Résumé Atelier I - Fabrication</h3>
+    <table class="resume">
+      <tbody><tr><td>Départements</td><td>1 (DI01)</td></tr>
+      <tr><td>Produits fabriqués</td><td>Pièces cuivre, Laiton décoratif, Accessoires</td></tr>
+      <tr><td>Ouvriers total</td><td>1</td></tr>
+      <tr><td>Chefs</td><td>1</td></tr>
+      <tr><td>Salaires/mois</td><td>6 000 DH</td></tr>
+      <tr><td>Heures/mois</td><td>176 h</td></tr>
+      <tr><td>Coût horaire moyen</td><td>73 DH/h</td></tr>
+      <tr><td>Couleur tenue</td><td><span style="background:#b45309;color:white;padding:2px 10px;border-radius:12px;font-size:11px">🧥 Dorée</span></td></tr>
+    </tbody></table>
+    <div class="spec-title">Spécificités :</div>
+    <div class="spec">• DI01 : Travail artisanal précieux — cuivre et laiton sur mesure</div>
+    <div class="spec">• NOUREDDINE OUZZAT : Artisan unique — expertise cuivre et laiton</div>
+  </div>
+</div>
+
+<script>
+function show(id, btn) {
+  document.querySelectorAll('.atelier').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => {
+    b.classList.remove('active');
+    b.style.background = 'white';
+    b.style.color = '#000';
+  });
+  document.getElementById('atelier-' + id).classList.add('active');
+  btn.classList.add('active');
+  const color = btn.getAttribute('data-color');
+  btn.style.background = color;
+  btn.style.color = 'white';
+}
+// Activer A au départ
+document.querySelector('.nav-btn').style.background = '#3b82f6';
+document.querySelector('.nav-btn').style.color = 'white';
+</script>
+
+
+</body></html>

@@ -305,3 +305,19 @@ du retard car la matière première n'est pas disponible.**
 statut partagé (vert = reçu), tracé par **client + article**.
 *Nouvel agent :* **Hassan = agent réception** (réceptionne → passe au vert).
 *À faire :* récupérer la **liste des 500 matières premières** (fournisseur / nature).
+
+**Données reçues de Driss (29/05/2026) — fichiers dans `donnees/` :**
+- `donnees/matieres-premieres-559.html` + `.csv` → **559 références** de matière première,
+  colonnes : Référence · Désignation · Unité · **Fournisseur** · P.U. HT · P.U. TTC.
+  **36 fournisseurs** distincts (ex. KY2N ARTON). → base du module stock/achat (Point 3).
+- `donnees/ateliers-reels.html` → **structure réelle des 9 ateliers (A→I)** : avec
+  **départements** (DA01…DA06, DB01…, etc.), **chef par département**, **équipes + salaires**,
+  **heures/mois**, **coût horaire**, et une **couleur de tenue par atelier**
+  (A Bleu, B Orange, C Violet, D Cyan, E Marron, F Rouge, G Gris, H Beige, I Doré).
+  Chefs réels : A Ayoub El Yagiz · B Ahmed Araji · C Bahri El Othmani · D Ettaib Bougatouch ·
+  E Dit Chnitifa · F Mohamed Elkarmani · G Mohamed Boualili · H Mustapha Aababou · I Noureddine Ouzzat.
+
+> ⚠️ **À CONFIRMER avec Driss — coût horaire :** le fichier ateliers réels indique
+> **55–73 DH/h** par département, alors que §4 indiquait **22–29 DH/h**. Décisif pour le
+> **coût de revient (but n°1)** → savoir quel taux utiliser (et s'il inclut charges/salaires).
+> Les **tenues de couleur par atelier** peuvent servir à coder visuellement les ouvriers.
