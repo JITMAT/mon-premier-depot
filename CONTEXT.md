@@ -235,6 +235,32 @@ Articles : Chaise Cartel ×75 @730 ; Tableau 120/80 ×25 @730 ; Tableau 40/40 ×
 
 ---
 
+## 13. Ordre de construction officiel (structure décidée, à suivre)
+
+> Driss délègue la structuration. On construit dans CET ordre, en s'appuyant sur les
+> maquettes validées (pages HTML), sans serveur ni GitHub (déploiement glisser-déposer),
+> IA via clé navigateur. On signale Driss à chaque module prêt à regarder.
+
+- **Module A — Socle de données partagées (backbone).** Un état commun dans le navigateur
+  (`creajit-data.js`) que TOUTES les pages lisent/écrivent : commandes, articles, parcours
+  d'ateliers, affectations, chronos, fiches techniques, bons matière, stock (559 réf.), QC,
+  consignes, fil d'événements. + `creajit-matieres.js` (559 réf.) + `creajit-ateliers.js`
+  (ateliers réels, départements, chefs, tenues). *Invisible mais indispensable.*
+- **Module B — Les vraies commandes arrivent chez Hanane** (point d'entrée).
+- **Module C — Hanane : vérifie + remplit la fiche technique + affecte les étapes** → ça
+  apparaît chez l'ouvrier concerné.
+- **Module D — Ouvrier : file de travail réelle, chrono, pause+motif, fini** → écrit dans
+  l'état partagé → remonte au fil du cockpit en direct.
+- **Module E — Fini → Fatima : contrôle qualité par étape + détection d'anomalies (IA).**
+- **Module F — Circuit matière** : Hanane bloque le stock ; sinon bon → Mohamed → (retrait
+  ou achat fournisseur ≤2 km) + chrono → Hassan réception → vert chez tous ; tracé client+article.
+- **Module G — Consignes patron → agents** (diffusion à tous / ciblé) + remontées agents.
+- **Module H — Dessin par IA validé par le client** avant lancement.
+- **Module I — Agents IA proactifs** (anticipent, analysent, alertent) + agents des autres
+  rôles (Mohamed, Fatima, Hassan, Kenza) cliquables/réels.
+- **Module J — Branchements réels** : WhatsApp (Wassenger), Hikvision (pointage), CreaJit
+  live, base partagée multi-appareils (vrai temps réel hors d'un seul navigateur).
+
 ## 12. Vision détaillée de Driss (précisions, point par point)
 
 > Driss explique sa vision point par point ; on note ici au fur et à mesure,
