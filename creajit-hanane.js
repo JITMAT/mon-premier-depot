@@ -587,6 +587,20 @@
     }, 1000);
   }
 
+  // raisons rapides de pause (numérotées pour aller vite)
+  const MOTIFS_PAUSE = ['Rupture matière', 'Attente validation client', 'Attente étape précédente', 'Pause déjeuner', 'Problème machine', 'Fin de journée'];
+  function demanderMotifPause(aid, wid) {
+    const liste = MOTIFS_PAUSE.map((m, i) => (i + 1) + '. ' + m).join('\n');
+    const r = prompt('Pourquoi cette pause ?\n\n' + liste + '\n\nTape le numéro (1-' + MOTIFS_PAUSE.length + ') ou écris ta raison :');
+    if (r === null) return; // annulé
+    let motif = r.trim();
+    const num = parseInt(motif, 10);
+    if (num >= 1 && num <= MOTIFS_PAUSE.length && String(num) === motif) motif = MOTIFS_PAUSE[num - 1];
+    if (window.CJ) CJ.pauserTravail(aid, wid, motif);
+    toastMsg('⏸️ En pause — ' + (motif || 'sans raison'));
+    renderWorkers();
+  }
+
   function renderWorkers() {
     const box = document.getElementById('workers'); if (!box) return;
     const groups = {}; WORKERS.forEach(w => { (groups[w.at] = groups[w.at] || []).push(w); });
@@ -610,7 +624,8 @@
           const jobs = window.CJ ? CJ.affectationsOuvrier(w.id).filter(x => x.statut !== 'fini') : [];
           // cadre coloré selon l'état de l'ouvrier (visibilité d'un coup d'œil)
           const actif = jobs.some(x => x.statut === 'encours');
-          const enPause = jobs.some(x => x.statut === 'pause');
+          const jobPause = jobs.find(x => x.statut === 'pause');
+          const enPause = !!jobPause;
           const aDemarrer = jobs.some(x => x.statut === 'affecte');
           let bord = 'rgba(196,113,79,.18)', fond = '#161d2b', barre = '';
           if (selA) { bord = 'rgba(196,113,79,.5)'; }
@@ -621,6 +636,7 @@
             <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
               <div data-assign="${w.id}" style="cursor:${selA ? 'copy' : 'pointer'};flex:1;min-width:0">
                 <span style="font-weight:600;font-size:13px">${esc(w.nm)}${w.chef ? ' · chef' : ''}</span>
+                ${actif ? '<span style="color:#37c98a;font-size:11px;font-weight:600"> · 🟢 au travail</span>' : enPause ? `<span style="color:#f0a23b;font-size:11px;font-weight:600"> · ⏸️ ${esc(jobPause.motif || 'en pause')}</span>` : ''}
                 ${selA ? '<span class="pc" style="color:#e69a76;font-size:11px"> — clique pour affecter ici</span>' : ''}
               </div>
               <button class="vbtn" data-voir="${w.id}">👁️ Fiche</button>
@@ -636,6 +652,7 @@
                     <div class="pc" style="font-size:11px;color:#8d96a5">${esc(j.client || '')}${j.ref ? ' · ' + esc(j.ref) : ''}</div>
                   </div>
                 </div>
+                ${j.statut === 'pause' ? `<div style="margin-top:7px;background:rgba(240,162,59,.14);border:1px solid rgba(240,162,59,.4);border-radius:8px;padding:6px 9px;font-size:11.5px;color:#f0a23b">⏸️ <b>En pause</b>${j.motif ? ' — ' + esc(j.motif) : ' (raison non précisée)'}</div>` : ''}
                 <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;font-size:11px">
                   <span class="cjchip" data-chrono="${esc(j.articleId)}|${esc(w.id)}" data-base="${j.elapsedMs || 0}" data-t0="${j.t0 || ''}">⏱️ ${fmtDuree(j.msVivant)}${j.statut === 'encours' ? ' 🟢' : ''}</span>
                   ${j.debutLe ? `<span class="cjchip">🕒 ${fmtHeureDate(j.debutLe)}</span>` : ''}
@@ -667,7 +684,7 @@
     box.querySelectorAll('[data-assign]').forEach(el => el.onclick = () => { var wid = el.getAttribute('data-assign'); if (selA) affecter(selA, wid); else location.href = 'ouvrier.html?w=' + wid; });
     // démarrer / pause / terminer
     box.querySelectorAll('[data-start]').forEach(b => b.onclick = e => { e.stopPropagation(); const [aid, wid] = b.getAttribute('data-start').split('|'); CJ.demarrerTravail(aid, wid); toastMsg('▶️ Travail démarré'); renderWorkers(); });
-    box.querySelectorAll('[data-pause]').forEach(b => b.onclick = e => { e.stopPropagation(); const [aid, wid] = b.getAttribute('data-pause').split('|'); CJ.pauserTravail(aid, wid, ''); toastMsg('⏸️ En pause'); renderWorkers(); });
+    box.querySelectorAll('[data-pause]').forEach(b => b.onclick = e => { e.stopPropagation(); const [aid, wid] = b.getAttribute('data-pause').split('|'); demanderMotifPause(aid, wid); });
     box.querySelectorAll('[data-done]').forEach(b => b.onclick = e => { e.stopPropagation(); const [aid, wid] = b.getAttribute('data-done').split('|'); CJ.finirTravail(aid, wid); toastMsg('✅ Terminé'); renderWorkers(); });
     lancerChrono();
   }
