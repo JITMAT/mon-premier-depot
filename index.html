@@ -280,15 +280,14 @@ function renderTeam(){
     stt:s.statut||'idle', rapporte:s.rapporte||0, faits:s.faits||0,
     coutMO:s.coutMO||0, heures:s.heures||0, enCours:s.enCours||0, pauses:s.pauses||0
   };});
-  // tri par la colonne choisie, mais ceux qui ont du vrai travail remontent
-  arr.sort((a,b)=>(b[teamKey]||0)-(a[teamKey]||0));
-  const actifs=arr.filter(w=>w.rapporte||w.faits||w.enCours||w.pauses||w.heures);
-  const liste=actifs.length?actifs:arr.slice(0,12);
-  const note=actifs.length
-    ? `<div class="h2s" style="margin-bottom:8px">${actifs.length} ouvrier(s) avec du travail enregistré. Le classement se construit au fur et à mesure que tu affectes et valides le travail.</div>`
-    : `<div class="h2s" style="margin-bottom:8px">Aucun travail enregistré pour l'instant. Dès que tu affectes des articles aux ouvriers (via Hanane) et qu'ils démarrent/terminent, leurs vraies stats apparaissent ici.</div>`;
-  document.getElementById('team').innerHTML=note+liste.map((w,i)=>{const medal=i===0?'🥇':(i===1?'🥈':(i===2?'🥉':'#'+(i+1)));
-    return `<div class="trow ${w.stt} ${i<3&&actifs.length?'t'+(i+1):''}" onclick="openWorker('${w.k}')"><div class="rk">${medal}</div>
+  // on montre TOUS les ouvriers : ceux qui ont du travail en haut (classés), le reste ensuite
+  const aDuTravail=w=>w.rapporte||w.faits||w.enCours||w.pauses||w.heures;
+  const actifs=arr.filter(aDuTravail).sort((a,b)=>(b[teamKey]||0)-(a[teamKey]||0));
+  const repos=arr.filter(w=>!aDuTravail(w)).sort((a,b)=>a.nm.localeCompare(b.nm));
+  const liste=actifs.concat(repos);
+  const note=`<div class="h2s" style="margin-bottom:8px">${arr.length} ouvriers au total · ${actifs.length} avec du travail enregistré. Le classement se construit au fur et à mesure que tu affectes et valides le travail.</div>`;
+  document.getElementById('team').innerHTML=note+liste.map((w,i)=>{const estActif=i<actifs.length;const medal=estActif?(i===0?'🥇':(i===1?'🥈':(i===2?'🥉':'#'+(i+1)))):'·';
+    return `<div class="trow ${w.stt} ${estActif&&i<3?'t'+(i+1):''}" onclick="openWorker('${w.k}')"><div class="rk">${medal}</div>
       ${av(w.k,ini(w.nm),'')}
       <div><div class="nm">${w.nm}${w.chef?' · chef':''}</div><div class="at">${w.at}</div><span class="stt ${STT[w.stt][1]}"><span class="dot"></span>${STT[w.stt][0]}</span></div>
       <div class="stat"><div class="s"><div class="v g">${nb(w.rapporte)}</div><div class="l">rapporté DH</div></div>
