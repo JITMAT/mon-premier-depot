@@ -98,6 +98,23 @@
     },
     consignesPour: (ouvrierId) => etat.consignes.filter(c => c.cible === 'tous' || c.cible === ouvrierId),
 
+    // Contexte temps réel injecté dans CHAQUE agent IA → ils sont « connectés »
+    contexteIA: () => {
+      const aff = Object.entries(etat.affectations).map(([id, a]) => `${a.nom || id} → ${a.ouvrierId} (atelier ${a.atelierCode}, ${a.statut})`);
+      const bons = Object.values(etat.bons).map(b => `${b.client || ''} ${b.ref || ''}: ${(b.lignes || []).length} matière(s) [${b.statut}]`);
+      const evs = (etat.evenements || []).slice(0, 12).map(x => `• ${x.texte}${x.route ? ' ' + x.route : ''}`);
+      const cons = (etat.consignes || []).slice(0, 6).map(c => `• [${c.cible}] ${c.texte}`);
+      return [
+        '--- ÉTAT PARTAGÉ TEMPS RÉEL DE L\'ATELIER CREAJIT ---',
+        'Tu es un agent CREAJIT IA, CONNECTÉ aux autres agents (Hanane, ouvriers, Mohamed magasin, Hassan réception, Fatima). Tu vois ce qu\'ils font ci-dessous et tu peux y faire référence.',
+        'Affectations en cours : ' + (aff.join(' ; ') || 'aucune'),
+        'Bons de matière : ' + (bons.join(' ; ') || 'aucun'),
+        'Consignes du patron : ' + (cons.join('  ') || 'aucune'),
+        'Derniers événements : ' + (evs.join('  ') || 'aucun'),
+        '--- fin état partagé ---',
+      ].join('\n');
+    },
+
     // Bons de matière
     bon: (b) => { const id = b.id || uid('bon'); etat.bons[id] = Object.assign({ id, statut: 'envoye', t0: Date.now() }, b); sauver(); return id; },
     majBon: (id, ch) => { if (etat.bons[id]) { Object.assign(etat.bons[id], ch); sauver(); } },

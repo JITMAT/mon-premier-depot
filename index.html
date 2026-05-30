@@ -344,7 +344,7 @@ async function send(){const inp=document.getElementById('inp');const txt=inp.val
   const box=document.getElementById('chat');const t=document.createElement('div');t.className='typ';t.innerHTML='<i></i><i></i><i></i>';box.appendChild(t);box.scrollTop=box.scrollHeight;
   try{
     let cle=cleIA(); if(!cle){t.remove();bub('assistant',"Aucune clé IA enregistrée sur cet appareil. Clique sur 🔑 pour la coller (elle reste chez toi).",false);document.getElementById('sendb').disabled=false;inp.focus();return;}
-    const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"content-type":"application/json","x-api-key":cle,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:1000,system:SYS,messages:conv})});
+    const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"content-type":"application/json","x-api-key":cle,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:1000,system:SYS+(window.CJ?("\n\n"+CJ.contexteIA()):""),messages:conv})});
     const data=await r.json();t.remove();
     if(data&&data.error){bub('assistant',"⚠️ "+(data.error.message||'Erreur IA')+"  (si la clé est mauvaise, clique sur 🔑 pour la re-saisir)",false);}
     else bub('assistant',(data.content||[]).filter(x=>x.type==='text').map(x=>x.text).join('\n').trim()||'(vide)');
