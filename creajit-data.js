@@ -113,7 +113,7 @@
     // Renvoie la liste des anomalies de l'atelier, triée par gravité.
     problemes: () => {
       const res = [];
-      const add = (gravite, cat, texte, route) => res.push({ gravite, cat, texte, route: route || '' });
+      const add = (gravite, cat, texte, route, action) => res.push({ gravite, cat, texte, route: route || '', action: action || null });
       const heures = (t0) => t0 ? Math.floor((Date.now() - t0) / 3600000) : 0;
       const aff = etat.affArt || {};
       Object.keys(aff).forEach(aid => {
@@ -126,21 +126,28 @@
         const tousFinis = liste.every(o => o.statut === 'fini');
         const aucunDemarre = liste.every(o => o.statut === 'affecte');
         const fa = (etat.fichesArt && etat.fichesArt[aid]) || {};
-        if (enPause.length) add('haute', 'pause', `« ${nom} » (${ref}) EN PAUSE : ${enPause.map(o => o.motif || 'sans motif').join(', ')}`, '→ atelier');
-        if (tousFinis && !etat.qc[aid]) add('moyenne', 'qc', `« ${nom} » (${ref}) terminé mais PAS encore contrôlé (QC).`, '→ Fatima');
-        if (aucunDemarre) add('info', 'attente', `« ${nom} » (${ref}) affecté mais travail PAS commencé.`, '→ atelier');
-        if (!fa.dessinValide && !tousFinis) add('moyenne', 'fiche', `« ${nom} » (${ref}) : dessin/fiche PAS validé avant production (risque de retour).`, '→ Hanane');
+        const w1 = (liste[0] && liste[0].ouvrierId) || 'tous';
+        if (enPause.length) add('haute', 'pause', `« ${nom} » (${ref}) EN PAUSE : ${enPause.map(o => o.motif || 'sans motif').join(', ')}`, '→ atelier',
+          { label: '📦 Commander la matière', cible: 'mohamedmag', texte: `Commander d'urgence la matière manquante pour « ${nom} » (${ref}).` });
+        if (tousFinis && !etat.qc[aid]) add('moyenne', 'qc', `« ${nom} » (${ref}) terminé mais PAS encore contrôlé (QC).`, '→ Fatima',
+          { label: '🔎 Demander le contrôle', cible: 'fatima', texte: `Contrôler la qualité de « ${nom} » (${ref}) — article prêt.` });
+        if (aucunDemarre) add('info', 'attente', `« ${nom} » (${ref}) affecté mais travail PAS commencé.`, '→ atelier',
+          { label: '▶️ Relancer l\'atelier', cible: w1, texte: `Démarrer « ${nom} » (${ref}) — en attente.` });
+        if (!fa.dessinValide && !tousFinis) add('moyenne', 'fiche', `« ${nom} » (${ref}) : dessin/fiche PAS validé avant production (risque de retour).`, '→ Hanane',
+          { label: '📝 Demander la fiche', cible: 'hanane', texte: `Valider la fiche technique + dessin client de « ${nom} » avant production (${ref}).` });
       });
       // QC en anomalie non corrigée
       Object.keys(etat.qc || {}).forEach(aid => {
         const q = etat.qc[aid]; if (q && q.ok === false) {
           const x = CJ.article(aid); const nom = (x && x.article && x.article.nom) || aid;
-          add('haute', 'anomalie', `ANOMALIE QUALITÉ non corrigée sur « ${nom} » : ${q.obs || 'voir Fatima'}.`, '→ atelier');
+          add('haute', 'anomalie', `ANOMALIE QUALITÉ non corrigée sur « ${nom} » : ${q.obs || 'voir Fatima'}.`, '→ atelier',
+            { label: '🔧 Faire corriger', cible: 'tous', texte: `Corriger l'anomalie qualité sur « ${nom} » : ${q.obs || ''}.` });
         }
       });
       // Bons matière en attente trop longtemps
       Object.values(etat.bons || {}).forEach(b => {
-        if (b.statut !== 'recu') { const h = heures(b.t0); if (h >= 24) add('moyenne', 'matiere', `Bon matière ${b.client || ''} en attente depuis ${h} h [${b.statut}].`, '→ Mohamed magasin'); }
+        if (b.statut !== 'recu') { const h = heures(b.t0); if (h >= 24) add('moyenne', 'matiere', `Bon matière ${b.client || ''} en attente depuis ${h} h [${b.statut}].`, '→ Mohamed magasin',
+          { label: '📦 Relancer le magasin', cible: 'mohamedmag', texte: `Relancer le bon matière en attente (${b.client || ''}) — ${h} h.` }); }
       });
       // Commandes réelles en retard (si chargées)
       try {
