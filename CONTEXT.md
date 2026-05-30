@@ -496,6 +496,19 @@ Articles : Chaise Cartel ×75 @730 ; Tableau 120/80 ×25 @730 ; Tableau 40/40 ×
   (puTTC/puHT par ref ou nom) ; Hanane stocke aussi `pu` à l'ajout d'une matière. Testé node :
   chrono 7h30 → 7.5h ; bon sans prix sur réf KY2N-D10 → 2×594 = 1188 DH auto. 3/3 fichiers OK.
 
+- **2026-05-30 — VIRAGE: Driss recadre « pas ma vision ». Sa vision = tableau de bord + suivi**
+  (pas la micro-gestion départements). Frustré que je construise des features sans matcher l'app
+  qu'il a en tête. Action immédiate sur le COCKPIT (index.html) : (1) les KPI du haut + tuiles
+  étaient **codés en dur et faux** (60/20/26/10/333289) → remplacés par `realStats()` calculé sur
+  les 186 vraies commandes : 186 cmd, 35 en fabrication, 41 livrées, 409 510 DH encaissé, 3 499 052
+  DH reste à encaisser (n'était même pas affiché — pourtant crucial pour le patron). (2) SUIVI :
+  barre de recherche client/réf, filtres alignés sur les KPI (Toutes/En fabrication/À livrer/
+  Livrées/À encaisser + compteurs), chaque carte montre état paiement (payée/acompte/impayée) +
+  livraison ; (3) chiffres du haut **cliquables** → `ouvrirSuivi(filtre)` ouvre la liste filtrée.
+  Testé node : filtres concordent (35, 41), recherche « yasmine » → 3 cmd. LEÇON: arrêter d'empiler
+  des écrans ; rester sur tableau de bord + suivi, avec des VRAIS chiffres. (Le travail départements/
+  coût-revient des commits précédents reste en place mais n'est PAS la priorité de Driss.)
+
 ## 13. Ordre de construction officiel (structure décidée, à suivre)
 
 > Driss délègue la structuration. On construit dans CET ordre, en s'appuyant sur les
