@@ -10,7 +10,7 @@
     { id: 'hanane',  nm: 'Hanane Ajdi',    role: 'Exploitation',            page: 'hanane.html' },
     { id: 'said',    nm: 'Said Chnitifa',  role: 'Chef de tous les ateliers' },
     { id: 'fatima',  nm: 'Fatima Ezzahra', role: 'Qualité & Logistique' },
-    { id: 'mohamedmag', nm: 'Mohamed', role: 'Magasin / Achat',             page: 'magasin.html' },
+    { id: 'mohamedmag', nm: 'Mohamed Moumen', role: 'Magasin / Achat',      page: 'magasin.html' },
     { id: 'hassan',  nm: 'Hassan Laagouri',role: 'Réception',               page: 'reception.html' },
   ];
   // Ouvriers réels par atelier (fiche Ateliers CreaJit)
