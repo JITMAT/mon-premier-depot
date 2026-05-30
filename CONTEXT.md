@@ -370,8 +370,8 @@ Articles : Chaise Cartel ×75 @730 ; Tableau 120/80 ×25 @730 ; Tableau 40/40 ×
   de COMMANDE, pas une date limite de livraison (aucun champ délai réel n'existe → pas de faux
   retard). Refonte pilotée par la VRAIE donnée (statuts réels : deliveryStatus PENDING/DELIVERED/
   PARTIAL, productionStatus IN_PROGRESS/PENDING/COMPLETED, paymentStatus PAID/UNPAID/PARTIAL).
-  Nouveaux KPIs justes : ✅ Prêtes à livrer **41** · À livrer total 158 (41 prêtes + 41 en fab +
-  73 à produire + 3 partielles) · 🔧 En fabrication 41 · 🚚 Livrées 28 (28+3+41+41+73 = 186,
+  Nouveaux KPIs justes (vérifiés node sur les 186) : 🚚 Livrées **41** · livrées partiel **3** ·
+  ✅ Prêtes à livrer **16** · 🔧 En fabrication **27** · 🪚 À produire **99** (41+3+16+27+99 = 186,
   classement exhaustif sans doublon). Lecture via les champs NORMALISÉS de CJ_ORDERS (livr/prod/
   paie) — un premier jet lisait deliveryStatus/productionStatus bruts (absents après normalisation),
   ce qui rangeait tout en « à produire » : corrigé avant commit. Priorité métier = ce qui est
