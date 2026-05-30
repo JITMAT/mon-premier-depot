@@ -27,11 +27,15 @@ const ROUTES = {
 };
 
 function authHeaders() {
-  // Bearer en priorité, avec fallbacks au cas où.
+  // On essaie plusieurs formats d'auth (Bearer, brut, x-api-key, token, cookie JWT…)
   return [
     { 'Authorization': 'Bearer ' + TOKEN },
     { 'Authorization': TOKEN },
     { 'x-api-key': TOKEN },
+    { 'x-auth-token': TOKEN },
+    { 'token': TOKEN },
+    { 'Cookie': 'token=' + TOKEN },
+    { 'Cookie': 'creajit_auth=' + TOKEN },
   ];
 }
 
