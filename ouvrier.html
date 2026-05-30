@@ -200,7 +200,7 @@ body{background:var(--bg);color:var(--ink);font-family:'Hanken Grotesk',sans-ser
     <div class="sec" id="sec-plan"><div class="h2">📅 Planning du mois</div><div class="card"><div class="cal" id="cal"></div></div></div>
     <div class="sec" id="sec-ai"><div class="h2">🤖 Assistant IA</div>
       <div class="chatwrap"><div class="chatscroll" id="chat"></div>
-        <div class="composer"><textarea id="inp" placeholder="Pose une question à l'assistant…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();send()}"></textarea><button class="send" id="sendb" onclick="send()">➤</button></div></div></div>
+        <div class="composer"><textarea id="inp" placeholder="Parle ou écris en darija…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();send()}"></textarea><button class="send" id="micb" onclick="toggleMic()" title="Parler en darija">🎤</button><button class="send" id="sendb" onclick="send()">➤</button></div></div></div>
     <div class="sec" id="sec-tools"><div class="h2">🧰 Outils & matière</div>
       <div class="tools"><button class="tool" onclick="checkStock()"><span class="ti">📦</span> Vérifier le stock</button></div>
       <div id="toolOut"></div></div>
@@ -228,7 +228,7 @@ var INI=String(MOI.nm||'??').split(' ').map(function(x){return x[0];}).slice(0,2
   var av=document.getElementById('pAv'); if(av) av.innerHTML=(PH[MOI.id])?('<img src="'+PH[MOI.id]+'">'):('<div class="ini">'+INI+'</div>');
 })();
 // Prompt de SON agent IA (injecté dans le chat, en plus du contexte temps réel partagé)
-window.CJ_SYS="Tu es l'assistant IA personnel de "+MOI.nm+", ouvrier"+(MOI.chef?" (chef d'atelier)":"")+" à l'atelier "+ATELIER_NOM+" de CREAJIT (meubles sur mesure, Marrakech). Son coût horaire chargé est "+TAUX+" DH/h. Tu l'aides à : estimer le temps et le coût main d'œuvre, calculer les quantités de matière (chute +22%), vérifier s'il a assez de matière, rédiger des messages courts au magasin (achat) ou à Fatima (qualité/logistique), expliquer son salaire et sa prime, et repérer les anomalies sur ses articles. Tu connais l'état temps réel de l'atelier (ci-dessous). Réponds en français, simple et court, comme à un ouvrier.";
+window.CJ_SYS="Tu es l'assistant IA personnel de "+MOI.nm+", ouvrier"+(MOI.chef?" (chef d'atelier)":"")+" à l'atelier "+ATELIER_NOM+" de CREAJIT (meubles sur mesure, Marrakech). Son cout horaire charge est "+TAUX+" DH/h.\n\nL'ouvrier parle DARIJA marocaine (arabe dialectal), il n'est souvent pas alle a l'ecole. PARLE-LUI EN DARIJA, tres simple et court, comme un collegue. Tu peux ecrire en lettres arabes ou en darija latine selon ce qu'il utilise.\n\nTon role : l'aider a fabriquer. Tu peux : estimer temps et cout, calculer la matiere (chute +22%), verifier sa matiere, expliquer sa paie/prime, reperer les anomalies.\n\nQUAND il te demande de COMMANDER de la matiere (ex: 'nqes 3lia tissu, commandi-h' / 'khassni l'mousse') -> utilise l'outil commander_matiere. QUAND il signale un detail manquant ou une info pour Hanane (ex: 'l'plan ma wadeh' / 'khass tassrih 3la accoudoir') -> utilise l'outil signaler_a_hanane. Confirme toujours en darija ce que tu as fait.\n\nTu connais l'etat temps reel de l'atelier (ci-dessous).";
 
 let TASKS=[
  {art:'a2',nm:'TABLEAU 120/80',etape:'Peinture & vernis',qty:25,pv:18250,moTot:732,state:'en_cours',t0:Date.now()-11*3600000,el:0},
@@ -269,7 +269,26 @@ function ficheBloc(t){
   } else h+=`<div style="font-size:12px;color:var(--mut)">Aucun bon matière pour cet article.</div>`;
   return h+'</div>';
 }
-function renderWork(){const active=cur();let h='';
+// ===== AGENT PROACTIF : conseils affichés tout seul (sans qu'on demande) =====
+function conseilsProactifs(){
+  var c=[];
+  TASKS.filter(function(t){return t.state!=='fini';}).forEach(function(t){
+    var m=matierePrete(t);
+    if(m.total>0 && !m.ok) c.push({t:'🔴',m:'Matière pas prête pour « '+t.nm+' » — n\'attaque pas, attends le magasin ('+m.attente+'/'+m.total+').'});
+    var f=t.fiche||{};
+    if((t.state==='en_cours'||t.state==='attente') && ('dessinValide' in f) && !f.dessinValide) c.push({t:'⚠️',m:'Le dessin de « '+t.nm+' » n\'est pas validé par le client. Demande à Hanane avant de continuer.'});
+    if(t.state==='en_cours'){var h=curEl(t)/3600000;if(h>=8)c.push({t:'⏱️',m:'Tu es sur « '+t.nm+' » depuis '+Math.floor(h)+'h. Tout va bien ? Sinon mets en pause avec le motif.'});}
+    if(t.state==='pause'&&/rupture|matiere|matière/i.test(t.motif||'')) c.push({t:'📦',m:'« '+t.nm+' » en pause pour matière. Dis-moi de commander (🎤 ou écris).'});
+  });
+  return c.slice(0,4);
+}
+function bannerProactif(){
+  var c=conseilsProactifs(); if(!c.length) return '';
+  return '<div style="background:rgba(196,113,79,.12);border:1px solid rgba(196,113,79,.4);border-radius:13px;padding:12px 14px;margin-bottom:13px">'+
+    '<div style="font-weight:700;font-size:13px;color:var(--orange-b);margin-bottom:7px">🤖 Ton assistant te conseille</div>'+
+    c.map(function(x){return '<div style="font-size:13px;padding:3px 0">'+x.t+' '+esc(x.m)+'</div>';}).join('')+'</div>';
+}
+function renderWork(){const active=cur();let h=bannerProactif();
   if(active){h+=`<div class="cur"><div class="top">${pic(active)}<div><div class="tn">${active.nm}</div><div class="tm">${active.etape} · ${active.qty} pièces${active.client?(' · '+active.client):''}</div></div></div>
     <div class="grid"><div><div class="chrono" id="chrono">${fmt(curEl(active))}</div><div class="moline">main d'œuvre ≈ <b id="moNow">${nb(curEl(active)/3600000*TAUX)}</b> DH</div></div>
     <div class="btns"><button class="cbtn pause" onclick="togglePause()">⏸ Pause</button><button class="cbtn fini" onclick="finish()">✅ Fini</button></div></div>
@@ -399,16 +418,73 @@ function renderChat(){const box=document.getElementById('chat');if(!conv.length)
 function quick(b){document.getElementById('inp').value=b.textContent;send();}
 function bub(role,txt,push=true){const box=document.getElementById('chat');if(box.querySelector('.cempty'))box.innerHTML='';
   const d=document.createElement('div');d.className='bub '+(role==='user'?'me':'ai');d.textContent=txt;box.appendChild(d);box.scrollTop=box.scrollHeight;if(push)conv.push({role:role==='user'?'user':'assistant',content:txt});}
+// Outils que l'agent peut DECLENCHER (commander matiere, signaler a Hanane)
+const CJ_TOOLS=[
+  {name:"commander_matiere",description:"Cree un bon de matiere envoye au magasin (Mohamed) pour l'article en cours de l'ouvrier. A utiliser quand l'ouvrier demande de commander/qu'il manque de la matiere.",
+   input_schema:{type:"object",properties:{matiere:{type:"string",description:"nom de la matiere a commander"},quantite:{type:"number",description:"quantite (defaut 1)"},unite:{type:"string",description:"unite ex: m, L, kg, piece"}},required:["matiere"]}},
+  {name:"signaler_a_hanane",description:"Envoie un message/consigne a Hanane (exploitation) pour un detail manquant ou une info a clarifier (plan, accoudoir, tissu, mesure...).",
+   input_schema:{type:"object",properties:{message:{type:"string",description:"le detail manquant ou la question pour Hanane"}},required:["message"]}}
+];
+function execOutil(name,args){
+  const c=(typeof cur==='function')?cur():null; const t=c||TASKS.find(x=>x.state!=='fini')||TASKS[0]||{};
+  if(name==="commander_matiere"){
+    if(!window.CJ) return "Hors ligne.";
+    window.CJ.bon({ref:t.ref||'',client:t.client||'',articleId:t.art||'',par:MOI.nm,statut:'envoye',
+      lignes:[{nom:args.matiere,qty:args.quantite||1,unite:args.unite||''}]});
+    window.CJ.evenement('warn',MOI.nm,'Bon matiere envoye : '+(args.quantite||1)+' '+(args.unite||'')+' '+args.matiere+(t.nm?(' (pour « '+t.nm+' »)'):'')+'.','→ Mohamed (magasin)');
+    return "Bon envoye au magasin : "+(args.quantite||1)+" "+(args.unite||'')+" "+args.matiere+".";
+  }
+  if(name==="signaler_a_hanane"){
+    if(!window.CJ) return "Hors ligne.";
+    window.CJ.consigne('hanane','['+MOI.nm+(t.nm?(' · '+t.nm):'')+'] '+args.message,MOI.nm);
+    window.CJ.evenement('warn',MOI.nm,'Detail signale a Hanane : '+args.message,'→ Hanane');
+    return "C'est envoye a Hanane : "+args.message;
+  }
+  return "Outil inconnu.";
+}
+async function callClaude(cle){
+  return fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"content-type":"application/json","x-api-key":cle,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
+    body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:1000,system:(window.CJ_SYS||SYS)+(window.CJ?("\n\n"+CJ.contexteIA()):""),tools:CJ_TOOLS,messages:conv})});
+}
 async function send(){const inp=document.getElementById('inp');const txt=inp.value.trim();if(!txt)return;inp.value='';document.getElementById('sendb').disabled=true;bub('user',txt);
   const box=document.getElementById('chat');const t=document.createElement('div');t.className='typ';t.innerHTML='<i></i><i></i><i></i>';box.appendChild(t);box.scrollTop=box.scrollHeight;
   try{
     let cle=cleIA(); if(!cle){t.remove();bub('assistant',"Aucune clé IA enregistrée sur cet appareil. Clique sur 🔑 pour la coller (elle reste chez toi).",false);document.getElementById('sendb').disabled=false;inp.focus();return;}
-    const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"content-type":"application/json","x-api-key":cle,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:1000,system:(window.CJ_SYS||SYS)+(window.CJ?("\n\n"+CJ.contexteIA()):""),messages:conv})});
-    const data=await r.json();t.remove();
-    if(data&&data.error){bub('assistant',"⚠️ "+(data.error.message||'Erreur IA')+"  (si la clé est mauvaise, clique sur 🔑 pour la re-saisir)",false);}
-    else bub('assistant',(data.content||[]).filter(x=>x.type==='text').map(x=>x.text).join('\n').trim()||'(vide)');
+    let guard=0;
+    while(guard++<4){
+      const r=await callClaude(cle); const data=await r.json();
+      if(data&&data.error){t.remove();bub('assistant',"⚠️ "+(data.error.message||'Erreur IA')+" (clé ?)",false);break;}
+      const blocks=data.content||[];
+      const texte=blocks.filter(x=>x.type==='text').map(x=>x.text).join('\n').trim();
+      const tools=blocks.filter(x=>x.type==='tool_use');
+      // l'assistant a parlé : on l'affiche + on le mémorise
+      conv.push({role:'assistant',content:blocks});
+      if(texte){t.remove();bub('assistant',texte,false);parle(texte);}
+      if(!tools.length){t.remove();break;}
+      // exécute les outils demandés et renvoie le résultat à Claude
+      const results=tools.map(tu=>{const out=execOutil(tu.name,tu.input||{});toast('✅ '+out);return {type:'tool_result',tool_use_id:tu.id,content:out};});
+      conv.push({role:'user',content:results});
+      renderWork();
+    }
   }catch(e){t.remove();const d=document.createElement('div');d.className='bub ai err';d.textContent="Impossible de joindre Claude (vérifie ta connexion internet).";box.appendChild(d);}
   document.getElementById('sendb').disabled=false;inp.focus();}
+
+// ===== VOIX : écouter (darija) + lire à voix haute =====
+let recog=null, micOn=false;
+function toggleMic(){
+  var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){toast("🎤 La voix marche sur Chrome (avec internet).");return;}
+  if(micOn&&recog){recog.stop();return;}
+  recog=new SR();recog.lang='ar-MA';recog.interimResults=false;recog.maxAlternatives=1;
+  recog.onstart=function(){micOn=true;var b=document.getElementById('micb');if(b){b.textContent='⏺️';b.style.background='var(--red)';}toast('🎤 Parle…');};
+  recog.onresult=function(e){var txt=e.results[0][0].transcript;var inp=document.getElementById('inp');if(inp){inp.value=txt;}send();};
+  recog.onerror=function(){toast('🎤 Pas compris, réessaie.');};
+  recog.onend=function(){micOn=false;var b=document.getElementById('micb');if(b){b.textContent='🎤';b.style.background='';}};
+  try{recog.start();}catch(e){}
+}
+function parle(txt){
+  try{ if(!('speechSynthesis' in window))return; var u=new SpeechSynthesisUtterance(txt); u.lang='ar-MA'; u.rate=1; speechSynthesis.cancel(); speechSynthesis.speak(u); }catch(e){}
+}
 
 let tt;function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),3600);}
 setInterval(()=>{const c=cur();if(c&&c.state==='en_cours'){const ch=document.getElementById('chrono');if(ch)ch.textContent=fmt(curEl(c));const m=document.getElementById('moNow');if(m)m.textContent=nb(curEl(c)/3600000*TAUX);updKpi();}},1000);

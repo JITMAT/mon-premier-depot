@@ -423,6 +423,18 @@ Articles : Chaise Cartel ×75 @730 ; Tableau 120/80 ×25 @730 ; Tableau 40/40 ×
   (confirm) si l'ouvrier lance la fabrication alors que la matière n'est pas reçue (« attends le feu
   vert de la réception »), sans bloquer de force. Conforme au Point 3. Testé : 2/2 blocs JS OK.
 
+- **2026-05-30 — Agent ouvrier PROACTIF + VOIX (darija) + ACTIONS.** Réponse au Point 1 (agent
+  actif, pas formulaire passif) + langage simple/vocal pour ouvriers non scolarisés. (1) **Proactif** :
+  `conseilsProactifs()`/`bannerProactif()` affichent tout seuls, en haut de la fiche, des conseils :
+  matière pas prête (n'attaque pas), dessin non validé (demande Hanane), trop long sur un article,
+  pause matière (propose de commander). (2) **Voix** : bouton 🎤 `toggleMic()` (SpeechRecognition
+  `ar-MA`) pour parler en darija → transcrit → envoyé ; `parle()` lit les réponses à voix haute
+  (speechSynthesis `ar-MA`). Marche sur Chrome+internet (limite navigateur, pas parfait en darija).
+  (3) **Actions** : Claude a 2 outils (tool use) — `commander_matiere` (crée un vrai bon → Mohamed)
+  et `signaler_a_hanane` (consigne → Hanane). `send()` gère la boucle tool_use/tool_result.
+  Prompt agent réécrit en darija. Testé node : les 2 actions créent bien bon+consigne ; 2/2 blocs
+  JS OK. À tester EN VRAI sur le site (micro/voix/Claude — impossible dans l'env sans internet).
+
 ## 13. Ordre de construction officiel (structure décidée, à suivre)
 
 > Driss délègue la structuration. On construit dans CET ordre, en s'appuyant sur les
