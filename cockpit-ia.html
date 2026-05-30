@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CreaJit OS · Cockpit IA</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&family=Hanken+Grotesk:wght@400;500;600;700;800&family=JetBrains+Mono:wght@600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0e15;--panel:#121927;--panel2:#0e1420;--line:rgba(196,113,79,.16);
+ --orange:#C4714F;--orange-b:#e69a76;--green:#22C55E;--red:#E74C3C;--yellow:#EAB308;
+ --ink:#ece9e3;--mut:#8d96a5;--mut2:#586273}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:'Hanken Grotesk',system-ui,sans-serif;-webkit-font-smoothing:antialiased;height:100vh;overflow:hidden}
+.serif{font-family:'Fraunces',serif}.mono{font-family:'JetBrains Mono',monospace}
+.layout{display:grid;grid-template-columns:248px 1fr;height:100vh}
+/* sidebar */
+.side{background:#0c121d;border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0}
+.brand{display:flex;align-items:center;gap:10px;padding:16px;border-bottom:1px solid var(--line)}
+.logo{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#C4714F,#e69a76);display:grid;place-items:center;font-size:18px;color:#1a0f08;font-weight:800}
+.brand b{font-size:15px}.brand span{display:block;color:var(--mut);font-size:11px}
+.nav{flex:1;overflow-y:auto;padding:10px 8px}
+.nav::-webkit-scrollbar{width:7px}.nav::-webkit-scrollbar-thumb{background:#222c3d;border-radius:7px}
+.nl{font-size:10.5px;color:var(--mut2);text-transform:uppercase;letter-spacing:.6px;padding:10px 10px 6px;font-weight:700}
+.item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:10px;cursor:pointer;margin-bottom:2px;border:1px solid transparent}
+.item:hover{background:#121927}
+.item.on{background:#161f2e;border-color:var(--line)}
+.item .ic{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;font-size:15px;flex:none}
+.item b{font-size:13px;font-weight:600}.item span{display:block;color:var(--mut2);font-size:10.5px}
+.item .pin{margin-left:auto;width:7px;height:7px;border-radius:50%;background:var(--green)}
+/* main */
+.main{min-height:0;overflow-y:auto;padding:22px 26px 60px}
+.main::-webkit-scrollbar{width:9px}.main::-webkit-scrollbar-thumb{background:#222c3d;border-radius:9px}
+.ah{display:flex;align-items:center;gap:14px;margin-bottom:6px}
+.ah .big{width:54px;height:54px;border-radius:15px;display:grid;place-items:center;font-size:27px;flex:none}
+.ah h1{font-size:24px;font-weight:800}.ah .role{color:var(--mut);font-size:13.5px}
+.watch{margin-left:auto;font-size:11.5px;color:#7ee2a8;display:inline-flex;align-items:center;gap:6px;font-weight:700;background:#10241a;border:1px solid rgba(34,197,94,.3);padding:6px 12px;border-radius:30px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--green);animation:pulse 1.6s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(34,197,94,.5)}70%{box-shadow:0 0 0 8px rgba(34,197,94,0)}100%{box-shadow:0 0 0 0 rgba(34,197,94,0)}}
+.mission{color:var(--mut);font-size:13.5px;line-height:1.55;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:13px 15px;margin:14px 0 18px}
+.mission b{color:var(--orange-b)}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 15px;position:relative;overflow:hidden}
+.kpi:before{content:"";position:absolute;inset:0 0 auto 0;height:3px;background:var(--ac,#C4714F)}
+.kpi .n{font-size:21px;font-weight:800;line-height:1.05;letter-spacing:-.5px}
+.kpi .l{font-size:11.5px;color:var(--mut);margin-top:5px}
+.kpi.red .n{color:#f3a79c}.kpi.grn .n{color:#7ee2a8}
+@media(max-width:900px){.kpis{grid-template-columns:repeat(2,1fr)}}
+.tcard{background:var(--panel);border:1px solid var(--line);border-radius:16px;overflow:hidden;margin-bottom:18px}
+.tcard .th{padding:13px 16px;border-bottom:1px solid var(--line);font-weight:700;font-size:14px;display:flex;align-items:center;gap:8px}
+.tcard .th .cnt{margin-left:auto;font-size:11px;color:var(--mut);font-weight:600}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;color:var(--mut2);font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;font-weight:700;padding:10px 14px;border-bottom:1px solid #1b2230;white-space:nowrap}
+td{padding:10px 14px;border-bottom:1px solid #141b27;color:var(--ink)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#10151f}
+td.money{font-family:'JetBrains Mono',monospace;font-weight:600;white-space:nowrap}
+td.red{color:#f3a79c;font-weight:700}td.grn{color:#7ee2a8}td.mut{color:var(--mut)}
+.pill{font-size:10.5px;padding:2px 8px;border-radius:20px;background:#0e1420;border:1px solid #232c3d;color:var(--mut)}
+.empty{padding:30px;text-align:center;color:var(--mut2);font-size:13px}
+/* chat (salon) */
+.feed{display:flex;flex-direction:column;gap:12px;max-width:840px}
+.msg{display:flex;gap:11px}.msg.boss .bubble{background:linear-gradient(180deg,rgba(196,113,79,.16),rgba(196,113,79,.05));border-color:rgba(196,113,79,.4)}
+.msg.you .bubble{background:linear-gradient(180deg,rgba(34,197,94,.13),rgba(34,197,94,.04));border-color:rgba(34,197,94,.4)}
+.av{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;font-size:17px;flex:none}
+.bubble{background:var(--panel2);border:1px solid #1b2230;border-radius:4px 13px 13px 13px;padding:9px 13px;max-width:82%}
+.who{display:flex;align-items:center;gap:8px;margin-bottom:3px}.who b{font-size:12.5px}.who .tm{font-size:10px;color:var(--mut2)}
+.ordre{display:inline-block;font-size:9.5px;font-weight:800;color:#1a0f08;background:var(--orange-b);padding:2px 7px;border-radius:20px;margin-bottom:5px}
+.txt{font-size:13.4px;line-height:1.5}.txt .k{color:var(--orange-b);font-weight:700}.txt .r{color:#f3a79c;font-weight:700}.txt .g{color:#7ee2a8;font-weight:700}
+.hint{color:var(--mut2);font-size:12px;margin-top:8px}
+</style>
+</head>
+<body>
+<div class="layout">
+  <aside class="side">
+    <div class="brand"><div class="logo serif">C</div><div><b>CreaJit OS</b><span>Cockpit IA · 11 agents</span></div></div>
+    <nav class="nav" id="nav"></nav>
+  </aside>
+  <main class="main" id="main"></main>
+</div>
+
+<script>
+var APP = {"stats":{"total":186,"enFab":35,"enAttente":101,"termine":50,"aLivrer":145,"livre":41,"impayes":141,"articles":442,"matieres":559,"fournisseurs":15,"salaries":39,"ateliers":9},"fmt":{"ca":"3 908 562 DH","paye":"409 510 DH","reste":"3 499 052 DH","masse":"221 300 DH","panier":"21 014 DH"},"raw":{"ca":3908562,"paye":409510,"reste":3499052,"tauxEnc":10},"finance":[{"client":"Mr LADI MOUSTAPHA","total":252300,"paye":0,"reste":252300,"vendeur":"Ikram","etat":"Impayé"},{"client":"Mme Chehrazade ","total":135392,"paye":0,"reste":135392,"vendeur":"Kenza","etat":"Impayé"},{"client":"Mr Bachar","total":130000,"paye":0,"reste":130000,"vendeur":"Ikram","etat":"Impayé"},{"client":"Mr Bachar","total":110000,"paye":0,"reste":110000,"vendeur":"Ikram","etat":"Impayé"},{"client":"Mr Bachar","total":110000,"paye":0,"reste":110000,"vendeur":"Ikram","etat":"Impayé"},{"client":"Mme Thanina ","total":106900,"paye":0,"reste":106900,"vendeur":"Kenza","etat":"Impayé"},{"client":"Moulay Rechid","total":106250,"paye":0,"reste":106250,"vendeur":"Laila","etat":"Impayé"},{"client":"Mr Ludo ","total":99490,"paye":0,"reste":99490,"vendeur":"Kenza","etat":"Impayé"},{"client":"2A WEDDING","total":95000,"paye":0,"reste":95000,"vendeur":"Ikram","etat":"Partiel"},{"client":"Mme Hafida Allali","total":80000,"paye":0,"reste":80000,"vendeur":"Laila","etat":"Partiel"},{"client":"2A WEDDING","total":75000,"paye":0,"reste":75000,"vendeur":"Ikram","etat":"Partiel"},{"client":"Mme Sanae BENGHANEM ","total":73290,"paye":0,"reste":73290,"vendeur":"Kenza","etat":"Partiel"},{"client":"PETRO ARABIA","total":70000,"paye":0,"reste":70000,"vendeur":"Ikram","etat":"Impayé"},{"client":"Mme Yasmine","total":67400,"paye":0,"reste":67400,"vendeur":"Laila","etat":"Partiel"},{"client":"Mr Yazid ","total":55400,"paye":0,"reste":55400,"vendeur":"Kenza","etat":"Impayé"},{"client":"Mr noureddine","total":53780,"paye":0,"reste":53780,"vendeur":"Ikram","etat":"Impayé"},{"client":"2A WEDDING","total":50000,"paye":0,"reste":50000,"vendeur":"Kenza","etat":"Partiel"},{"client":"Mr Nira Taoufik ","total":45000,"paye":0,"reste":45000,"vendeur":"Kenza","etat":"Impayé"},{"client":"MME ALAOUI SOUKAINA ","total":44700,"paye":0,"reste":44700,"vendeur":"Kenza","etat":"Partiel"},{"client":"Mr Walid BELEMLIH ","total":44100,"paye":0,"reste":44100,"vendeur":"Kenza","etat":"Impayé"},{"client":"Mr Bachar","total":42000,"paye":0,"reste":42000,"vendeur":"Ikram","etat":"Impayé"},{"client":"MME SABRINA ","total":41940,"paye":0,"reste":41940,"vendeur":"Kenza","etat":"Partiel"},{"client":"El Baidouri Chaimaa ","total":40500,"paye":0,"reste":40500,"vendeur":"Ikram","etat":"Impayé"},{"client":"B BUZIOS STUDIO ","total":40500,"paye":0,"reste":40500,"vendeur":"Kenza","etat":"Impayé"},{"client":"Mr Hamza Naciri","total":39300,"paye":0,"reste":39300,"vendeur":"Kenza","etat":"Partiel"}],"production":[{"client":"El Baidouri Chaimaa ","date":"2026-04-06","total":7200,"vendeur":"Ikram","art":"Sur Mesure — El Baidouri Chaimaa "},{"client":"IKRAM","date":"2026-04-06","total":4965,"vendeur":"Laila","art":"TABLE CERAMIQUE"},{"client":"Mme Horiya","date":"2026-04-08","total":10500,"vendeur":"Ikram","art":"Canape Me Horiya"},{"client":"Mme Kenza","date":"2026-04-08","total":5700,"vendeur":"Ikram","art":"Lit Gris"},{"client":"Mme Ghizlane ","date":"2026-04-09","total":18992,"vendeur":"Kenza","art":"Lit OLIA"},{"client":"Mr Yazid ","date":"2026-04-09","total":55400,"vendeur":"Kenza","art":"Lit 180/200"},{"client":"Mr Yassin","date":"2026-04-10","total":9600,"vendeur":"Ikram","art":"Chaise HARMONIE II "},{"client":"Htag Packs","date":"2026-04-11","total":8000,"vendeur":"Laila","art":"Bureau en travertin"},{"client":"Mme Maria","date":"2026-04-11","total":4500,"vendeur":"Ikram","art":"Séparation en vitrage"},{"client":"MARIA ","date":"2026-04-12","total":6500,"vendeur":"Kenza","art":"Comptoir "},{"client":"Mme ELBAROUDI RACHIDA ","date":"2026-04-12","total":16700,"vendeur":"Kenza","art":"TABLE BASSE DUO "},{"client":" MR MOHAMED BIQAA","date":"2026-04-12","total":11000,"vendeur":"Kenza","art":"Chaise HARMONIE II "},{"client":"Mr Bachar","date":"2026-04-13","total":130000,"vendeur":"Ikram","art":"Cuisine : -Caissons Mdf Mélanie 18mm -Portes higloss 18mm -Charnières hydrauliques très bon qualité -Tiroirs tendim box -Vitrages 5mm bronze cadre aluminium noir -Plan de travail en SILISTONE "},{"client":"Mr Bachar","date":"2026-04-13","total":110000,"vendeur":"Ikram","art":"Cuisine Mr BACHAR: -Caissons Mdf Mélanie 18mm -Portes higloss 18mm -Charnières hydrauliques très bon qualité -Tiroirs tendim box -Vitrages 5mm bronze cadre aluminium noir -Plan de travail en granite glaxi"},{"client":"Mr Bachar","date":"2026-04-13","total":110000,"vendeur":"Ikram","art":" Cuisine Mr BACHAR:  -Caissons Mdf Mélanie 18mm  -Portes higloss 18mm  -Charnières hydrauliques très bon qualité  -Tiroirs tendim box   -Vitrages 5mm bronze cadre aluminium noir  -Plan de travail en granite glaxi  Prix 110000 dh"},{"client":"Mektoub invest","date":"2026-04-13","total":5000,"vendeur":"Laila","art":"Socle en travertin"},{"client":"Marh coffee roasters ","date":"2026-04-13","total":17600,"vendeur":"Kenza","art":"Chaise PULSY II"},{"client":"Mme Imane ","date":"2026-04-13","total":19000,"vendeur":"Kenza","art":"Rideau "},{"client":"Mr ABDELJALIL KADDOUR ","date":"2026-04-14","total":13500,"vendeur":"Kenza","art":"EDDEN"},{"client":"Mr Mourad","date":"2026-04-14","total":13800,"vendeur":"Ikram","art":"MIROIRS"},{"client":"Mr Raouf","date":"2026-04-15","total":23360,"vendeur":"Laila","art":"Pierre Eclaté noir de khnifra"},{"client":"Mme Yasmine","date":"2026-04-15","total":20500,"vendeur":"Laila","art":"Fauteuil"},{"client":"Mme Rose","date":"2026-04-15","total":17900,"vendeur":"Laila","art":"plateau de service décoratif en travertin"},{"client":"Mmr Rose","date":"2026-04-15","total":17900,"vendeur":"Laila","art":"Lustre en cuivre"},{"client":"Alixe","date":"2026-04-15","total":33600,"vendeur":"Laila","art":"Enceigne "}],"enfab":[{"client":"Hanane","total":3496,"vendeur":"Ikram","art":"Table travertin et pied bardage "},{"client":"Mme ALIACHI IMANE","total":4800,"vendeur":"Ikram","art":"Table a manger avec 4 chaises"},{"client":"Haizoune Dalal","total":1050,"vendeur":"Ikram","art":"Marba two "},{"client":"Mr Abdelwahed","total":8600,"vendeur":"Ikram","art":"Table bardage dio"},{"client":"Mr lazrag ","total":5700,"vendeur":"Ikram","art":"Tableaux "},{"client":"Marh coffee roasters ","total":500,"vendeur":"Kenza","art":"Coussin Decocercele "},{"client":"Mr MOUNADI IDRISSI MOHAMED ","total":3940,"vendeur":"Kenza","art":"Chaise Pulsia "},{"client":"Mr DUBOUCHE ","total":4000,"vendeur":"Kenza","art":"Nexus"},{"client":"MME SABRINA ","total":41940,"vendeur":"Kenza","art":"LIT 180/200"},{"client":"Mme Yasmine","total":31000,"vendeur":"Laila","art":"Salon"},{"client":"Mme soumali ","total":39000,"vendeur":"Ikram","art":"3 canape"},{"client":"Mr Hamza Naciri","total":39300,"vendeur":"Kenza","art":"SLEEP WELL"},{"client":"Mr Maliki","total":7850,"vendeur":"Laila","art":"Coussins Décoratifs Carré"},{"client":"Mme Yasmine","total":67400,"vendeur":"Laila","art":"Colonne en travertin"},{"client":"Mme Zaki nadia","total":20000,"vendeur":"Ikram","art":"SALON "},{"client":"Mr Ahmed Akaious","total":17000,"vendeur":"Kenza","art":"Lit OLIA"},{"client":"2A WEDDING","total":75000,"vendeur":"Ikram","art":"Transat EDGY"},{"client":"Mr lazrag ","total":20000,"vendeur":"Ikram","art":"Lit OLIA"},{"client":"Mme Laila","total":5300,"vendeur":"Laila","art":"Table basse en Travertin"},{"client":"Mr Abdoullah Okoli","total":2100,"vendeur":"Laila","art":"Diffuseur d'huile en Marbre"},{"client":"2A WEDDING MAJORELLE ","total":20400,"vendeur":"Kenza","art":"Chaise SOLIS "},{"client":"KHALID ABDERRAHIM","total":8400,"vendeur":"Ikram","art":"Transat EDGY"},{"client":"Mme Hafida Allali","total":80000,"vendeur":"Laila","art":"Lit Sleep weel"},{"client":"Mme Wiam ","total":14000,"vendeur":"Kenza","art":"SLEEP WELL"},{"client":"SHOWROOM ","total":1,"vendeur":"Fatima","art":"COMPTOIR SHOWROOM "}],"livraison":[{"client":"Mr LADI MOUSTAPHA","total":252300,"date":"2026-05-05","etat":"À livrer"},{"client":"Mme Chehrazade ","total":135392,"date":"2026-04-16","etat":"À livrer"},{"client":"Mr Bachar","total":130000,"date":"2026-04-13","etat":"À livrer"},{"client":"Mr Bachar","total":110000,"date":"2026-04-13","etat":"À livrer"},{"client":"Mr Bachar","total":110000,"date":"2026-04-13","etat":"À livrer"},{"client":"Mme Thanina ","total":106900,"date":"2026-05-04","etat":"À livrer"},{"client":"Moulay Rechid","total":106250,"date":"2026-05-04","etat":"À livrer"},{"client":"Mr Ludo ","total":99490,"date":"2026-05-21","etat":"À livrer"},{"client":"2A WEDDING","total":95000,"date":"2026-04-18","etat":"À livrer"},{"client":"2A WEDDING","total":75000,"date":"2026-04-28","etat":"À livrer"},{"client":"PETRO ARABIA","total":70000,"date":"2026-05-14","etat":"À livrer"},{"client":"Mme Yasmine","total":67400,"date":"2026-05-04","etat":"À livrer"},{"client":"Mr Yazid ","total":55400,"date":"2026-04-09","etat":"À livrer"},{"client":"Mr noureddine","total":53780,"date":"2026-05-20","etat":"À livrer"},{"client":"Mr Nira Taoufik ","total":45000,"date":"2026-05-15","etat":"À livrer"},{"client":"MME ALAOUI SOUKAINA ","total":44700,"date":"2026-04-21","etat":"Partiel"},{"client":"Mr Walid BELEMLIH ","total":44100,"date":"2026-05-17","etat":"À livrer"},{"client":"Mr Bachar","total":42000,"date":"2026-04-10","etat":"À livrer"},{"client":"El Baidouri Chaimaa ","total":40500,"date":"2026-05-06","etat":"À livrer"},{"client":"B BUZIOS STUDIO ","total":40500,"date":"2026-04-17","etat":"À livrer"},{"client":"Mr Hamza Naciri","total":39300,"date":"2026-05-06","etat":"À livrer"},{"client":"Mme soumali ","total":39000,"date":"2026-05-08","etat":"À livrer"},{"client":"Mr Bobo ","total":37500,"date":"2026-05-06","etat":"À livrer"},{"client":"Mr Mourad","total":35200,"date":"2026-04-08","etat":"Partiel"},{"client":"Mme Daniela DOUHI ","total":35000,"date":"2026-04-05","etat":"À livrer"}],"gros":[{"client":"Mr LADI MOUSTAPHA","total":252300,"paye":0,"vendeur":"Ikram","art":"Lit Sleep weel"},{"client":"Mme Chehrazade ","total":135392,"paye":0,"vendeur":"Kenza","art":"Bureau Enfant "},{"client":"Mr Bachar","total":130000,"paye":0,"vendeur":"Ikram","art":"Cuisine : -Caissons Mdf Mélanie 18mm -Portes higloss 18mm -Charnières hydrauliques très bon qualité -Tiroirs tendim box -Vitrages 5mm bronze cadre aluminium noir -Plan de travail en SILISTONE "},{"client":"Mr Bachar","total":110000,"paye":0,"vendeur":"Ikram","art":"Cuisine Mr BACHAR: -Caissons Mdf Mélanie 18mm -Portes higloss 18mm -Charnières hydrauliques très bon qualité -Tiroirs tendim box -Vitrages 5mm bronze cadre aluminium noir -Plan de travail en granite glaxi"},{"client":"Mr Bachar","total":110000,"paye":0,"vendeur":"Ikram","art":" Cuisine Mr BACHAR:  -Caissons Mdf Mélanie 18mm  -Portes higloss 18mm  -Charnières hydrauliques très bon qualité  -Tiroirs tendim box   -Vitrages 5mm bronze cadre aluminium noir  -Plan de travail en granite glaxi  Prix 110000 dh"},{"client":"Mme Thanina ","total":106900,"paye":0,"vendeur":"Kenza","art":"EGO I"},{"client":"Moulay Rechid","total":106250,"paye":0,"vendeur":"Laila","art":"Chambre 1 ; Lit Sleep Well "},{"client":"Mr Ludo ","total":99490,"paye":0,"vendeur":"Kenza","art":"Canape en U "},{"client":"2A WEDDING","total":95000,"paye":0,"vendeur":"Ikram","art":"Chaise Cartel "},{"client":"Mme Hafida Allali","total":80000,"paye":0,"vendeur":"Laila","art":"Lit Sleep weel"},{"client":"2A WEDDING","total":75000,"paye":0,"vendeur":"Ikram","art":"Transat EDGY"},{"client":"Mme Sanae BENGHANEM ","total":73290,"paye":0,"vendeur":"Kenza","art":"LIT CHAMBRE PARENT"},{"client":"PETRO ARABIA","total":70000,"paye":0,"vendeur":"Ikram","art":"PERGOLA VOLERA"},{"client":"Mme Yasmine","total":67400,"paye":0,"vendeur":"Laila","art":"Colonne en travertin"},{"client":"Mr Yazid ","total":55400,"paye":0,"vendeur":"Kenza","art":"Lit 180/200"},{"client":"Mr noureddine","total":53780,"paye":0,"vendeur":"Ikram","art":"Canape"},{"client":"2A WEDDING","total":50000,"paye":0,"vendeur":"Kenza","art":"TRANSAT EDGY "},{"client":"Mr Nira Taoufik ","total":45000,"paye":0,"vendeur":"Kenza","art":"Pergola Ombrella"},{"client":"MME ALAOUI SOUKAINA ","total":44700,"paye":0,"vendeur":"Kenza","art":"Lit OLIA"},{"client":"Mr Walid BELEMLIH ","total":44100,"paye":0,"vendeur":"Kenza","art":"Pergola VOLERA "}],"vendeurs":[{"v":"Ikram benaddi","nb":65,"ca":1552312,"reste":1375082,"enc":177230},{"v":"Kenza Mokhantar","nb":63,"ca":1449694,"reste":1341154,"enc":108540},{"v":"Laila boudil","nb":53,"ca":906555,"reste":782815,"enc":123740},{"v":"Fatima ezzahrae sedky","nb":3,"ca":1,"reste":1,"enc":0},{"v":"—","nb":1,"ca":0,"reste":0,"enc":0},{"v":"Driss Aarab","nb":1,"ca":0,"reste":0,"enc":0}],"topArt":[{"nom":"Chaise Enfant","q":147},{"nom":"Chaise Cartel","q":105},{"nom":"Pose Porte isoplane existante sans finition vernis","q":60},{"nom":"Commode Enfant","q":56},{"nom":"Transat EDGY","q":54},{"nom":"Chaise MARRY","q":53},{"nom":"Bureau Enfant","q":49},{"nom":"Chaise SOLIS","q":48},{"nom":"TABLE 40/40","q":40},{"nom":"Chaise HARMONIE II","q":36},{"nom":"Pierre de taza gris veillie ep 3CM","q":33},{"nom":"Chaise Pulsy","q":30},{"nom":"TRANSAT EDGY","q":28},{"nom":"RENOVATION PIENTURE DES CHAISES CARTEL","q":25},{"nom":"TABLE 120/80","q":25}],"fournisseurs":[{"f":"DROGERIE AL MASSAR","n":132,"refs":["Apprêt Blanc 5KG","Apprêt Filler 1KG"]},{"f":"SGUIFER","n":76,"refs":["Tube Carré 16×2mm","Tube Carré 20×1.5mm"]},{"f":"Hamza BELGOAUTI","n":52,"refs":["Colle Flambo Rapid 4KG","Colle Flambo Rapid 10KG"]},{"f":"EQUIPEMENT JOUD","n":49,"refs":["Apprêt Blanc 5KG","Apprêt Filler 1KG"]},{"f":"LAGO METAL","n":47,"refs":["Tube Carré 16×2mm","Tube Carré 20×1.5mm"]},{"f":"NOUR 7 ELEC","n":23,"refs":["Câble MTH 0.50mm Transparent","Câble MTH 2×1.5 Rouge Noir"]},{"f":"AIT BEN ADDI","n":22,"refs":["Diluant 5L Sodicso","Fengiboi Noyer 1KG"]},{"f":"KY2N ARTON","n":21,"refs":["Mousse DOLENO 200×180×10mm BLANC","Mousse DOLENO 200×180×5mm BLANC"]},{"f":"IGADOR","n":20,"refs":["Mousse 33 200×180×10cm","Mousse 33 200×180×3mm"]},{"f":"MENARA BOIS","n":14,"refs":["MDF Brut 06mm","MDF Brut 08mm"]},{"f":"COMPTANT","n":11,"refs":["Tissu Imperméable Gris Foncé","Tissu GATIFA Vert (COMPTANT)"]},{"f":"TEGUEMI SARL","n":10,"refs":["Mousse 33 03cm","Mousse 33 1.5cm"]},{"f":"IAMAR DARNA","n":6,"refs":["MDF Brut 08mm","MDF Brut 10mm"]},{"f":"MENARA SANITAIRE","n":6,"refs":["Chlore Poudre 5KG","Coffret Métallique"]},{"f":"ELAA BOIS","n":5,"refs":["MDF Brut 16mm","MDF Mélaminé Noyer 08mm"]}],"salaries":[{"n":"Ayoub El Yagiz","poste":"Chef Tapisserie Canapés","atelier":"A","sal":6000,"coutH":67},{"n":"Abdessamie El Yagiz","poste":"Tapisserie Canapés","atelier":"A","sal":6000,"coutH":67},{"n":"Labiade De Mohssine","poste":"Tapisserie Canapés","atelier":"A","sal":3900,"coutH":67},{"n":"Said Lamghari","poste":"Chef Menuiserie carcasse canapé","atelier":"A","sal":5000,"coutH":64},{"n":"Abdelhadi Bouchfer","poste":"Menuiserie carcasse canapé","atelier":"A","sal":5000,"coutH":64},{"n":"Mohamad Marhoub","poste":"Chef Tapisserie Lits","atelier":"A","sal":6000,"coutH":64},{"n":"Hassan Labiad","poste":"Tapisserie Lits","atelier":"A","sal":3900,"coutH":64},{"n":"Abdelaati Lafdili","poste":"Chef Menuiserie carcasse lit","atelier":"A","sal":5000,"coutH":64},{"n":"Mohamed Fadil El Mouaden","poste":"Chef Couture","atelier":"A","sal":6000,"coutH":71},{"n":"Ahmed Araji","poste":"Chef Tapisserie","atelier":"B","sal":6000,"coutH":67},{"n":"Abdelilah Dakhama","poste":"Tapisserie","atelier":"B","sal":6000,"coutH":67},{"n":"Le Boudrif De Mustapha","poste":"Tapisserie","atelier":"B","sal":5000,"coutH":67},{"n":"Abdelmajid Anjar","poste":"Tapisserie","atelier":"B","sal":5000,"coutH":67},{"n":"Khalid Houfati","poste":"Chef Carcasse Canapé & Lit","atelier":"B","sal":5000,"coutH":64},{"n":"Youssef Argibi","poste":"Chef Couture","atelier":"B","sal":5000,"coutH":71},{"n":"Yassine Madidi","poste":"Chef Ferronnerie","atelier":"B","sal":5000,"coutH":64},{"n":"Adil Rehaimine","poste":"Ferronnerie","atelier":"B","sal":5500,"coutH":64},{"n":"Souhail Sakat","poste":"Chef Carcasse Chaise Bois","atelier":"B","sal":5000,"coutH":64},{"n":"Youssef Ben Elarradia","poste":"Chef Peinture","atelier":"B","sal":5500,"coutH":68},{"n":"Bahri El Othmani","poste":"Chef CNC & Laser","atelier":"C","sal":5000,"coutH":28},{"n":"Ettaib Bougatouch","poste":"Chef Résine & Polystyrène","atelier":"D","sal":5000,"coutH":71},{"n":"Rachid Ait Taleb","poste":"Résine & Polystyrène","atelier":"D","sal":20000,"coutH":71},{"n":"Dit Chnitifa","poste":"Chef Menuiserie","atelier":"E","sal":8000,"coutH":70},{"n":"Chaise Ayoub","poste":"Menuiserie","atelier":"E","sal":6000,"coutH":70},{"n":"Mourad Zemit","poste":"Menuiserie","atelier":"E","sal":5000,"coutH":70},{"n":"Redouan Houfati","poste":"Menuiserie","atelier":"E","sal":5000,"coutH":70},{"n":"El Mahdi Bahaj","poste":"Menuiserie","atelier":"E","sal":5000,"coutH":70},{"n":"Mohamed Elkarmani","poste":"Chef Peinture","atelier":"F","sal":5500,"coutH":55},{"n":"Abdelaaziz Ben Amer","poste":"Peinture","atelier":"F","sal":5000,"coutH":55},{"n":"Mohamed Elmoussaoui","poste":"Peinture","atelier":"F","sal":5000,"coutH":55},{"n":"Mouad Elmaamlem","poste":"Peinture","atelier":"F","sal":4000,"coutH":55},{"n":"Milouda El Azaoui","poste":"Peinture","atelier":"F","sal":3500,"coutH":55},{"n":"Youssef Ibnradiya","poste":"Peinture","atelier":"F","sal":5000,"coutH":55},{"n":"Mohamed Boualili","poste":"Chef Ferronnerie & Soudure","atelier":"G","sal":5500,"coutH":63},{"n":"Abdelghani Malih","poste":"Ferronnerie & Soudure","atelier":"G","sal":5000,"coutH":63},{"n":"Mustapha Aababou","poste":"Chef Pierre & Marbre","atelier":"H","sal":8000,"coutH":72},{"n":"Anoir Touati","poste":"Pierre & Marbre","atelier":"H","sal":5000,"coutH":72},{"n":"Amine Samadi","poste":"Pierre & Marbre","atelier":"H","sal":5000,"coutH":72},{"n":"Noureddine Ouzzat","poste":"Chef Cuivre & Laiton","atelier":"I","sal":6000,"coutH":73}],"ateliers":[{"code":"A","nom":"Tapisserie (Canapé/Fauteuil/Lit)","chef":"Ayoub El Yagiz","coutH":67,"effectif":9,"couleur":"#3b82f6"},{"code":"B","nom":"Chaise / Transat","chef":"Ahmed Araji","coutH":67,"effectif":10,"couleur":"#f97316"},{"code":"C","nom":"CNC & Laser","chef":"Bahri El Othmani","coutH":28,"effectif":1,"couleur":"#8b5cf6"},{"code":"D","nom":"Résine & Polystyrène","chef":"Ettaib Bougatouch","coutH":71,"effectif":2,"couleur":"#06b6d4"},{"code":"E","nom":"Menuiserie","chef":"Dit Chnitifa","coutH":70,"effectif":5,"couleur":"#92400e"},{"code":"F","nom":"Peinture","chef":"Mohamed Elkarmani","coutH":55,"effectif":6,"couleur":"#ef4444"},{"code":"G","nom":"Ferronnerie & Soudure","chef":"Mohamed Boualili","coutH":63,"effectif":2,"couleur":"#6b7280"},{"code":"H","nom":"Pierre & Marbre","chef":"Mustapha Aababou","coutH":72,"effectif":3,"couleur":"#d97706"},{"code":"I","nom":"Cuivre & Laiton","chef":"Noureddine Ouzzat","coutH":73,"effectif":1,"couleur":"#b45309"}],"recent":[{"client":"Hanane","date":"2026-05-25","total":3496,"vendeur":"Ikram","etat":"En fabrication"},{"client":"Mme Ghizlane Naani","date":"2026-05-24","total":22000,"vendeur":"Kenza","etat":"En attente"},{"client":"Mr Ismail ","date":"2026-05-23","total":24840,"vendeur":"Kenza","etat":"En attente"},{"client":"Houssam","date":"2026-05-23","total":9000,"vendeur":"Ikram","etat":"En attente"},{"client":"Mme ALIACHI IMANE","date":"2026-05-23","total":4800,"vendeur":"Ikram","etat":"En fabrication"},{"client":"Haizoune Dalal","date":"2026-05-22","total":1050,"vendeur":"Ikram","etat":"En fabrication"},{"client":"Mr David","date":"2026-05-22","total":25000,"vendeur":"Laila","etat":"En attente"},{"client":"Mme Malika Zouine","date":"2026-05-21","total":24250,"vendeur":"Laila","etat":"En attente"},{"client":"WASSILA","date":"2026-05-21","total":32090,"vendeur":"Kenza","etat":"En attente"},{"client":"Mr Abdelwahed","date":"2026-05-21","total":8600,"vendeur":"Ikram","etat":"En fabrication"},{"client":"Mr Ludo ","date":"2026-05-21","total":99490,"vendeur":"Kenza","etat":"En attente"},{"client":"Mr noureddine","date":"2026-05-20","total":53780,"vendeur":"Ikram","etat":"En attente"},{"client":"Mme Roukaya el oualad","date":"2026-05-20","total":5500,"vendeur":"Kenza","etat":"En attente"},{"client":"Mme SoFIA ","date":"2026-05-20","total":23500,"vendeur":"Ikram","etat":"En attente"},{"client":"Mme khadija","date":"2026-05-20","total":10400,"vendeur":"Ikram","etat":"En attente"}]};
+function fmt(n){return (Math.round(n)||0).toLocaleString('fr-FR')+' DH';}
+function num(n){return (n||0).toLocaleString('fr-FR');}
+function esc(s){return String(s==null?'':s).replace(/[&<>]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;'}[c];});}
+function pick(a,i){return a[((i%a.length)+a.length)%a.length];}
+
+/* ---- définition des agents ---- */
+var AG = [
+ {id:'overview',em:'🏠',c:'#C4714F',nom:'Vue d\'ensemble',role:'Tableau de bord global'},
+ {id:'salon',em:'💬',c:'#e69a76',nom:'Salon des agents',role:'Discussion en direct'},
+ {id:'veilleur',em:'⚠️',c:'#E74C3C',nom:'Le Veilleur',role:'Supervision générale',
+   mission:"Je consolide les alertes de tous les agents et je te remonte l'urgent, classé par gravité."},
+ {id:'finance',em:'💰',c:'#EAB308',nom:'Finance',role:'Encaissements · impayés',
+   mission:"Je surveille l'argent : CA, encaissé, et surtout le <b>reste dû</b>. Je relance les impayés, le plus gros d'abord."},
+ {id:'production',em:'🏭',c:'#3b82f6',nom:'Hanane · Production',role:'Fabrication',
+   mission:"Je suis l'état de fabrication de chaque commande. Mon but : qu'aucune ne traîne. J'alerte sur les commandes à lancer."},
+ {id:'planning',em:'📅',c:'#06b6d4',nom:'Planning',role:'Ordonnancement · délais',
+   mission:"Je construis le planning de production. Je lance les plus anciennes d'abord et j'évite de saturer un atelier."},
+ {id:'coutRevient',em:'🧮',c:'#34d399',nom:'Coût de revient',role:'Marge · prix',
+   mission:"Je sécurise la marge des grosses commandes. Avant de lancer la matière, je valide que c'est rentable."},
+ {id:'achats',em:'📦',c:'#a78bfa',nom:'Moumen · Achats',role:'Matières · fournisseurs',
+   mission:"Je gère les 559 matières et je <b>compare les fournisseurs</b> pour qu'on achète au meilleur prix."},
+ {id:'livraison',em:'🚚',c:'#22C55E',nom:'Fatima · Livraison',role:'Logistique',
+   mission:"Je surveille ce qui est à livrer et les retards. Une livraison en retard = un client mécontent, c'est ma priorité."},
+ {id:'commercial',em:'👥',c:'#e69a76',nom:'Commercial',role:'Ventes',
+   mission:"Je suis la performance de l'équipe de vente : CA généré, commandes, et reste à encaisser par commercial."},
+ {id:'marketing',em:'📣',c:'#f59e0b',nom:'Marketing',role:'Pub · best-sellers',
+   mission:"Je pousse les best-sellers et j'alimente le carnet de commandes : posts, pubs, leads."},
+ {id:'rh',em:'👷',c:'#f472b6',nom:'RH · Paie',role:'Équipe · salaires',
+   mission:"Je connais les 39 salariés, la masse salariale et le coût main d'œuvre par atelier."},
+ {id:'ateliers',em:'🧰',c:'#06b6d4',nom:'Les Ateliers',role:'Capacité · coûts',
+   mission:"Je connais les 9 ateliers, leurs chefs et leur coût horaire. J'aide à équilibrer la charge."}
+];
+var BY={}; AG.forEach(function(a){BY[a.id]=a;});
+
+/* ---- sidebar ---- */
+document.getElementById('nav').innerHTML =
+ '<div class="nl">Pilotage</div>'+
+ AG.slice(0,2).map(navItem).join('')+
+ '<div class="nl">Tes agents</div>'+
+ AG.slice(2).map(navItem).join('');
+function navItem(a){
+ return '<div class="item" data-id="'+a.id+'" onclick="show(\''+a.id+'\')">'+
+  '<div class="ic" style="background:'+a.c+'22">'+a.em+'</div>'+
+  '<div><b>'+esc(a.nom)+'</b><span>'+esc(a.role)+'</span></div>'+
+  (a.id!=='overview'&&a.id!=='salon'?'<span class="pin"></span>':'')+'</div>';
+}
+
+/* ---- helpers de rendu ---- */
+function kpiHTML(list,c){return '<div class="kpis">'+list.map(function(k){
+  return '<div class="kpi '+(k.cls||'')+'" style="--ac:'+c+'"><div class="n">'+esc(k.n)+'</div><div class="l">'+esc(k.l)+'</div></div>';}).join('')+'</div>';}
+function table(title,cols,rows){
+  if(!rows||!rows.length)return '';
+  var head='<tr>'+cols.map(function(c){return '<th>'+esc(c.label)+'</th>';}).join('')+'</tr>';
+  var body=rows.map(function(r){return '<tr>'+cols.map(function(c){
+     var v=r[c.k]; if(c.money)return '<td class="money '+(c.cls||'')+'">'+fmt(v)+'</td>';
+     if(c.num)return '<td class="money">'+num(v)+'</td>';
+     return '<td class="'+(c.cls||'')+'">'+esc(v)+'</td>';}).join('')+'</tr>';}).join('');
+  return '<div class="tcard"><div class="th">'+esc(title)+'<span class="cnt">'+rows.length+' lignes</span></div>'+
+    '<div class="tw"><table><thead>'+head+'</thead><tbody>'+body+'</tbody></table></div></div>';
+}
+function header(a,extra){
+ return '<div class="ah"><div class="big" style="background:'+a.c+'22">'+a.em+'</div>'+
+  '<div><h1>'+esc(a.nom)+'</h1><div class="role">'+esc(a.role)+'</div></div>'+
+  (a.id!=='overview'&&a.id!=='salon'?'<span class="watch"><span class="dot"></span>en surveillance</span>':'')+'</div>'+
+  (a.mission?'<div class="mission">'+a.mission+'</div>':'')+(extra||'');
+}
+
+/* ---- contenu par agent ---- */
+function content(id){
+ var a=BY[id], S=APP.stats, F=APP.fmt;
+ if(id==='overview'){
+   return header(a)+kpiHTML([
+     {n:num(S.total),l:'commandes suivies'},{n:F.ca,l:'CA total'},
+     {n:F.reste,l:'reste à encaisser',cls:'red'},{n:F.paye,l:'encaissé ('+APP.raw.tauxEnc+'%)'}],a.c)+
+     kpiHTML([{n:S.enAttente,l:'en attente'},{n:S.enFab,l:'en fabrication'},{n:S.aLivrer,l:'à livrer'},{n:S.salaries,l:'salariés'}],a.c)+
+     table('🔴 Top impayés à récupérer',[{k:'client',label:'Client'},{k:'vendeur',label:'Vente',cls:'mut'},{k:'total',label:'Total',money:1},{k:'reste',label:'Reste dû',money:1,cls:'red'}],APP.finance.slice(0,8))+
+     '<div class="hint">👉 Clique sur un agent à gauche pour voir son travail en détail.</div>';
+ }
+ if(id==='salon') return header(a)+'<div class="feed" id="feed"></div>';
+ if(id==='veilleur'){
+   return header(a)+kpiHTML([{n:'100',l:'criticité /100',cls:'red'},{n:S.impayes,l:'impayés',cls:'red'},{n:S.enAttente,l:'en attente'},{n:'0',l:'retard livr.',cls:'grn'}],a.c)+
+     table('🔴 Alertes prioritaires — impayés',[{k:'client',label:'Client'},{k:'vendeur',label:'Vente',cls:'mut'},{k:'reste',label:'Montant dû',money:1,cls:'red'}],APP.finance.slice(0,12));
+ }
+ if(id==='finance'){
+   return header(a)+kpiHTML([{n:F.ca,l:'CA total'},{n:F.paye,l:'encaissé ('+APP.raw.tauxEnc+'%)',cls:'grn'},{n:F.reste,l:'reste dû',cls:'red'},{n:S.impayes,l:'commandes impayées',cls:'red'}],a.c)+
+     table('Dossier impayés — à relancer',[{k:'client',label:'Client'},{k:'vendeur',label:'Vente',cls:'mut'},{k:'total',label:'Total',money:1},{k:'paye',label:'Payé',money:1,cls:'grn'},{k:'reste',label:'Reste dû',money:1,cls:'red'}],APP.finance);
+ }
+ if(id==='production'){
+   return header(a)+kpiHTML([{n:S.enFab,l:'en fabrication'},{n:S.enAttente,l:'en attente'},{n:S.termine,l:'terminées',cls:'grn'},{n:num(S.articles),l:'articles suivis'}],a.c)+
+     table('À lancer — commandes en attente (plus anciennes d\'abord)',[{k:'client',label:'Client'},{k:'date',label:'Depuis',cls:'mut'},{k:'art',label:'Article'},{k:'total',label:'Montant',money:1}],APP.production)+
+     table('En cours de fabrication',[{k:'client',label:'Client'},{k:'art',label:'Article'},{k:'total',label:'Montant',money:1}],APP.enfab);
+ }
+ if(id==='planning'){
+   return header(a)+kpiHTML([{n:S.enAttente,l:'à planifier'},{n:S.ateliers,l:'ateliers'},{n:S.enFab,l:'en cours'},{n:'jeudi',l:'⚠️ Peinture saturée'}],a.c)+
+     table('File de lancement (par ancienneté)',[{k:'client',label:'Client'},{k:'date',label:'Date commande',cls:'mut'},{k:'art',label:'Article'},{k:'total',label:'Montant',money:1}],APP.production)+
+     table('Charge par atelier',[{k:'nom',label:'Atelier'},{k:'chef',label:'Chef',cls:'mut'},{k:'effectif',label:'Effectif',num:1},{k:'coutH',label:'Coût/h',num:1}],APP.ateliers);
+ }
+ if(id==='coutRevient'){
+   return header(a)+kpiHTML([{n:F.panier,l:'panier moyen'},{n:F.ca,l:'CA potentiel'},{n:F.masse,l:'charges salariales/mois'},{n:'à valider',l:'marge par commande'}],a.c)+
+     table('Grosses commandes — marge à sécuriser',[{k:'client',label:'Client'},{k:'art',label:'Produit'},{k:'total',label:'Montant',money:1},{k:'paye',label:'Encaissé',money:1,cls:'grn'},{k:'vendeur',label:'Vente',cls:'mut'}],APP.gros);
+ }
+ if(id==='achats'){
+   return header(a)+kpiHTML([{n:num(S.matieres),l:'matières au catalogue'},{n:S.fournisseurs+'+',l:'fournisseurs'},{n:num(S.articles),l:'articles commandés'},{n:S.enAttente,l:'cmd à approvisionner'}],a.c)+
+     table('Fournisseurs (catalogue matières)',[{k:'f',label:'Fournisseur'},{k:'n',label:'Nb références',num:1},{k:'refs',label:'Exemples',cls:'mut'}],APP.fournisseurs.map(function(x){return {f:x.f,n:x.n,refs:(x.refs||[]).join(' · ')};}))+
+     table('Articles les plus commandés (besoins matière)',[{k:'nom',label:'Article'},{k:'q',label:'Qté commandée',num:1}],APP.topArt);
+ }
+ if(id==='livraison'){
+   return header(a)+kpiHTML([{n:S.aLivrer,l:'à livrer'},{n:S.livre,l:'livrées',cls:'grn'},{n:'0',l:'en retard',cls:'grn'},{n:num(S.total),l:'commandes'}],a.c)+
+     table('Commandes à livrer (par montant)',[{k:'client',label:'Client'},{k:'date',label:'Date prévue',cls:'mut'},{k:'etat',label:'État'},{k:'total',label:'Montant',money:1}],APP.livraison);
+ }
+ if(id==='commercial'){
+   return header(a)+kpiHTML([{n:APP.vendeurs.length,l:'commerciaux'},{n:num(S.total),l:'commandes'},{n:(APP.vendeurs[0]||{}).v||'—',l:'top vente'},{n:fmt((APP.vendeurs[0]||{}).ca||0),l:'son CA'}],a.c)+
+     table('Performance par commercial',[{k:'v',label:'Commercial'},{k:'nb',label:'Cmd',num:1},{k:'ca',label:'CA généré',money:1},{k:'enc',label:'Encaissé',money:1,cls:'grn'},{k:'reste',label:'Reste à encaisser',money:1,cls:'red'}],APP.vendeurs);
+ }
+ if(id==='marketing'){
+   return header(a)+kpiHTML([{n:(APP.topArt[0]||{}).nom||'—',l:'best-seller'},{n:num((APP.topArt[0]||{}).q||0),l:'vendus'},{n:num(S.total),l:'commandes'},{n:'2/j',l:'posts proposés'}],a.c)+
+     table('Best-sellers à mettre en avant',[{k:'nom',label:'Produit'},{k:'q',label:'Vendus',num:1}],APP.topArt)+
+     table('Dernières commandes (matière à contenu)',[{k:'client',label:'Client'},{k:'date',label:'Date',cls:'mut'},{k:'total',label:'Montant',money:1}],APP.recent.slice(0,8));
+ }
+ if(id==='rh'){
+   return header(a)+kpiHTML([{n:S.salaries,l:'salariés'},{n:F.masse,l:'masse salariale/mois'},{n:S.ateliers,l:'ateliers pourvus'},{n:'60 DH',l:'coût horaire moyen'}],a.c)+
+     table('Effectif & salaires',[{k:'n',label:'Nom'},{k:'poste',label:'Poste',cls:'mut'},{k:'atelier',label:'Atelier'},{k:'sal',label:'Salaire',money:1},{k:'coutH',label:'Coût/h',num:1}],APP.salaries);
+ }
+ if(id==='ateliers'){
+   return header(a)+kpiHTML([{n:S.ateliers,l:'ateliers'},{n:S.salaries,l:'effectif total'},{n:'60 DH',l:'coût/h moyen'},{n:S.enAttente,l:'à répartir'}],a.c)+
+     table('Les 9 ateliers',[{k:'code',label:'Code'},{k:'nom',label:'Atelier'},{k:'chef',label:'Chef',cls:'mut'},{k:'effectif',label:'Effectif',num:1},{k:'coutH',label:'Coût horaire',num:1}],APP.ateliers);
+ }
+ return header(a)+'<div class="empty">En construction.</div>';
+}
+
+/* ---- salon (chat live) ---- */
+var chatTimer=null;
+function startSalon(){
+ var team={'Patron IA':{em:'🧠',c:'#C4714F'},'Le Veilleur':{em:'⚠️',c:'#E74C3C'},'Finance':{em:'💰',c:'#EAB308'},
+  'Production':{em:'🏭',c:'#3b82f6'},'Coût de revient':{em:'🧮',c:'#34d399'},'Achats':{em:'📦',c:'#a78bfa'},
+  'Planning':{em:'📅',c:'#06b6d4'},'Commercial':{em:'👥',c:'#e69a76'},'Marketing':{em:'📣',c:'#f59e0b'},'Service client':{em:'💬',c:'#60a5fa'}};
+ function build(cy){
+  var i1=pick(APP.finance,cy),i2=pick(APP.finance,cy+1),gr=pick(APP.gros,cy),pe=pick(APP.production,cy),ar=pick(APP.topArt,cy),vt=APP.vendeurs[0]||{v:'—'};
+  return [
+   {a:'Patron IA',boss:1,o:'BRIEFING',m:'Analyse — '+num(APP.stats.total)+' commandes, encaissé seulement <span class="r">'+APP.fmt.paye+'</span> sur '+APP.fmt.ca+'. Vos points.'},
+   {a:'Finance',m:'Plus gros impayé : <span class="r">'+esc(i1.client)+' — '+fmt(i1.reste)+'</span> (vente '+esc(i1.vendeur)+'). Total dû : '+APP.fmt.reste+'.'},
+   {a:'Production',m:'<span class="k">'+APP.stats.enAttente+' en attente</span>. La plus vieille : '+esc(pe.client)+' ('+esc(pe.date)+', '+fmt(pe.total)+').'},
+   {a:'Patron IA',boss:1,o:'ORDRE',m:'Finance → relance <span class="k">'+esc(i1.client)+'</span> puis '+esc(i2.client)+'. Production → lance '+esc(pe.client)+' (déjà payée ?).'},
+   {a:'Coût de revient',m:'Je sécurise la marge de <span class="k">'+esc(gr.client)+'</span> ('+fmt(gr.total)+') avant lancement.'},
+   {a:'Achats',m:'Best-seller à approvisionner : '+esc(ar.nom)+' ('+ar.q+' vendus). Je compare 2 fournisseurs.'},
+   {a:'Marketing',m:'Je pousse <span class="k">'+esc(ar.nom)+'</span> en pub aujourd\'hui pour remplir le carnet.'},
+   {a:'Patron IA',boss:1,you:1,m:'Driss : <span class="k">'+esc(i1.client)+'</span> ('+fmt(i1.reste)+') demande un délai. Je propose un échéancier 3x. Tu valides ?'}
+  ];
+ }
+ var feed=document.getElementById('feed'); if(!feed)return;
+ var cycle=0,script=build(0),i=0;
+ function bubble(it){var t=team[it.a]||{em:'•',c:'#888'};var el=document.createElement('div');
+   el.className='msg'+(it.boss?' boss':'')+(it.you?' you':'');
+   el.innerHTML='<div class="av" style="background:'+t.c+'22">'+t.em+'</div><div class="bubble">'+
+    (it.o?'<div class="ordre">'+it.o+'</div>':'')+'<div class="who"><b>'+it.a+'</b></div><div class="txt">'+it.m+'</div></div>';
+   feed.appendChild(el);feed.scrollTop=feed.scrollHeight;}
+ function step(){ if(!document.getElementById('feed'))return;
+   if(i>=script.length){chatTimer=setTimeout(function(){feed.innerHTML='';cycle++;script=build(cycle);i=0;step();},5500);return;}
+   bubble(script[i++]); chatTimer=setTimeout(step,1100);}
+ feed.innerHTML=''; step();
+}
+
+/* ---- routeur ---- */
+function show(id){
+ if(chatTimer){clearTimeout(chatTimer);chatTimer=null;}
+ document.querySelectorAll('.item').forEach(function(el){el.classList.toggle('on',el.getAttribute('data-id')===id);});
+ document.getElementById('main').innerHTML=content(id);
+ document.getElementById('main').scrollTop=0;
+ if(id==='salon')startSalon();
+}
+show('overview');
+</script>
+</body>
+</html>
