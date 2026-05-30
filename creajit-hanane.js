@@ -107,7 +107,7 @@
     bar.innerHTML = `
       <div class="cjtabs">
         <button data-tab="commandes" class="on">📋 Commandes clients (${COMMANDES.length})</button>
-        <button data-tab="catalogue">🛋️ Catalogue (${CAT.length})</button>
+        <button data-tab="catalogue">🛋️ Catalogue (${(window.CJ_CATALOGUE||[]).length})</button>
       </div>
       <div class="cjfilt">
         <input id="cjq" placeholder="🔎 Client, référence, produit…">
@@ -302,15 +302,17 @@
   }
 
   function renderCatalogue(box) {
-    let items = CAT.slice();
-    if (q) items = items.filter(p => (p.nm + ' ' + p.cat).toLowerCase().includes(q));
-    const groups = {}; items.forEach(p => { (groups[p.cat] = groups[p.cat] || []).push(p); });
-    let h = '';
-    Object.keys(groups).forEach(cat => {
-      h += `<div class="cjcat-h">${esc(cat)} (${groups[cat].length})</div>`;
-      groups[cat].forEach(p => h += `<div class="cjp"><div class="pn">${esc(p.nm)}</div><span class="pb ${p.stock}">${p.stock === 'rupture' ? '⛔ rupture' : '⚠️ stock bas'}</span></div>`);
+    let items = (window.CJ_CATALOGUE || []).slice();
+    if (q) items = items.filter(p => (p.nm || '').toLowerCase().includes(q));
+    let h = `<div class="cjcat-h">Catalogue CREAJIT — ${items.length} produits (photos du site)</div>`;
+    items.forEach(p => {
+      const img = p.photo ? `<img src="${esc(p.photo)}" style="width:54px;height:54px;border-radius:9px;object-fit:cover;background:#fff">`
+        : `<div style="width:54px;height:54px;border-radius:9px;background:#222c3d;display:grid;place-items:center">🛋️</div>`;
+      const st = p.stock === 'ok' ? `<span class="pb" style="background:rgba(55,201,138,.16);color:#37c98a">en stock</span>`
+        : `<span class="pb rupture">⛔ rupture</span>`;
+      h += `<div class="cjp">${img}<div class="pn">${esc(p.nm)} <span class="pc">· ${p.prix} DH</span></div>${st}</div>`;
     });
-    if (!items.length) h = `<div class="sub">Aucun produit ne correspond.</div>`;
+    if (!items.length) h = `<div class="sub">Catalogue indisponible.</div>`;
     box.innerHTML = h;
   }
 
