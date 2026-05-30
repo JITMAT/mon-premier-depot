@@ -333,6 +333,26 @@ Articles : Chaise Cartel ×75 @730 ; Tableau 120/80 ×25 @730 ; Tableau 40/40 ×
   Testé sous node (shim navigateur, pas de jsdom dispo) : 13/13 OK + évènements + flux QC + math MO
   (2 h atelier A = 134 DH). **Reste :** temps réel multi-appareils (vraie base partagée, pas localStorage).
 
+- **2026-05-30 — Audit complet + agents IA intelligents.** Audit syntaxe/dépendances de
+  TOUTES les pages (15) et modules (16) : 0 erreur réelle. Bugs corrigés :
+  **(A) Chrono ouvrier qui ne démarrait pas** pour un ouvrier connecté (réentrance : l'évènement
+  émis avant l'écriture CJ déclenchait un resync qui effaçait le chrono) → garde BUSY dans
+  `creajit-ouvrier-sync.js`. **(B) Identité « Youssef » codée en dur** dans `ouvrier.html` :
+  la fiche est maintenant **au nom de l'ouvrier connecté** (CJ_MOI / ?w=) → nom, atelier, coût
+  horaire chargé (coutHoraire), initiales/photo, et **prompt de SON agent IA** (window.CJ_SYS)
+  spécifiques. TAUX dynamique = coût horaire de son atelier. Évènements et messages au nom réel,
+  sans doublon (les tâches CJ remontent via le sync, plus de double évènement). Client réel
+  affiché (plus de « 2A MARIAGE » figé). **(C) Intelligence des agents** : `CJ.problemes()`
+  scanne l'atelier et détecte les anomalies (pauses/ruptures, articles finis non contrôlés QC,
+  affectés non démarrés, fiche/dessin non validé avant production, bons matière en attente > 24 h,
+  commandes en retard) triées par gravité ; `CJ.resumeProblemes()` injecté dans `contexteIA()` →
+  CHAQUE agent (surtout le boss) voit et raisonne sur tous les problèmes. Cockpit : la section
+  **⚠️ Alertes** affiche les problèmes détectés EN TEMPS RÉEL (live, abonné aux changements) +
+  bouton « Analyse tous les problèmes et donne-moi un plan d'action priorisé » dans l'assistant.
+  Testé sous node : 13/13 régression OK + détection des 5 types de problèmes + injection contexte.
+  Note honnête : un agent IA du navigateur **analyse, détecte et propose/exécute des actions de
+  données** ; il ne réécrit pas le code source (ça reste le rôle de Claude Code).
+
 ## 13. Ordre de construction officiel (structure décidée, à suivre)
 
 > Driss délègue la structuration. On construit dans CET ordre, en s'appuyant sur les

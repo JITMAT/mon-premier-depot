@@ -30,7 +30,7 @@
       var pv = (t.qte || 1) * (t.prix || 0);
       var taux = th(t.atelierCode);
       TASKS.push({
-        art: t.articleId, nm: t.nom, etape: atName(t.atelierCode), qty: t.qte,
+        art: t.articleId, nm: t.nom, etape: atName(t.atelierCode), qty: t.qte, client: t.client || '',
         pv: pv, moTot: 0, taux: taux,
         state: t.statut === 'encours' ? 'en_cours' : (t.statut === 'pause' ? 'pause' : (t.statut === 'fini' ? 'fini' : 'attente')),
         t0: t.t0 || null, el: t.elapsedMs || 0, motif: t.motif || '', _cj: true

@@ -109,6 +109,58 @@
     },
     consignesPour: (ouvrierId) => etat.consignes.filter(c => c.cible === 'tous' || c.cible === ouvrierId),
 
+    // ===== ANALYSE INTELLIGENTE : l'agent détecte tous les problèmes =====
+    // Renvoie la liste des anomalies de l'atelier, triée par gravité.
+    problemes: () => {
+      const res = [];
+      const add = (gravite, cat, texte, route) => res.push({ gravite, cat, texte, route: route || '' });
+      const heures = (t0) => t0 ? Math.floor((Date.now() - t0) / 3600000) : 0;
+      const aff = etat.affArt || {};
+      Object.keys(aff).forEach(aid => {
+        const liste = aff[aid] || []; if (!liste.length) return;
+        const x = CJ.article(aid);
+        const nom = (liste[0] && liste[0].nom) || (x && x.article && x.article.nom) || aid;
+        const client = (x && x.commande && x.commande.client) || (liste[0] && liste[0].client) || '';
+        const ref = client ? (client + (x && x.commande ? ' · ' + (x.commande.ref || '') : '')) : '';
+        const enPause = liste.filter(o => o.statut === 'pause');
+        const tousFinis = liste.every(o => o.statut === 'fini');
+        const aucunDemarre = liste.every(o => o.statut === 'affecte');
+        const fa = (etat.fichesArt && etat.fichesArt[aid]) || {};
+        if (enPause.length) add('haute', 'pause', `« ${nom} » (${ref}) EN PAUSE : ${enPause.map(o => o.motif || 'sans motif').join(', ')}`, '→ atelier');
+        if (tousFinis && !etat.qc[aid]) add('moyenne', 'qc', `« ${nom} » (${ref}) terminé mais PAS encore contrôlé (QC).`, '→ Fatima');
+        if (aucunDemarre) add('info', 'attente', `« ${nom} » (${ref}) affecté mais travail PAS commencé.`, '→ atelier');
+        if (!fa.dessinValide && !tousFinis) add('moyenne', 'fiche', `« ${nom} » (${ref}) : dessin/fiche PAS validé avant production (risque de retour).`, '→ Hanane');
+      });
+      // QC en anomalie non corrigée
+      Object.keys(etat.qc || {}).forEach(aid => {
+        const q = etat.qc[aid]; if (q && q.ok === false) {
+          const x = CJ.article(aid); const nom = (x && x.article && x.article.nom) || aid;
+          add('haute', 'anomalie', `ANOMALIE QUALITÉ non corrigée sur « ${nom} » : ${q.obs || 'voir Fatima'}.`, '→ atelier');
+        }
+      });
+      // Bons matière en attente trop longtemps
+      Object.values(etat.bons || {}).forEach(b => {
+        if (b.statut !== 'recu') { const h = heures(b.t0); if (h >= 24) add('moyenne', 'matiere', `Bon matière ${b.client || ''} en attente depuis ${h} h [${b.statut}].`, '→ Mohamed magasin'); }
+      });
+      // Commandes réelles en retard (si chargées)
+      try {
+        const ord = window.CJ_ORDERS;
+        if (ord && ord.all) {
+          const today = new Date();
+          const late = ord.all().filter(o => o.deliveryStatus !== 'DELIVERED' && o.date && new Date(o.date) < today);
+          if (late.length) add('haute', 'retard', `${late.length} commande(s) en RETARD de livraison.`, '→ Fatima / planning');
+        }
+      } catch (e) {}
+      const ordre = { haute: 0, moyenne: 1, info: 2 };
+      return res.sort((a, b) => ordre[a.gravite] - ordre[b.gravite]);
+    },
+    resumeProblemes: () => {
+      const p = CJ.problemes();
+      if (!p.length) return 'Aucun problème détecté.';
+      const ic = { haute: '🔴', moyenne: '🟡', info: '🔵' };
+      return p.map(x => `${ic[x.gravite] || '•'} ${x.texte}${x.route ? ' ' + x.route : ''}`).join('\n');
+    },
+
     // Contexte temps réel injecté dans CHAQUE agent IA → ils sont « connectés »
     contexteIA: () => {
       const aff = Object.entries(etat.affectations).map(([id, a]) => `${a.nom || id} → ${a.ouvrierId} (atelier ${a.atelierCode}, ${a.statut})`);
@@ -117,11 +169,12 @@
       const cons = (etat.consignes || []).slice(0, 6).map(c => `• [${c.cible}] ${c.texte}`);
       return [
         '--- ÉTAT PARTAGÉ TEMPS RÉEL DE L\'ATELIER CREAJIT ---',
-        'Tu es un agent CREAJIT IA, CONNECTÉ aux autres agents (Hanane, ouvriers, Mohamed magasin, Hassan réception, Fatima). Tu vois ce qu\'ils font ci-dessous et tu peux y faire référence.',
+        'Tu es un agent CREAJIT IA, CONNECTÉ aux autres agents (Hanane, ouvriers, Mohamed magasin, Hassan réception, Fatima). Tu vois ce qu\'ils font ci-dessous et tu peux y faire référence, anticiper, calculer et proposer des actions concrètes.',
         'Affectations en cours : ' + (aff.join(' ; ') || 'aucune'),
         'Bons de matière : ' + (bons.join(' ; ') || 'aucun'),
         'Consignes du patron : ' + (cons.join('  ') || 'aucune'),
         'Derniers événements : ' + (evs.join('  ') || 'aucun'),
+        'PROBLÈMES DÉTECTÉS (à analyser et résoudre en priorité) :\n' + CJ.resumeProblemes(),
         '--- fin état partagé ---',
       ].join('\n');
     },

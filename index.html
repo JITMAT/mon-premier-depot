@@ -319,10 +319,11 @@ function pushRandom(){const e={...RANDOM[Math.floor(Math.random()*RANDOM.length)
 
 /* ===== alertes ===== */
 const OVERDUE=[['26040026','Mr Soufiane',25],['26040045','Mr Yazid',25],['26040019','2A WEDDING',24],['26040052','Mr Benjamin',21],['26040048','AZZOZI RELAX HOUSES',21],['26040053','Expresse Beuty',21],['26040008','Mr Youssef Ajdir',20],['26040022','Mme Ilhame',14],['26040024','Mme Anisa Guerroumi',13],['26050019','Mme Nazha',11]];
-function renderAlerts(){let h=`<div class="al high"><div class="ai2">🧱</div><div><div class="an">Rupture vernis — Youssef (Peinture)</div><div class="am">Notif → Hanane + Service Achat</div></div><button class="act" onclick="toast('Bon de commande ouvert (démo)')">Commander</button></div>`;
+function probsLive(){if(!window.CJ)return'';var probs=CJ.problemes();if(!probs.length)return'';return probs.map(function(p){var cls=p.gravite==='haute'?'high':'mid';var ic=p.cat==='pause'?'⏸️':p.cat==='qc'?'🔎':p.cat==='anomalie'?'⚠️':p.cat==='matiere'?'📦':p.cat==='retard'?'🚚':p.cat==='fiche'?'📝':'•';return '<div class="al '+cls+'"><div class="ai2">'+ic+'</div><div><div class="an">'+p.texte+'</div><div class="am">'+(p.route||'CREAJIT IA — détection auto')+'</div></div></div>';}).join('');}
+function renderAlerts(){let h=probsLive();h+=`<div class="al high"><div class="ai2">🧱</div><div><div class="an">Rupture vernis — Youssef (Peinture)</div><div class="am">Notif → Hanane + Service Achat</div></div><button class="act" onclick="toast('Bon de commande ouvert (démo)')">Commander</button></div>`;
   h+=`<div class="al mid"><div class="ai2">📦</div><div><div class="an">Stock vernis bas — 12 L (seuil 15)</div><div class="am">Atelier Peinture</div></div><button class="act" onclick="toast('Réappro (démo)')">Réappro.</button></div>`;
   OVERDUE.forEach(o=>h+=`<div class="al ${o[2]>=21?'high':'mid'}"><div class="ai2">🚚</div><div><div class="an">${o[1]} — ${o[0]}</div><div class="am">Retard de ${o[2]} jours</div></div><button class="act" onclick="toast('Relance (démo)')">Relancer</button></div>`);
-  document.getElementById('alerts').innerHTML=h;document.getElementById('bAl').textContent=OVERDUE.length+2;}
+  document.getElementById('alerts').innerHTML=h;var pc=(window.CJ?CJ.problemes().length:0);document.getElementById('bAl').textContent=OVERDUE.length+2+pc;}
 
 /* ===== assistant IA ===== */
 const SNAP=`État CREAJIT (temps réel) : 60 employés, 20 commandes en fabrication, 26 livrées ce mois, 10 en retard, 333 289 DH d'avances.
@@ -337,6 +338,7 @@ function cleIA(){let k=localStorage.getItem('creajit_cle_ia');if(!k){k=prompt("C
 function resetCleIA(){localStorage.removeItem('creajit_cle_ia');const k=cleIA();if(typeof toast==='function')toast(k?'Clé IA enregistrée ✅':'Clé IA effacée');}
 function renderChat(){const box=document.getElementById('chat');if(!conv.length){box.innerHTML=`<div class="cempty">Pose ta question — l'assistant voit tout.
   <div class="sg"><button onclick="resetCleIA()">🔑 Saisir / changer ma clé IA</button></div>
+  <div class="sg"><button onclick="quick(this)">Analyse tous les problèmes de l'atelier et donne-moi un plan d'action priorisé</button></div>
   <div class="sg"><button onclick="quick(this)">Qui est le plus rentable aujourd'hui ?</button>
   <button onclick="quick(this)">Qui est en retard et qui je dois recadrer ?</button>
   <button onclick="quick(this)">Quel article je devrais pousser à la vente ?</button>
@@ -359,6 +361,7 @@ function show(s){document.querySelectorAll('.mi').forEach(m=>m.classList.toggle(
   if(s==='board')renderDir();if(s==='feed')renderFeed();if(s==='team')renderTeam();if(s==='late')renderLate();if(s==='renta')renderRenta();if(s==='alerts')renderAlerts();if(s==='ai')renderChat();}
 let tt;function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),3000);}
 renderDir();renderLate();renderAlerts();
+if(window.CJ)CJ.abonner(function(){var s=document.getElementById('sec-alerts');renderAlerts();if(s&&!s.classList.contains('on')){}});
 setInterval(pushRandom,14000);
 </script>
 
