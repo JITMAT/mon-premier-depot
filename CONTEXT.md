@@ -394,6 +394,22 @@ Articles : Chaise Cartel ×75 @730 ; Tableau 120/80 ×25 @730 ; Tableau 40/40 ×
   sorties node se sont révélées corrompues (clés JSON dupliquées) → recompté en sortie entière
   simple écrite en fichier pour fiabiliser (41/145/16/129, somme cohérente).
 
+- **2026-05-30 — COLONNE VERTÉBRALE : `CJ.suivi(commande)` (coordination réelle).** Driss (à
+  raison, frustré) : « aucune coordination, Fatima n'a aucune info des ateliers ». Diagnostic
+  d'archi : les 186 vraies commandes (`CJ_ORDERS`, lecture seule) et le travail d'atelier
+  (`affArt`/`qc`/`bons`) vivaient dans deux mondes séparés, jamais reliés → chaque page était un
+  îlot. Solution : UNE fonction `CJ.suivi(order)` qui agrège l'état COMPLET d'une commande à
+  travers toutes les données dispersées : étape réelle (Pas lancé → Affecté → En fabrication →
+  En pause → En contrôle qualité → Prêt à livrer → Anomalie → Livré), ateliers + ouvriers
+  impliqués, articles finis/total, QC (ok/anomalie/attente), bons matière en attente, motifs de
+  pause, coût MO total, progression 0–100 %, et `pretALivrer`. Si aucune activité interne, reflète
+  honnêtement l'état CreaJit (`source:'creajit'`). Testé node sur tout le cycle de vie + sur une
+  vraie commande (atelier travaille → Fatima voit l'atelier/ouvrier/avancement). Fatima : chaque
+  carte livraison affiche désormais la **ligne de coordination atelier** (étape, ateliers, ouvriers,
+  N/total finis, QC, matière en attente, pause, barre de progression) ; bouton « Marquer livrée »
+  seulement si réellement prêt, sinon « livrer quand même ». Prochaine étape : même backbone dans
+  le cockpit (boss) et la page Hanane pour une vue unifiée partout.
+
 ## 13. Ordre de construction officiel (structure décidée, à suivre)
 
 > Driss délègue la structuration. On construit dans CET ordre, en s'appuyant sur les

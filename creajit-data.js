@@ -302,6 +302,65 @@
       return res;
     },
 
+    // ===== COLONNE VERTÉBRALE : suivi complet d'une commande =====
+    // Donne à TOUS les agents (Fatima, cockpit, Hanane) le MÊME état réel d'une
+    // commande : production, qui travaille, contrôle qualité, matière, livraison.
+    // `order` = une commande de CJ_ORDERS (id, ref, articles[]) ou amorcée.
+    suivi: (order) => {
+      if (!order) return null;
+      const ref = order.ref || order.id;
+      const arts = order.articles || [];
+      let affectes = 0, enCours = 0, pause = 0, finis = 0, qcOk = 0, qcAno = 0, qcAtt = 0, avecActivite = 0;
+      const ouvriers = new Set(), ateliers = new Set(), bons = [], motifs = [];
+      let moTotal = 0;
+      arts.forEach(a => {
+        const liste = (etat.affArt || {})[a.id] || [];
+        if (liste.length) { affectes++; avecActivite++; }
+        liste.forEach(o => {
+          if (o.ouvrierId) ouvriers.add(nomOuvrier(o.ouvrierId));
+          if (o.atelierCode) ateliers.add(o.atelierCode);
+          if (o.statut === 'encours') enCours++;
+          if (o.statut === 'pause') { pause++; if (o.motif) motifs.push(o.motif); }
+          const th = (window.coutHoraire ? window.coutHoraire(o.atelierCode) : 60);
+          const ms = (o.elapsedMs || 0) + (o.t0 ? (Date.now() - o.t0) : 0);
+          moTotal += (ms / 3600000) * th;
+        });
+        if (liste.length && liste.every(o => o.statut === 'fini')) {
+          finis++;
+          const q = etat.qc[a.id];
+          if (!q) qcAtt++; else if (q.ok) qcOk++; else qcAno++;
+        }
+        Object.values(etat.bons).filter(b => b.articleId === a.id).forEach(b => bons.push(b));
+      });
+      const livree = !!etat.livraisons[ref] || /delivered/i.test(order.livr || order.deliveryStatus || '');
+      const bonsEnAttente = bons.filter(b => b.statut !== 'recu').length;
+      // étape réelle, du plus avancé au moins avancé
+      let etape, pret = false, source = 'atelier';
+      if (livree) { etape = 'Livré'; }
+      else if (qcAno > 0) { etape = 'Anomalie qualité'; }
+      else if (arts.length && finis === arts.length && qcOk === arts.length) { etape = 'Prêt à livrer'; pret = true; }
+      else if (finis > 0 && qcAtt > 0) { etape = 'En contrôle qualité'; }
+      else if (pause > 0) { etape = 'En pause'; }
+      else if (enCours > 0) { etape = 'En fabrication'; }
+      else if (affectes > 0) { etape = 'Affecté (pas démarré)'; }
+      else {
+        // aucune activité dans l'appli -> on reflète l'état CreaJit (honnête : pas encore lancé en interne)
+        source = 'creajit';
+        const ps = String(order.prod || order.productionStatus || '').toLowerCase();
+        if (ps === 'completed') { etape = 'Prêt (CreaJit)'; pret = true; }
+        else if (ps === 'in_progress') { etape = 'En fabrication (CreaJit)'; }
+        else { etape = 'Pas encore lancé'; }
+      }
+      return {
+        ref, totalArticles: arts.length, affectes, enCours, pause, finis,
+        qcOk, qcAnomalie: qcAno, qcEnAttente: qcAtt, avecActivite,
+        ouvriers: [...ouvriers], ateliers: [...ateliers], bons, bonsEnAttente,
+        motifs, moTotal, livree, etape, pretALivrer: pret, source,
+        // progression 0..100 (affecté 25, en cours 50, fini 75, qc ok 100)
+        progression: arts.length ? Math.round(((affectes ? 25 : 0) + (enCours || finis ? 25 : 0) + (finis ? 25 : 0) + (qcOk === arts.length && arts.length ? 25 : 0))) : 0,
+      };
+    },
+
     // Données de référence (chargées par les autres fichiers)
     matieres: () => window.CJ_MATIERES || [],
     ateliers: () => window.CJ_ATELIERS || [],
