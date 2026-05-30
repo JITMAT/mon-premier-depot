@@ -197,11 +197,13 @@ function av(key,fb,cls,col){return PH[key]?`<img class="${cls}" src="${PH[key]}"
 
 /* ===== direction ===== */
 const DIR=[
- {nm:'Kenza',role:'Responsable commerciale',ini:'K',col:'#a78bfa',mv:'20',ml:'commandes en cours'},
- {nm:'Mohamed Sabiri',role:'Comptable / Finance',photo:'sabiri',mv:'333 289',ml:'avances ce mois (DH)'},
+ {nm:'Kenza',role:'Responsable commerciale',ini:'K',col:'#a78bfa',mv:'20',ml:'commandes en cours',link:'ouvrier.html?w=kenza'},
+ {nm:'Mohamed Sabiri',role:'Comptable / Finance',photo:'sabiri',mv:'333 289',ml:'avances ce mois (DH)',link:'ouvrier.html?w=sabiri'},
  {nm:'Hanane Ajdi',role:'Responsable exploitation',ini:'HA',col:'#C4714F',mv:'20',ml:'en fabrication',link:'hanane.html'},
- {nm:'Said Chnitifa',role:'Chef de tous les ateliers',ini:'SC',col:'#2fbd74',mv:'9',ml:'ateliers'},
- {nm:'Fatima Ezzahra',role:'Contrôle qualité & Logistique',ini:'FE',col:'#5b9bf3',mv:'26',ml:'livrés ce mois'},
+ {nm:'Said Chnitifa',role:'Chef de tous les ateliers',ini:'SC',col:'#2fbd74',mv:'9',ml:'ateliers',link:'ouvrier.html?w=said'},
+ {nm:'Fatima Ezzahra',role:'Contrôle qualité & Logistique',ini:'FE',col:'#5b9bf3',mv:'26',ml:'livrés ce mois',link:'ouvrier.html?w=fatima'},
+ {nm:'Mohamed',role:'Magasin / Achat',ini:'M',col:'#C4714F',mv:'',ml:'bons matière',link:'magasin.html'},
+ {nm:'Hassan Laagouri',role:'Réception',ini:'HL',col:'#3b82f6',mv:'',ml:'matière reçue',link:'reception.html'},
 ];
 function renderDir(){document.getElementById('direction').innerHTML=DIR.map(d=>`<div class="dcard" ${d.link?`onclick="location.href='${d.link}'" style="cursor:pointer"`:`onclick="toast('Agent ${d.nm} — bientôt cliquable')"`}>
   ${d.photo&&PH[d.photo]?`<img src="${PH[d.photo]}">`:`<div class="av" style="background:${d.col}">${d.ini}</div>`}
