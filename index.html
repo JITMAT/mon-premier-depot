@@ -351,7 +351,7 @@ function openWorker(k){
 function closeMod(){document.getElementById('ov').classList.remove('on');}
 
 /* ===== feed ===== */
-function hm(d){return d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});}
+function hm(d){const now=new Date();const diff=(now-d)/60000;if(diff<1)return "à l'instant";if(diff<60)return 'il y a '+Math.round(diff)+' min';const t=d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});if(d.toDateString()===now.toDateString())return "aujourd'hui "+t;const y=new Date(now-86400000);if(d.toDateString()===y.toDateString())return 'hier '+t;return d.toLocaleDateString('fr-FR',{day:'numeric',month:'short'})+', '+t;}
 let FEED=[
  {type:'alert',who:'ibnradiya',fb:'YI',txt:'<b>Youssef (Peinture)</b> a signalé une <b>rupture de vernis</b>.',routed:'→ Notif envoyée à Hanane + Service Achat.',t:new Date(Date.now()-2*60000)},
  {type:'success',who:'lafdili',fb:'AL',txt:'<b>Lafdili</b> a fini « Cadre TABLEAU 40/40 » · +14 891 DH.',t:new Date(Date.now()-9*60000)},
