@@ -363,6 +363,20 @@ Articles : Chaise Cartel ×75 @730 ; Tableau 120/80 ×25 @730 ; Tableau 40/40 ×
   coutures, notes, dessin validé ✓/⚠️) et la **matière première** (bons + statut envoyé/commandé/reçu).
   Testé node : chaîne Hanane→ouvrier complète (photo+fiche+bons) + 13/13 régression.
 
+- **2026-05-30 — Refonte page Logistique (Fatima), pro.** L'ancienne était fausse : « 186 à
+  livrer », « 0 en retard » (alors que tout est passé), liste à plat de 186 lignes sans photo ni
+  priorité, calendrier redondant. Cause : elle comptait TOUTES les commandes comme « à livrer »
+  (ignorait `deliveryStatus`) et un `retard` jamais calculé ; en plus le champ `date` est la date
+  de COMMANDE, pas une date limite de livraison (aucun champ délai réel n'existe → pas de faux
+  retard). Refonte pilotée par la VRAIE donnée (statuts réels : deliveryStatus PENDING/DELIVERED/
+  PARTIAL, productionStatus IN_PROGRESS/PENDING/COMPLETED, paymentStatus PAID/UNPAID/PARTIAL).
+  Nouveaux KPIs justes : ✅ Prêtes à livrer **41** · À livrer total 158 · 🔧 En fabrication 73 ·
+  🚚 Livrées 28 (somme = 186, classement exhaustif sans doublon). Priorité métier = ce qui est
+  FINI et attend l'expédition (« en attente N j » = ancienneté de commande, rouge >14 j). Sections
+  filtrables (Prêtes / En fabrication / À produire / Livrées / Toutes) + recherche client/réf,
+  photo réelle du 1er article, montant, badges production/paiement, bouton « Marquer livrée » (seulement
+  si pertinent). QC photo-obligatoire conservé. Testé node : 2/2 blocs OK, KPIs vérifiés sur les 186.
+
 ## 13. Ordre de construction officiel (structure décidée, à suivre)
 
 > Driss délègue la structuration. On construit dans CET ordre, en s'appuyant sur les

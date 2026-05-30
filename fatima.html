@@ -12,195 +12,222 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 <title>CREAJIT — Logistique (Fatima)</title>
 <style>
-  :root{--bg:#0d111b;--card:#161d2b;--card2:#10151f;--line:rgba(196,113,79,.18);--orange:#C4714F;--orange-b:#e69a76;--green:#37c98a;--red:#E74C3C;--yellow:#EAB308;--blue:#5b9bf3;--ink:#ece9e3;--mut:#8d96a5}
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{background:var(--bg);color:var(--ink);font-family:'Hanken Grotesk',sans-serif;padding:24px 18px 80px}
-  .wrap{max-width:980px;margin:0 auto}
-  .head{display:flex;align-items:center;gap:14px;margin-bottom:18px}
-  .av0{width:60px;height:60px;border-radius:16px;overflow:hidden;background:#33405a;display:grid;place-items:center;font-family:'Fraunces';font-weight:700;font-size:20px;color:#fff}
-  .av0 img{width:100%;height:100%;object-fit:cover}
-  h1{font-family:'Fraunces';font-weight:700;font-size:21px}
-  .sub{font-size:12px;color:var(--mut)}
-  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:18px}
-  .kpi{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
-  .kpi .v{font-family:'Fraunces';font-weight:700;font-size:26px}
-  .kpi .l{font-size:11px;color:var(--mut);margin-top:2px}
-  .sec{font-family:'Fraunces';font-weight:700;font-size:17px;margin:22px 0 11px}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:13px;margin-bottom:9px}
-  .row{display:flex;align-items:center;gap:10px}
-  .row .nm{font-weight:700;font-size:14px}
-  .row .mt{font-size:11.5px;color:var(--mut)}
-  .row .sp{margin-left:auto;text-align:right}
-  .badge{font-size:11px;padding:3px 10px;border-radius:20px;font-weight:700;white-space:nowrap}
-  .b-late{background:rgba(231,76,60,.16);color:var(--red)}
-  .b-soon{background:rgba(234,179,8,.16);color:var(--yellow)}
-  .b-ok{background:rgba(55,201,138,.16);color:var(--green)}
-  button{font-family:inherit;cursor:pointer}
-  .act{border:none;border-radius:9px;padding:8px 13px;font-weight:700;font-size:12.5px;margin-left:6px}
-  .act.go{background:var(--green);color:#06210f}
-  .act.ok{background:rgba(55,201,138,.16);color:var(--green);border:1px solid rgba(55,201,138,.4)}
-  .act.no{background:rgba(231,76,60,.16);color:var(--red);border:1px solid rgba(231,76,60,.4)}
-  .cal{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:9px}
-  .cal .day{background:var(--card2);border:1px solid var(--line);border-radius:11px;padding:10px}
-  .cal .day .d{font-weight:700;font-size:13px;color:var(--orange-b)}
-  .cal .day .it{font-size:12px;color:var(--ink);margin-top:5px;padding-top:5px;border-top:1px solid var(--line)}
-  .empty{color:var(--mut);font-size:13px;padding:14px;border:1px dashed var(--line);border-radius:12px}
+:root{--bg:#0d111b;--card:#161d2b;--card2:#111825;--line:#283449;--ink:#eef2f8;--mut:#94a3b8;--mut2:#5d6a7d;--green:#34d399;--red:#f87171;--yellow:#fbbf24;--blue:#60a5fa;--orange:#C4714F;--orange-b:#e69a76}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:'Hanken Grotesk',system-ui,sans-serif;padding:18px;max-width:1080px;margin:0 auto;padding-bottom:80px}
+h1{font-family:'Fraunces',serif;font-size:24px;margin-bottom:3px}
+.sub{color:var(--mut);font-size:13px}
+.head{display:flex;align-items:center;gap:13px;margin-bottom:16px;flex-wrap:wrap}
+.av0{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#C4714F,#8a4d34);display:grid;place-items:center;font-family:Fraunces;font-weight:700;font-size:20px;flex:none}
+.menu{margin-left:auto;display:flex;gap:7px;flex-wrap:wrap}
+.menu a{font-size:12px;color:var(--mut);text-decoration:none;background:var(--card);border:1px solid var(--line);padding:7px 11px;border-radius:9px}
+.menu a:hover{color:var(--orange-b);border-color:rgba(196,113,79,.4)}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-bottom:18px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:13px 15px}
+.kpi.go{border-color:rgba(52,211,153,.4);background:rgba(52,211,153,.06)}
+.kpi .v{font-family:Fraunces;font-weight:700;font-size:24px}
+.kpi .l{color:var(--mut);font-size:12px;margin-top:3px}
+.bar{display:flex;gap:9px;align-items:center;margin-bottom:6px;flex-wrap:wrap}
+.bar input{flex:1;min-width:180px;background:var(--card);border:1px solid var(--line);color:var(--ink);border-radius:10px;padding:10px 13px;font-size:14px;font-family:inherit}
+.bar input:focus{outline:none;border-color:var(--orange)}
+.seg{display:flex;background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden;flex-wrap:wrap}
+.seg button{background:none;border:none;color:var(--mut);font-family:inherit;font-size:12.5px;font-weight:600;padding:9px 13px;cursor:pointer}
+.seg button.on{background:rgba(196,113,79,.18);color:var(--orange-b)}
+.sec{font-family:'Fraunces',serif;font-weight:600;font-size:17px;margin:22px 0 11px;display:flex;align-items:center;gap:9px}
+.sec .cnt{font-family:'Hanken Grotesk';font-size:12px;font-weight:600;color:var(--mut);background:var(--card);border:1px solid var(--line);border-radius:20px;padding:2px 10px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:11px 13px;margin-bottom:9px;display:flex;align-items:center;gap:13px}
+.card.go{border-left:3px solid var(--green)}
+.card.fab{border-left:3px solid var(--yellow)}
+.card.wait{border-left:3px solid var(--mut2)}
+.card.part{border-left:3px solid var(--blue)}
+.vig{width:54px;height:54px;border-radius:10px;object-fit:cover;background:#0c1018;flex:none;display:grid;place-items:center;font-size:22px}
+.info{flex:1;min-width:0}
+.nm{font-weight:600;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mt{color:var(--mut);font-size:12px;margin-top:3px;display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+.tag{font-size:11px;padding:2px 8px;border-radius:20px;font-weight:600;white-space:nowrap}
+.t-ok{background:rgba(52,211,153,.15);color:var(--green)}
+.t-soon{background:rgba(251,191,36,.15);color:var(--yellow)}
+.t-blue{background:rgba(96,165,250,.15);color:var(--blue)}
+.t-mut{background:rgba(148,163,184,.13);color:var(--mut)}
+.t-red{background:rgba(248,113,113,.16);color:var(--red)}
+.sp{margin-left:auto;display:flex;align-items:center;gap:9px;flex:none}
+.amt{font-family:'Fraunces',serif;font-weight:700;font-size:15px}
+.act{background:var(--orange);color:#1a0f08;border:none;border-radius:9px;padding:9px 13px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap}
+.act.gho{background:transparent;border:1px solid var(--line);color:var(--ink)}
+.act:hover{filter:brightness(1.08)}
+.empty{color:var(--mut);font-size:13px;padding:16px;text-align:center;background:var(--card);border-radius:13px;border:1px dashed var(--line)}
+#prep .card{border-left:3px solid var(--green)}
+.more{display:block;width:100%;background:var(--card);border:1px solid var(--line);color:var(--mut);font-family:inherit;font-size:13px;font-weight:600;padding:11px;border-radius:11px;cursor:pointer;margin-top:4px}
+@media(max-width:640px){.kpis{grid-template-columns:repeat(2,1fr)}.card{flex-wrap:wrap}.sp{width:100%;justify-content:space-between}}
 </style>
 
-<div class="wrap">
-  <div class="head"><div class="av0" id="av"></div><div><h1>Logistique — Fatima Ezzahra</h1><div class="sub">Contrôle qualité · préparation · planning des livraisons</div></div></div>
-  <div class="kpis" id="kpis"></div>
-
-  <div class="sec">📦 Préparation & contrôle qualité <span class="sub">(articles finis par les ouvriers)</span></div>
-  <div id="prep"></div>
-
-  <div class="sec">🚚 Livraisons à venir</div>
-  <div id="avenir"></div>
-
-  <div class="sec">📅 Calendrier des livraisons</div>
-  <div class="cal" id="cal"></div>
-
-  <div class="sec">✅ Livraisons effectuées</div>
-  <div id="faites"></div>
-</div>
-
-<script>
-(function(){
-  var TODAY = new Date('2026-05-30');
-  // Commandes réelles CreaJit (client, ref, livraison, statut, retard)
-  var CMD = (window.CJ_ORDERS ? window.CJ_ORDERS.all().map(function(o){
-    return { ref:o.ref, client:o.client, livr:o.date||'', retard:0,
-             statutLivr:o.livr, statutLivrLib:o.livrLib, articles:o.articles };
-  }) : []);
-  function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]);});}
-  function jour(d){return new Date(d).toLocaleDateString('fr-FR',{day:'2-digit',month:'short'});}
-  function av(){ var p=(window.CJ_PHOTOS||{}).fatima; document.getElementById('av').innerHTML = p?('<img src="'+p+'">'):'FE'; }
-
-  function render(){
-    av();
-    var livrees = window.CJ ? window.CJ.etat().livraisons : {};
-    var nonLivr = CMD.filter(function(c){return !livrees[c.ref];});
-    var faites = CMD.filter(function(c){return livrees[c.ref];});
-    var retard = nonLivr.filter(function(c){return c.retard>0;});
-
-    // KPIs
-    document.getElementById('kpis').innerHTML =
-      kpi((window.CJ_ORDERS?window.CJ_ORDERS.byDelivery('DELIVERED').length:26),'Livrées (CreaJit)','var(--green)') +
-      kpi(nonLivr.length,'À livrer') +
-      kpi(retard.length,'En retard','var(--red)') +
-      kpi(faites.length,'Marquées livrées (appli)','var(--green)');
-
-    // Préparation & QC : articles finis par les ouvriers
-    var finis = window.CJ ? window.CJ.articlesFinis() : [];
-    var prep = document.getElementById('prep');
-    if(!finis.length){ prep.innerHTML='<div class="empty">Aucun article fini pour l\'instant. Quand un ouvrier termine un article, il arrive ici pour contrôle qualité.</div>'; }
-    else prep.innerHTML = finis.map(function(x){
-      var af=x.af, qc=window.CJ.qcDe(x.id);
-      var mo = af.moTot ? ' · 💰 main d\'œuvre '+Math.round(af.moTot).toLocaleString('fr-FR')+' DH' : '';
-      var st = qc ? (qc.ok?'<span class="badge b-ok">✅ Conforme</span>':'<span class="badge b-late">⚠️ Anomalie</span>') :
-        '<button class="act ok" data-ok="'+x.id+'">📷 Conforme (photo)</button><button class="act no" data-no="'+x.id+'">📷 Anomalie (photo)</button>'+
-        '<input type="file" accept="image/*" capture="environment" class="qcfile" data-for="'+x.id+'" style="display:none">';
-      var thumb = (qc&&qc.photo)?'<img src="'+qc.photo+'" alt="preuve QC" style="width:54px;height:54px;border-radius:9px;object-fit:cover;margin-right:9px">':'';
-      return '<div class="card"><div class="row">'+thumb+'<div style="flex:1"><div class="nm">'+esc(af.nom||x.id)+'</div>'+
-        '<div class="mt">'+esc(af.client||'')+' · '+esc(af.ref||'')+' · fini par '+esc(af.ouvrierId||'')+mo+'</div></div>'+
-        '<div class="sp">'+st+'</div></div>'+(qc&&qc.obs?'<div class="mt" style="margin-top:7px">📝 '+esc(qc.obs)+'</div>':'')+
-        (qc?'<div class="mt" style="margin-top:5px;font-size:11px;color:var(--mut)">Contrôlé par '+esc(qc.par||'Fatima')+'</div>':'')+'</div>';
-    }).join('');
-
-    // À venir
-    var av2=document.getElementById('avenir');
-    av2.innerHTML = nonLivr.length ? nonLivr.sort(function(a,b){return a.livr.localeCompare(b.livr);}).map(function(c){
-      var b = c.retard>0?'<span class="badge b-late">+'+c.retard+' j retard</span>':'<span class="badge b-soon">à livrer</span>';
-      return '<div class="card"><div class="row"><div><div class="nm">'+esc(c.client)+'</div><div class="mt">'+esc(c.ref)+' · livraison prévue '+jour(c.livr)+'</div></div>'+
-        '<div class="sp">'+b+'<button class="act go" data-livr="'+c.ref+'">✅ Marquer livrée</button></div></div></div>';
-    }).join('') : '<div class="empty">Tout est livré 🎉</div>';
-
-    // Calendrier
-    var byDay={}; nonLivr.forEach(function(c){(byDay[c.livr]=byDay[c.livr]||[]).push(c);});
-    var days=Object.keys(byDay).sort();
-    document.getElementById('cal').innerHTML = days.length ? days.map(function(d){
-      return '<div class="day"><div class="d">📅 '+jour(d)+'</div>'+byDay[d].map(function(c){return '<div class="it">'+esc(c.client)+(c.retard>0?' ⚠️':'')+'</div>';}).join('')+'</div>';
-    }).join('') : '<div class="empty">Aucune livraison planifiée.</div>';
-
-    // Effectuées
-    document.getElementById('faites').innerHTML = faites.length ? faites.map(function(c){
-      return '<div class="card"><div class="row"><div><div class="nm">'+esc(c.client)+'</div><div class="mt">'+esc(c.ref)+'</div></div><div class="sp"><span class="badge b-ok">✅ Livrée</span></div></div></div>';
-    }).join('') : '<div class="empty">Marque une livraison comme effectuée pour la voir ici. (26 déjà livrées ce mois côté CreaJit.)</div>';
-
-    // actions
-    document.querySelectorAll('[data-livr]').forEach(function(b){b.onclick=function(){
-      var ref=b.getAttribute('data-livr'); var c=CMD.find(function(x){return x.ref===ref;});
-      window.CJ.livrer(ref,{par:'Fatima'});
-      window.CJ.evenement('success','Fatima (logistique)','Livraison effectuée : '+(c?c.client:ref)+' ('+ref+').','✅ livré');
-      render();
-    };});
-    // QC bloquante : la photo (preuve) est OBLIGATOIRE avant de valider.
-    function infoArt(id){ var f=finis.find(function(y){return y.id===id;}); return f?f.af:{}; }
-    function lireFichier(file,cb){ var r=new FileReader(); r.onload=function(){cb(r.result);}; r.readAsDataURL(file); }
-    var pending=null; // { id, mode:'ok'|'no', obs }
-    function fileFor(id){ return document.querySelector('.qcfile[data-for="'+id+'"]'); }
-    document.querySelectorAll('[data-ok]').forEach(function(b){b.onclick=function(){
-      var id=b.getAttribute('data-ok'); pending={id:id,mode:'ok'}; var f=fileFor(id); if(f) f.click();
-    };});
-    document.querySelectorAll('[data-no]').forEach(function(b){b.onclick=function(){
-      var id=b.getAttribute('data-no'); var obs=prompt('Quelle anomalie ?')||''; pending={id:id,mode:'no',obs:obs}; var f=fileFor(id); if(f) f.click();
-    };});
-    document.querySelectorAll('.qcfile').forEach(function(inp){inp.onchange=function(){
-      var id=inp.getAttribute('data-for'); var file=inp.files&&inp.files[0];
-      if(!file||!pending||pending.id!==id){ pending=null; return; }
-      lireFichier(file,function(dataUrl){
-        var af=infoArt(id);
-        if(pending.mode==='ok'){
-          window.CJ.qcSet(id,true,'','Fatima',dataUrl);
-          window.CJ.evenement('success','Fatima (QC)','✅ Contrôle qualité OK (photo) : « '+(af.nom||id)+' » ('+(af.client||'')+').');
-        } else {
-          window.CJ.qcSet(id,false,pending.obs,'Fatima',dataUrl);
-          window.CJ.evenement('alert','Fatima (QC)','⚠️ Anomalie qualité (photo) : « '+(af.nom||id)+' » ('+(af.client||'')+') — '+pending.obs,'→ '+(af.ouvrierId||'atelier'));
-        }
-        pending=null; render();
-      });
-    };});
-  }
-  function kpi(v,l,col){return '<div class="kpi"><div class="v"'+(col?(' style="color:'+col+'"'):'')+'>'+v+'</div><div class="l">'+l+'</div></div>';}
-
-  window.addEventListener('load',render);
-  if(window.CJ) window.CJ.abonner(render);
-})();
-</script>
-
-<!-- ===== Menu de navigation CREAJIT IA ===== -->
-<div id="cjmenu">
-  <div id="cjbar">
-    <a id="cjhome" href="index.html">← Accueil</a>
-    <button id="cjtog" type="button" onclick="document.getElementById('cjmenu').classList.toggle('open')">☰ Menu</button>
-  </div>
-  <div id="cjlinks">
-    <a href="index.html">🏠 Accueil (Cockpit)</a>
-    <a href="agents.html">👥 Tous les agents</a>
-    <a href="consignes.html">🎙️ Consignes (Driss)</a>
-    <a href="hanane.html">🗂️ Agent Hanane</a>
-    <a href="ouvrier.html">👷 Agent Ouvrier</a>
-    <a href="magasin.html">🧰 Magasin (Mohamed)</a>
-    <a href="reception.html">📦 Réception (Hassan)</a>
-    <a href="fatima.html">🚚 Logistique (Fatima)</a>
-    <a href="kenza.html">💼 Commercial (Kenza)</a>
-    <a href="sabiri.html">💰 Compta (Sabiri)</a>
-    <a href="rentabilite.html">📊 Rentabilité</a>
-    <a href="cockpit.html">👁️ Cockpit (v2)</a>
-    <a href="banc-test.html">🔀 Banc de test</a>
+<div class="head">
+  <div class="av0" id="av">FE</div>
+  <div><h1>Logistique — Fatima Ezzahra</h1><div class="sub">Contrôle qualité · préparation · expéditions</div></div>
+  <div class="menu">
+    <a href="index.html">🏠 Cockpit</a>
+    <a href="hanane.html">📋 Commandes</a>
     <a href="login.html">🔑 Connexion</a>
   </div>
 </div>
-<style>
-#cjmenu{position:fixed;left:12px;top:12px;z-index:2147483000;font-family:'Hanken Grotesk',Arial,sans-serif;display:flex;flex-direction:column;align-items:flex-start;gap:8px}
-#cjbar{display:flex;gap:8px}
-#cjhome{display:inline-flex;align-items:center;background:#C4714F;color:#1a0f08;border-radius:24px;padding:10px 15px;font-weight:700;font-size:14px;text-decoration:none;box-shadow:0 6px 20px rgba(0,0,0,.45)}
-#cjtog{background:#1a2230;color:#eef2f8;border:1px solid #2c3850;border-radius:24px;padding:10px 13px;font-weight:700;font-size:14px;cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,.45)}
-#cjlinks{display:none;flex-direction:column;gap:6px;background:#1a2230;border:1px solid #2c3850;border-radius:12px;padding:8px;box-shadow:0 10px 30px rgba(0,0,0,.55);max-height:80vh;overflow:auto}
-#cjmenu.open #cjlinks{display:flex}
-#cjlinks a{color:#eef2f8;text-decoration:none;font-weight:600;font-size:14px;padding:9px 14px;border-radius:9px;white-space:nowrap}
-#cjlinks a:hover{background:#222c3d;color:#e69a76}
-</style>
 
-<script>window.CJ_AGENT_PROMPT="Tu es l'assistant IA de Fatima Ezzahra, responsable Qualité & Logistique chez CREAJIT (meubles sur mesure, Marrakech). Tu l'aides a : planifier et prioriser les livraisons (surtout les retards), preparer les commandes, faire le controle qualite et reperer les anomalies, rediger des messages aux ateliers/clients. Connecte aux autres agents. Reponds en francais, court et concret.";</script>
+<div class="kpis" id="kpis"></div>
+
+<div class="sec">📦 Contrôle qualité <span class="cnt" id="cPrep">0</span></div>
+<div id="prep"></div>
+
+<div class="bar">
+  <input id="q" placeholder="🔎 Chercher un client ou une référence…" autocomplete="off">
+  <div class="seg" id="seg">
+    <button data-f="prete" class="on">✅ Prêtes</button>
+    <button data-f="fab">🔧 En fabrication</button>
+    <button data-f="wait">⏳ À produire</button>
+    <button data-f="done">🚚 Livrées</button>
+    <button data-f="all">Toutes</button>
+  </div>
+</div>
+
+<div id="lists"></div>
+
+<div id="toast" style="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1f2937;border:1px solid var(--line);padding:11px 18px;border-radius:10px;opacity:0;transition:.3s;pointer-events:none;z-index:50"></div>
+
+<script>
+(function(){
+  var ORD = (window.CJ_ORDERS ? window.CJ_ORDERS.all() : []);
+  var filtre='prete', q='';
+  var DAY=86400000;
+  function today(){ var d=new Date(); d.setHours(0,0,0,0); return d; }
+  function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+  function dh(n){ return Math.round(n||0).toLocaleString('fr-FR')+' DH'; }
+  function jour(d){ if(!d) return '—'; try{ return new Date(d).toLocaleDateString('fr-FR',{day:'2-digit',month:'short'}); }catch(e){ return d; } }
+  function low(s){ return String(s||'').toLowerCase(); }
+  function age(d){ if(!d) return null; var x=new Date(d); if(isNaN(x)) return null; x.setHours(0,0,0,0); return Math.round((today()-x)/DAY); }
+
+  // Statuts réels CreaJit : deliveryStatus PENDING/DELIVERED/PARTIAL · productionStatus IN_PROGRESS/PENDING/COMPLETED
+  function livreeLoc(ref){ return window.CJ ? window.CJ.estLivree(ref) : false; }
+  function estLivree(o){ return low(o.deliveryStatus)==='delivered' || livreeLoc(o.ref||o.id); }
+  function estPartielle(o){ return low(o.deliveryStatus)==='partial' && !estLivree(o); }
+  function estPrete(o){ return !estLivree(o) && !estPartielle(o) && low(o.productionStatus)==='completed'; }
+  function enFab(o){ return !estLivree(o) && !estPartielle(o) && low(o.productionStatus)==='in_progress'; }
+  function aProduire(o){ return !estLivree(o) && !estPartielle(o) && (low(o.productionStatus)==='pending' || !o.productionStatus); }
+
+  function vignette(o){
+    var a=(o.articles||[])[0]||{};
+    if(a.photo) return '<img class="vig" src="'+esc(a.photo)+'" onerror="this.outerHTML=\'<div class=&quot;vig&quot;>🛋️</div>\'">';
+    return '<div class="vig">🛋️</div>';
+  }
+  function payTag(o){ var p=low(o.paymentStatus); if(p==='paid')return '<span class="tag t-ok">payé</span>'; if(p==='partial')return '<span class="tag t-soon">acompte</span>'; if(!p)return ''; return '<span class="tag t-red">impayé</span>'; }
+  function prodTag(o){ if(estLivree(o))return '<span class="tag t-ok">🚚 livrée</span>'; if(estPartielle(o))return '<span class="tag t-blue">livrée en partie</span>'; if(estPrete(o))return '<span class="tag t-ok">✅ prête</span>'; if(enFab(o))return '<span class="tag t-soon">🔧 en fabrication</span>'; return '<span class="tag t-mut">🪚 à produire</span>'; }
+
+  function kpi(v,l,cls){ return '<div class="kpi'+(cls?(' '+cls):'')+'"><div class="v">'+v+'</div><div class="l">'+l+'</div></div>'; }
+
+  function render(){
+    document.getElementById('av').textContent='FE';
+    var livrees=ORD.filter(estLivree), pretes=ORD.filter(estPrete), fab=ORD.filter(enFab), wait=ORD.filter(aProduire), part=ORD.filter(estPartielle);
+    var aLivrer=pretes.length+fab.length+wait.length+part.length;
+    document.getElementById('kpis').innerHTML =
+      kpi(pretes.length,'✅ Prêtes à livrer', pretes.length?'go':'') +
+      kpi(aLivrer,'À livrer (total)','') +
+      kpi(fab.length,'🔧 En fabrication','') +
+      kpi(livrees.length,'🚚 Livrées','');
+
+    renderQC();
+
+    // recherche
+    function flt(arr){ if(!q) return arr; var Q=q.toLowerCase(); return arr.filter(function(o){ return ((o.client||'')+' '+(o.ref||o.id||'')).toLowerCase().indexOf(Q)>=0; }); }
+    // les prêtes : la priorité = celles qui attendent l'expédition depuis le plus longtemps
+    function parAge(a,b){ return (age(b.date)||0)-(age(a.date)||0); }
+    function parDate(a,b){ return String(b.date).localeCompare(String(a.date)); }
+
+    var box=document.getElementById('lists'), h='';
+    if(filtre==='prete'){ h=block('✅ Prêtes à livrer','go',flt(pretes).sort(parAge),true,true); }
+    else if(filtre==='fab'){ h=block('🔧 En fabrication','fab',flt(fab).sort(parDate),false,false); }
+    else if(filtre==='wait'){ h=block('⏳ À produire','wait',flt(wait).sort(parDate),false,false); }
+    else if(filtre==='done'){ h=block('🚚 Livrées','',flt(livrees).sort(parDate),false,false); }
+    else { // all : tout, par priorité
+      h =block('✅ Prêtes à livrer','go',flt(pretes).sort(parAge),true,true);
+      h+=block('🚚 Partiellement livrées','part',flt(part).sort(parDate),true,false);
+      h+=block('🔧 En fabrication','fab',flt(fab).sort(parDate),false,false);
+      h+=block('⏳ À produire','wait',flt(wait).sort(parDate),false,false);
+    }
+    box.innerHTML = h || '<div class="empty">Rien ici 🎉</div>';
+    wire();
+  }
+
+  function block(titre,cls,arr,canDeliver,showAge){
+    if(!arr.length) return '';
+    var LIM=60, shown=arr.slice(0,LIM), rest=arr.length-shown.length;
+    return '<div class="sec">'+titre+' <span class="cnt">'+arr.length+'</span></div>'+
+      shown.map(function(o){ return card(o,cls,canDeliver,showAge); }).join('')+
+      (rest>0?'<div class="more">… et '+rest+' autres (affine la recherche)</div>':'');
+  }
+
+  function card(o,cls,canDeliver,showAge){
+    var ref=esc(o.ref||o.id), a=age(o.date);
+    var ageT = (showAge && a!==null && a>0) ? '<span class="tag '+(a>14?'t-red':'t-soon')+'">en attente '+a+' j</span>' : '';
+    return '<div class="card '+cls+'">'+vignette(o)+
+      '<div class="info"><div class="nm">'+esc(o.client)+'</div>'+
+      '<div class="mt">'+(o.ref?('<span>'+ref+'</span>'):'')+'<span>commandé '+jour(o.date)+'</span>'+ageT+prodTag(o)+payTag(o)+'</div></div>'+
+      '<div class="sp"><span class="amt">'+dh(o.total)+'</span>'+
+      (canDeliver?('<button class="act" data-livr="'+ref+'">✅ Marquer livrée</button>'):'')+'</div></div>';
+  }
+
+  // ---------- Contrôle qualité (photo obligatoire) ----------
+  var pending=null;
+  function renderQC(){
+    var finis = window.CJ ? window.CJ.articlesFinis() : [];
+    document.getElementById('cPrep').textContent=finis.length;
+    var prep=document.getElementById('prep');
+    if(!finis.length){ prep.innerHTML='<div class="empty">Aucun article fini à contrôler. Quand un ouvrier termine un article, il arrive ici (photo obligatoire avant validation).</div>'; return; }
+    prep.innerHTML=finis.map(function(x){
+      var af=x.af, qc=window.CJ.qcDe(x.id);
+      var mo=af.moTot?(' · 💰 '+dh(af.moTot)+' MO'):'';
+      var st=qc?(qc.ok?'<span class="tag t-ok">✅ Conforme</span>':'<span class="tag t-red">⚠️ Anomalie</span>'):
+        '<button class="act" data-ok="'+x.id+'">📷 Conforme</button><button class="act gho" data-no="'+x.id+'">📷 Anomalie</button>'+
+        '<input type="file" accept="image/*" capture="environment" class="qcfile" data-for="'+x.id+'" style="display:none">';
+      var thumb=(qc&&qc.photo)?'<img class="vig" src="'+esc(qc.photo)+'">':'<div class="vig">🪑</div>';
+      return '<div class="card">'+thumb+'<div class="info"><div class="nm">'+esc(af.nom||x.id)+'</div>'+
+        '<div class="mt"><span>'+esc(af.client||'')+'</span>'+(af.ref?('<span>'+esc(af.ref)+'</span>'):'')+'<span>fini par '+esc(af.ouvrierId||'')+'</span>'+mo+'</div>'+
+        (qc&&qc.obs?'<div class="mt">📝 '+esc(qc.obs)+'</div>':'')+(qc?'<div class="mt">contrôlé par '+esc(qc.par||'Fatima')+'</div>':'')+
+        '</div><div class="sp">'+st+'</div></div>';
+    }).join('');
+    var map={}; finis.forEach(function(f){map[f.id]=f.af;});
+    function fileFor(id){ return prep.querySelector('.qcfile[data-for="'+id+'"]'); }
+    prep.querySelectorAll('[data-ok]').forEach(function(b){b.onclick=function(){var id=b.getAttribute('data-ok');pending={id:id,mode:'ok'};var f=fileFor(id);if(f)f.click();};});
+    prep.querySelectorAll('[data-no]').forEach(function(b){b.onclick=function(){var id=b.getAttribute('data-no');var obs=prompt('Quelle anomalie ?')||'';pending={id:id,mode:'no',obs:obs};var f=fileFor(id);if(f)f.click();};});
+    prep.querySelectorAll('.qcfile').forEach(function(inp){inp.onchange=function(){
+      var id=inp.getAttribute('data-for'),file=inp.files&&inp.files[0];
+      if(!file||!pending||pending.id!==id){pending=null;return;}
+      var r=new FileReader();
+      r.onload=function(){
+        var af=map[id]||{};
+        if(pending.mode==='ok'){ window.CJ.qcSet(id,true,'','Fatima',r.result); window.CJ.evenement('success','Fatima (QC)','✅ Contrôle qualité OK (photo) : « '+(af.nom||id)+' » ('+(af.client||'')+').'); }
+        else { window.CJ.qcSet(id,false,pending.obs,'Fatima',r.result); window.CJ.evenement('alert','Fatima (QC)','⚠️ Anomalie qualité (photo) : « '+(af.nom||id)+' » ('+(af.client||'')+') — '+pending.obs,'→ '+(af.ouvrierId||'atelier')); }
+        pending=null; render();
+      };
+      r.readAsDataURL(file);
+    };});
+  }
+
+  function wire(){
+    document.querySelectorAll('[data-livr]').forEach(function(b){b.onclick=function(){
+      var ref=b.getAttribute('data-livr'); var o=ORD.find(function(x){return (x.ref||x.id)===ref;});
+      if(window.CJ){ window.CJ.livrer(ref,{par:'Fatima'}); window.CJ.evenement('success','Fatima (logistique)','🚚 Livraison effectuée : '+((o&&o.client)||ref)+(o&&o.ref?(' ('+o.ref+')'):'')+'.','✅ livré'); }
+      toast('✅ Marquée livrée'); render();
+    };});
+  }
+
+  function syncSeg(){ document.querySelectorAll('#seg button').forEach(function(x){ x.classList.toggle('on', x.getAttribute('data-f')===filtre); }); }
+  document.querySelectorAll('#seg button').forEach(function(b){ b.onclick=function(){ filtre=b.getAttribute('data-f'); syncSeg(); render(); }; });
+  document.getElementById('q').oninput=function(e){ q=e.target.value; render(); };
+
+  var tt; function toast(m){ var t=document.getElementById('toast'); t.textContent=m; t.style.opacity=1; clearTimeout(tt); tt=setTimeout(function(){t.style.opacity=0;},2600); }
+
+  window.addEventListener('load', render);
+  if(window.CJ) window.CJ.abonner(render);
+  render();
+})();
+</script>
+
 <script src="creajit-assistant.js"></script>
+<script>window.CJ_AGENT_PROMPT="Tu es l'assistant IA de Fatima Ezzahra, responsable Qualité & Logistique chez CREAJIT (meubles sur mesure, Marrakech). Tu l'aides a : prioriser les expeditions (surtout les commandes PRETES qui attendent depuis longtemps), preparer les livraisons, faire le controle qualite (photo obligatoire) et reperer les anomalies, rediger des messages aux ateliers/clients. Connecte aux autres agents, tu vois l'etat temps reel. Reponds en francais, court et concret.";</script>
