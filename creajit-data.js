@@ -47,6 +47,15 @@
 
   const uid = (p) => (p || 'id') + '_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 
+  // Résolution de noms (pour le fil d'actualité du cockpit)
+  function nomOuvrier(id) {
+    const all = [].concat(window.CJ_OUVRIERS || [], window.CJ_DIRECTION || []);
+    const w = all.find(x => x.id === id);
+    return w ? w.nm : id;
+  }
+  function libArticle(articleId) { const x = CJ.article(articleId); return (x && x.article && x.article.nom) || 'article'; }
+  function clientDe(articleId) { const x = CJ.article(articleId); return (x && x.commande && x.commande.client) ? ' (' + x.commande.client + ')' : ''; }
+
   // ---- API publique ----
   const CJ = {
     etat: () => etat,
@@ -142,6 +151,51 @@
     ficheArticleDe: (articleId) => (etat.fichesArt && etat.fichesArt[articleId]) || {},
     // Bons matière par article
     bonsArticle: (articleId) => Object.values(etat.bons).filter(b => b.articleId === articleId).sort((a, b) => (b.t0 || 0) - (a.t0 || 0)),
+
+    // ===== TRAVAIL OUVRIER PAR ARTICLE (chrono + statut, remonte partout) =====
+    // Liste des tâches d'un ouvrier (lues depuis les affectations par article)
+    tachesOuvrier: (ouvrierId) => {
+      const res = [];
+      const aff = etat.affArt || {};
+      Object.keys(aff).forEach(aid => {
+        (aff[aid] || []).forEach(o => {
+          if (o.ouvrierId === ouvrierId) {
+            const x = CJ.article(aid);
+            res.push({ articleId: aid, nom: o.nom || (x && x.article.nom) || aid, atelierCode: o.atelierCode || '',
+              client: x ? x.commande.client : (o.client || ''), ref: x ? x.commande.ref : '',
+              qte: x ? (x.article.qte || x.article.qty || 1) : 1, prix: x ? (x.article.prix || x.article.pu || 0) : 0,
+              statut: o.statut || 'affecte', t0: o.t0 || null, elapsedMs: o.elapsedMs || 0, motif: o.motif || '' });
+          }
+        });
+      });
+      return res;
+    },
+    // Met à jour l'état de travail d'un (article, ouvrier)
+    majTravail: (articleId, ouvrierId, ch) => {
+      const liste = (etat.affArt || {})[articleId]; if (!liste) return;
+      const o = liste.find(x => x.ouvrierId === ouvrierId); if (!o) return;
+      Object.assign(o, ch); sauver();
+    },
+    demarrerTravail: (articleId, ouvrierId) => {
+      const liste = (etat.affArt || {})[articleId]; if (!liste) return;
+      const o = liste.find(x => x.ouvrierId === ouvrierId); if (!o) return;
+      o.statut = 'encours'; o.t0 = Date.now(); o.motif = ''; sauver();
+      CJ.evenement('info', nomOuvrier(ouvrierId), `🔧 démarre « ${o.nom || libArticle(articleId)} »${clientDe(articleId)}.`, 'Atelier ' + (o.atelierCode || ''));
+    },
+    pauserTravail: (articleId, ouvrierId, motif) => {
+      const liste = (etat.affArt || {})[articleId]; if (!liste) return;
+      const o = liste.find(x => x.ouvrierId === ouvrierId); if (!o) return;
+      if (o.t0) { o.elapsedMs = (o.elapsedMs || 0) + (Date.now() - o.t0); o.t0 = null; }
+      o.statut = 'pause'; o.motif = motif || ''; sauver();
+      CJ.evenement('warn', nomOuvrier(ouvrierId), `⏸️ pause sur « ${o.nom || libArticle(articleId)} »${motif ? ' — ' + motif : ''}.`, 'Atelier ' + (o.atelierCode || ''));
+    },
+    finirTravail: (articleId, ouvrierId) => {
+      const liste = (etat.affArt || {})[articleId]; if (!liste) return;
+      const o = liste.find(x => x.ouvrierId === ouvrierId); if (!o) return;
+      if (o.t0) { o.elapsedMs = (o.elapsedMs || 0) + (Date.now() - o.t0); o.t0 = null; }
+      o.statut = 'fini'; sauver();
+      CJ.evenement('ok', nomOuvrier(ouvrierId), `✅ termine « ${o.nom || libArticle(articleId)} »${clientDe(articleId)}.`, 'Atelier ' + (o.atelierCode || ''));
+    },
     // Articles saisis par Hanane (fiche technique) — le connecteur ne donne que le nombre
     ajouterArticle: (ref, art) => { (etat.articlesSaisis[ref] = etat.articlesSaisis[ref] || []).push(Object.assign({ id: ref + '_m' + Date.now().toString(36) }, art)); sauver(); },
     articlesSaisis: (ref) => etat.articlesSaisis[ref] || [],
@@ -150,12 +204,31 @@
     // Livraisons (agent Fatima — logistique)
     livrer: (ref, info) => { etat.livraisons[ref] = Object.assign({ ref, date: Date.now() }, info || {}); sauver(); },
     estLivree: (ref) => !!etat.livraisons[ref],
-    // Contrôle qualité (Fatima)
-    qcSet: (articleId, ok, obs, par) => { etat.qc[articleId] = { ok: !!ok, obs: obs || '', par: par || 'Fatima', date: Date.now() }; sauver(); },
+    // Contrôle qualité (Fatima) — avec photo obligatoire (preuve / traçabilité)
+    qcSet: (articleId, ok, obs, par, photo) => { etat.qc[articleId] = { ok: !!ok, obs: obs || '', par: par || 'Fatima', photo: photo || '', date: Date.now() }; sauver(); },
     qcDe: (articleId) => etat.qc[articleId] || null,
+    // Articles prêts pour le contrôle qualité : finis via l'ancien système OU
+    // dans le nouveau (par article : tous les ouvriers de l'article ont terminé).
     articlesFinis: () => {
       const res = [];
       for (const [aid, af] of Object.entries(etat.affectations)) if (af.statut === 'fini') res.push({ id: aid, af });
+      const aff = etat.affArt || {};
+      Object.keys(aff).forEach(aid => {
+        const liste = aff[aid] || [];
+        if (liste.length && liste.every(o => o.statut === 'fini') && !res.some(r => r.id === aid)) {
+          const x = CJ.article(aid);
+          const nom = (liste[0] && liste[0].nom) || (x && x.article && x.article.nom) || aid;
+          const client = (x && x.commande && x.commande.client) || (liste[0] && liste[0].client) || '';
+          const ref = (x && x.commande && x.commande.ref) || '';
+          // coût main d'œuvre total de l'article (heures × coût horaire chargé)
+          const moTot = liste.reduce((s, o) => {
+            const th = (window.coutHoraire ? window.coutHoraire(o.atelierCode) : 60);
+            const ms = (o.elapsedMs || 0) + (o.t0 ? (Date.now() - o.t0) : 0);
+            return s + (ms / 3600000) * th;
+          }, 0);
+          res.push({ id: aid, af: { nom, client, ref, ouvrierId: (liste.map(o => o.ouvrierId).join(', ')), moTot } });
+        }
+      });
       return res;
     },
 

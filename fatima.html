@@ -1,6 +1,7 @@
 <!-- Socle de données partagées CREAJIT IA -->
 <script src="creajit-matieres.js"></script>
 <script src="creajit-ateliers.js"></script>
+<script src="creajit-couthoraire.js"></script>
 <script src="creajit-data.js"></script>
 <script src="creajit-commandes-reelles.js"></script>
 <script src="creajit-orders.js"></script>
@@ -95,11 +96,15 @@
     if(!finis.length){ prep.innerHTML='<div class="empty">Aucun article fini pour l\'instant. Quand un ouvrier termine un article, il arrive ici pour contrôle qualité.</div>'; }
     else prep.innerHTML = finis.map(function(x){
       var af=x.af, qc=window.CJ.qcDe(x.id);
+      var mo = af.moTot ? ' · 💰 main d\'œuvre '+Math.round(af.moTot).toLocaleString('fr-FR')+' DH' : '';
       var st = qc ? (qc.ok?'<span class="badge b-ok">✅ Conforme</span>':'<span class="badge b-late">⚠️ Anomalie</span>') :
-        '<button class="act ok" data-ok="'+x.id+'">✅ Conforme</button><button class="act no" data-no="'+x.id+'">⚠️ Anomalie</button>';
-      return '<div class="card"><div class="row"><div><div class="nm">'+esc(af.nom||x.id)+'</div>'+
-        '<div class="mt">'+esc(af.client||'')+' · '+esc(af.ref||'')+' · fini par '+esc(af.ouvrierId||'')+'</div></div>'+
-        '<div class="sp">'+st+'</div></div>'+(qc&&qc.obs?'<div class="mt" style="margin-top:7px">📝 '+esc(qc.obs)+'</div>':'')+'</div>';
+        '<button class="act ok" data-ok="'+x.id+'">📷 Conforme (photo)</button><button class="act no" data-no="'+x.id+'">📷 Anomalie (photo)</button>'+
+        '<input type="file" accept="image/*" capture="environment" class="qcfile" data-for="'+x.id+'" style="display:none">';
+      var thumb = (qc&&qc.photo)?'<img src="'+qc.photo+'" alt="preuve QC" style="width:54px;height:54px;border-radius:9px;object-fit:cover;margin-right:9px">':'';
+      return '<div class="card"><div class="row">'+thumb+'<div style="flex:1"><div class="nm">'+esc(af.nom||x.id)+'</div>'+
+        '<div class="mt">'+esc(af.client||'')+' · '+esc(af.ref||'')+' · fini par '+esc(af.ouvrierId||'')+mo+'</div></div>'+
+        '<div class="sp">'+st+'</div></div>'+(qc&&qc.obs?'<div class="mt" style="margin-top:7px">📝 '+esc(qc.obs)+'</div>':'')+
+        (qc?'<div class="mt" style="margin-top:5px;font-size:11px;color:var(--mut)">Contrôlé par '+esc(qc.par||'Fatima')+'</div>':'')+'</div>';
     }).join('');
 
     // À venir
@@ -129,15 +134,31 @@
       window.CJ.evenement('success','Fatima (logistique)','Livraison effectuée : '+(c?c.client:ref)+' ('+ref+').','✅ livré');
       render();
     };});
+    // QC bloquante : la photo (preuve) est OBLIGATOIRE avant de valider.
+    function infoArt(id){ var f=finis.find(function(y){return y.id===id;}); return f?f.af:{}; }
+    function lireFichier(file,cb){ var r=new FileReader(); r.onload=function(){cb(r.result);}; r.readAsDataURL(file); }
+    var pending=null; // { id, mode:'ok'|'no', obs }
+    function fileFor(id){ return document.querySelector('.qcfile[data-for="'+id+'"]'); }
     document.querySelectorAll('[data-ok]').forEach(function(b){b.onclick=function(){
-      var id=b.getAttribute('data-ok'); window.CJ.qcSet(id,true,'');
-      var af=window.CJ.etat().affectations[id]||{};
-      window.CJ.evenement('success','Fatima (QC)','Contrôle qualité OK : « '+(af.nom||id)+' » ('+(af.client||'')+').'); render();
+      var id=b.getAttribute('data-ok'); pending={id:id,mode:'ok'}; var f=fileFor(id); if(f) f.click();
     };});
     document.querySelectorAll('[data-no]').forEach(function(b){b.onclick=function(){
-      var id=b.getAttribute('data-no'); var obs=prompt('Quelle anomalie ?')||''; window.CJ.qcSet(id,false,obs);
-      var af=window.CJ.etat().affectations[id]||{};
-      window.CJ.evenement('alert','Fatima (QC)','⚠️ Anomalie qualité : « '+(af.nom||id)+' » ('+(af.client||'')+') — '+obs,'→ '+(af.ouvrierId||'atelier')); render();
+      var id=b.getAttribute('data-no'); var obs=prompt('Quelle anomalie ?')||''; pending={id:id,mode:'no',obs:obs}; var f=fileFor(id); if(f) f.click();
+    };});
+    document.querySelectorAll('.qcfile').forEach(function(inp){inp.onchange=function(){
+      var id=inp.getAttribute('data-for'); var file=inp.files&&inp.files[0];
+      if(!file||!pending||pending.id!==id){ pending=null; return; }
+      lireFichier(file,function(dataUrl){
+        var af=infoArt(id);
+        if(pending.mode==='ok'){
+          window.CJ.qcSet(id,true,'','Fatima',dataUrl);
+          window.CJ.evenement('success','Fatima (QC)','✅ Contrôle qualité OK (photo) : « '+(af.nom||id)+' » ('+(af.client||'')+').');
+        } else {
+          window.CJ.qcSet(id,false,pending.obs,'Fatima',dataUrl);
+          window.CJ.evenement('alert','Fatima (QC)','⚠️ Anomalie qualité (photo) : « '+(af.nom||id)+' » ('+(af.client||'')+') — '+pending.obs,'→ '+(af.ouvrierId||'atelier'));
+        }
+        pending=null; render();
+      });
     };});
   }
   function kpi(v,l,col){return '<div class="kpi"><div class="v"'+(col?(' style="color:'+col+'"'):'')+'>'+v+'</div><div class="l">'+l+'</div></div>';}
@@ -167,6 +188,7 @@
     <a href="rentabilite.html">📊 Rentabilité</a>
     <a href="cockpit.html">👁️ Cockpit (v2)</a>
     <a href="banc-test.html">🔀 Banc de test</a>
+    <a href="login.html">🔑 Connexion</a>
   </div>
 </div>
 <style>

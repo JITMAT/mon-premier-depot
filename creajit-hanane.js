@@ -84,6 +84,20 @@
 
   const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
   const dh = n => (Math.round(n||0)).toLocaleString('fr-FR') + ' DH';
+
+  // ---- Report du travail ouvrier (remonte ici depuis la fiche ouvrier) ----
+  // Temps écoulé réel = temps cumulé + (en cours : depuis t0)
+  function tempsMs(o) { return (o.elapsedMs || 0) + (o.t0 ? (Date.now() - o.t0) : 0); }
+  function fmtDur(ms) { var m = Math.floor((ms||0) / 60000); return m < 1 ? '0 min' : (m < 60 ? (m + ' min') : (Math.floor(m/60) + 'h' + String(m%60).padStart(2,'0'))); }
+  // Coût main d'œuvre d'un ouvrier sur l'article = heures × coût horaire chargé de son atelier
+  function moOuvrier(o) { var th = (window.coutHoraire ? window.coutHoraire(o.atelierCode) : 60); return (tempsMs(o)/3600000) * th; }
+  var TRAV = {
+    affecte: { lib: 'à faire', em: '⏳', col: '#8d96a5', bg: 'rgba(141,166,189,.14)' },
+    encours: { lib: 'en cours', em: '🔧', col: '#EAB308', bg: 'rgba(234,179,8,.16)' },
+    pause:   { lib: 'en pause', em: '⏸️', col: '#E08C3A', bg: 'rgba(224,140,58,.16)' },
+    fini:    { lib: 'terminé',  em: '✅', col: '#37c98a', bg: 'rgba(55,201,138,.16)' },
+  };
+  function travInfo(o) { return TRAV[o.statut] || TRAV.affecte; }
   const ats = () => (window.CJ_ATELIERS || []);
   const atName = c => { const a = ats().find(x => x.code === c); return a ? a.nom : ('Atelier ' + c); };
   const atColor = c => { const a = ats().find(x => x.code === c); return a ? a.couleur : '#C4714F'; };
@@ -264,6 +278,17 @@
       const noms = Array.from(new Set([].concat.apply([], arts.map(a => aff(a.id).map(o => {
         const w = WORKERS.find(x => x.id === o.ouvrierId); return w ? w.nm.split(' ')[0] : '';
       }))).filter(Boolean)));
+      // report travail agrégé (remonté depuis les fiches ouvriers)
+      const allOuv = [].concat.apply([], arts.map(a => aff(a.id)));
+      const nbEnCours = allOuv.filter(o => o.statut === 'encours').length;
+      const nbPause = allOuv.filter(o => o.statut === 'pause').length;
+      const nbFini = allOuv.filter(o => o.statut === 'fini').length;
+      const moTot = allOuv.reduce((s,o) => s + moOuvrier(o), 0);
+      let travBadges = '';
+      if (nbEnCours) travBadges += `<span style="font-size:11px;color:#EAB308">🔧 ${nbEnCours} en cours</span>`;
+      if (nbPause) travBadges += `<span style="font-size:11px;color:#E08C3A">⏸️ ${nbPause} pause</span>`;
+      if (nbFini) travBadges += `<span style="font-size:11px;color:#37c98a">✅ ${nbFini} terminé${nbFini>1?'s':''}</span>`;
+      if (moTot > 0) travBadges += `<span style="font-size:11px;color:#e69a76">💰 MO ${dh(moTot)}</span>`;
 
       h += `<div class="cjcli" data-open="${esc(c.cle || c.ref)}">
         <div class="cjvig">${vignette}</div>
@@ -286,6 +311,7 @@
             <span style="font-size:11px;color:#8d96a5">${affectes}/${arts.length} affecté${affectes>1?'s':''}</span>
             ${noms.length ? `<span style="font-size:11px;color:#e69a76">👷 ${esc(noms.join(', '))}</span>` : ''}
           </div>
+          ${travBadges ? `<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:5px">${travBadges}</div>` : ''}
         </div>
         <div class="chev">›</div></div>`;
     });
@@ -311,16 +337,22 @@
       const on = selA === a.id;
       const fa = window.CJ ? window.CJ.ficheArticleDe(a.id) : {};
       const bons = window.CJ ? window.CJ.bonsArticle(a.id) : [];
-      // chips ouvriers
+      // chips ouvriers — avec report du travail (statut + chrono + coût main d'œuvre)
       let chips = ouvs.map(o => {
         const w = WORKERS.find(x => x.id === o.ouvrierId);
-        return `<span class="cjchip">👷 ${esc(w ? w.nm : o.ouvrierId)}${o.atelierCode ? ' ('+esc(o.atelierCode)+')' : ''} <b data-rmw="${esc(a.id)}|${esc(o.ouvrierId)}">✕</b></span>`;
+        const ti = travInfo(o);
+        const dur = (o.statut === 'encours' || o.statut === 'pause' || o.statut === 'fini') ? ' · ⏱️ ' + fmtDur(tempsMs(o)) : '';
+        const mo = tempsMs(o) > 0 ? ' · 💰 ' + dh(moOuvrier(o)) : '';
+        const mot = (o.statut === 'pause' && o.motif) ? ' · ' + esc(o.motif) : '';
+        return `<span class="cjchip" style="border-color:${ti.col}55"><span style="color:${ti.col}">${ti.em}</span> ${esc(w ? w.nm : o.ouvrierId)}${o.atelierCode ? ' ('+esc(o.atelierCode)+')' : ''}<span class="pc" style="color:${ti.col}"> ${ti.lib}${dur}${mo}${mot}</span> <b data-rmw="${esc(a.id)}|${esc(o.ouvrierId)}">✕</b></span>`;
       }).join('');
+      // total main d'œuvre de l'article (tous ouvriers)
+      const moArt = ouvs.reduce((s,o) => s + moOuvrier(o), 0);
 
       h += `<div class="cjart-card">
         <div class="cjart-top">${photoOf(a)}
           <div style="flex:1;min-width:0"><div class="pn">${esc(a.nm)}</div>
-            <div class="pc">${a.qty ? a.qty+' × '+a.pu+' DH' : ''}</div>
+            <div class="pc">${a.qty ? a.qty+' × '+a.pu+' DH' : ''}${moArt > 0 ? ' · <span style="color:#e69a76">main d\'œuvre ' + dh(moArt) + '</span>' : ''}</div>
             <div class="cjchips">${chips || '<span class="pc">Aucun ouvrier affecté</span>'}</div>
           </div></div>
         <div class="cjart-actions">

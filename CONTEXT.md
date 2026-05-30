@@ -313,6 +313,26 @@ Articles : Chaise Cartel ×75 @730 ; Tableau 120/80 ×25 @730 ; Tableau 40/40 ×
   bloquante par étape ; (5) trancher le TAUX horaire (22-29 vs 55-73) ; (6) temps réel multi-appareils
   (nécessite vraie base partagée, pas localStorage).
 
+- **2026-05-30 — Les 4 priorités de l'audit + coût horaire (fiche Rentabilité).** Fait :
+  **(1) REPORT temps réel ouvrier→Hanane→cockpit.** CJ : `tachesOuvrier`, `demarrerTravail`,
+  `pauserTravail`, `finirTravail`, `majTravail` (chrono cumulé `elapsedMs` + `t0` absolu →
+  jamais de remise à 0). `creajit-ouvrier-sync.js` reconstruit la file de l'ouvrier depuis les
+  VRAIES affectations par article et branche start/pause/finish → CJ. Page commande (Hanane) :
+  chaque chip ouvrier affiche statut (à faire/en cours/pause/terminé) + ⏱️ chrono + 💰 coût MO ;
+  la liste affiche un report agrégé (🔧 en cours / ⏸️ pause / ✅ terminés / 💰 MO totale).
+  Cockpit : démarrer/pause/finir émettent des évènements dans le fil d'actualité (avec nom de
+  l'ouvrier, article, client, atelier). **(2) AUTH par salarié.** `login.html` + `creajit-auth.js`
+  (compte par employé, code partagé 0000) ; sur `ouvrier.html` sans `?w=`, on prend l'utilisateur
+  connecté (`window.CJ_MOI`). Lien « 🔑 Connexion » dans tous les menus. **(3) QC photo bloquante
+  (Fatima).** `articlesFinis()` lit désormais le nouveau système par article (article prêt quand
+  TOUS ses ouvriers ont terminé) ; le contrôle qualité exige une **photo** (preuve) avant de valider
+  Conforme/Anomalie ; vignette + coût MO affichés ; `qcSet(...,photo)`. **(4) COÛT HORAIRE CHARGÉ.**
+  `creajit-couthoraire.js` = taux chargés repris de la fiche Rentabilité de Driss
+  (A:67 B:67 C:28 D:71 E:70 F:55 G:63 H:72 I:73 DH/h, moyen 60) ; `window.coutHoraire(code)` ;
+  branché dans le coût MO (Hanane, Fatima) et le chrono ouvrier. Chargé dans hanane/ouvrier/fatima/index.
+  Testé sous node (shim navigateur, pas de jsdom dispo) : 13/13 OK + évènements + flux QC + math MO
+  (2 h atelier A = 134 DH). **Reste :** temps réel multi-appareils (vraie base partagée, pas localStorage).
+
 ## 13. Ordre de construction officiel (structure décidée, à suivre)
 
 > Driss délègue la structuration. On construit dans CET ordre, en s'appuyant sur les
