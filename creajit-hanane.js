@@ -232,7 +232,7 @@
       h += `</div></div>`;
     });
     box.innerHTML = h;
-    box.querySelectorAll('[data-voir]').forEach(b => b.onclick = e => { e.stopPropagation(); location.href = 'ouvrier.html'; });
+    box.querySelectorAll('[data-voir]').forEach(b => b.onclick = e => { e.stopPropagation(); location.href = 'ouvrier.html?w=' + b.getAttribute('data-voir'); });
     box.querySelectorAll('[data-assign]').forEach(el => el.onclick = () => { if (selA) affecter(selA, el.getAttribute('data-assign')); });
   }
 
