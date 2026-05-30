@@ -21,10 +21,21 @@
   function build() {
     var RAW = window.CJ_COMMANDES_REELLES || [];
     ORDERS = RAW.map(function (o) {
+      var dateLiv = o.plannedDeliveryDate || '';
+      var retard = (dateLiv && o.deliveryStatus !== 'DELIVERED') ? (Date.now() > new Date(dateLiv).getTime()) : false;
+      var joursRetard = retard ? Math.floor((Date.now() - new Date(dateLiv).getTime()) / 86400000) : 0;
+      var tot = o.total || 0;
+      // Montant payé : direct si dispo, sinon déduit du statut de paiement (données figées)
+      var paye;
+      if (o.paidAmount != null) paye = o.paidAmount;
+      else if (o.paymentStatus === 'PAID') paye = tot;
+      else paye = 0; // UNPAID ou PARTIAL inconnu → prudent
       return {
         id: o.id, ref: o.ref || '', date: o.date || '', client: o.client || '', tel: o.telephone || '',
-        vendeur: o.vendeur || '', total: o.total || 0,
+        vendeur: o.vendeur || '', total: tot,
+        paye: paye, reste: Math.max(0, tot - paye),
         prod: o.productionStatus || '', paie: o.paymentStatus || '', livr: o.deliveryStatus || '',
+        dateLiv: dateLiv, retard: retard, joursRetard: joursRetard,
         prodLib: LIB_PROD[o.productionStatus] || o.productionStatus || '',
         paieLib: LIB_PAY[o.paymentStatus] || o.paymentStatus || '',
         livrLib: LIB_DEL[o.deliveryStatus] || o.deliveryStatus || '',
@@ -46,17 +57,30 @@
     count: function () { return ORDERS.length; },
     byProd: function (s) { return ORDERS.filter(function (o) { return o.prod === s; }); },
     byDelivery: function (s) { return ORDERS.filter(function (o) { return o.livr === s; }); },
+    enRetard: function () { return ORDERS.filter(function (o) { return o.retard; }); },
     vendeurs: function () { return Array.from(new Set(ORDERS.map(function (o) { return o.vendeur; }).filter(Boolean))); },
+    // Perf par commercial : [{vendeur, nb, ca, reste}] trié par CA décroissant
+    parVendeur: function () {
+      var m = {};
+      ORDERS.forEach(function (o) {
+        var v = o.vendeur || '—';
+        if (!m[v]) m[v] = { vendeur: v, nb: 0, ca: 0, reste: 0 };
+        m[v].nb++; m[v].ca += o.total; m[v].reste += o.reste;
+      });
+      return Object.keys(m).map(function (k) { return m[k]; }).sort(function (a, b) { return b.ca - a.ca; });
+    },
     stats: function () {
       var s = { total: 0, paye: 0, reste: 0, nbArticles: 0, nbPhotos: 0,
-                enFab: 0, termine: 0, aLivrer: 0, livre: 0, impaye: 0 };
+                enFab: 0, enAttente: 0, termine: 0, aLivrer: 0, livre: 0, impaye: 0, enRetard: 0 };
       ORDERS.forEach(function (o) {
         s.total += o.total;
-        if (o.paie === 'PAID') s.paye += o.total; else s.reste += o.total;
+        s.paye += o.paye; s.reste += o.reste;
         if (o.prod === 'IN_PROGRESS') s.enFab++;
+        if (o.prod === 'PENDING') s.enAttente++;
         if (o.prod === 'COMPLETED') s.termine++;
         if (o.livr === 'DELIVERED') s.livre++; else s.aLivrer++;
         if (o.paie !== 'PAID') s.impaye++;
+        if (o.retard) s.enRetard++;
         (o.articles || []).forEach(function (a) { s.nbArticles++; if (a.photo) s.nbPhotos++; });
       });
       return s;
