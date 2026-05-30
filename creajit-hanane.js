@@ -456,7 +456,7 @@
       else sauve();
     };
     if ($('mat_q')) $('mat_q').oninput = e => { matQ=e.target.value; const pos=e.target.selectionStart; renderArts(); const m=$('mat_q'); if(m){m.focus(); try{m.setSelectionRange(pos,pos);}catch(x){}} };
-    document.querySelectorAll('[data-add]').forEach(el => el.onclick = () => { const ref=el.getAttribute('data-add'); const m=(window.CJ.matieres()||[]).find(x=>x.ref===ref); if(m){bonLignes.push({ref:m.ref,nom:m.nom,fournisseur:m.fournisseur,unite:m.unite,qty:1}); matQ=''; renderArts();} });
+    document.querySelectorAll('[data-add]').forEach(el => el.onclick = () => { const ref=el.getAttribute('data-add'); const m=(window.CJ.matieres()||[]).find(x=>x.ref===ref); if(m){bonLignes.push({ref:m.ref,nom:m.nom,fournisseur:m.fournisseur,unite:m.unite,pu:m.puTTC||m.puHT||0,qty:1}); matQ=''; renderArts();} });
     document.querySelectorAll('.qte').forEach(inp => inp.onchange = () => { bonLignes[+inp.getAttribute('data-q')].qty=+inp.value||1; });
     document.querySelectorAll('[data-del]').forEach(b => b.onclick = () => { bonLignes.splice(+b.getAttribute('data-del'),1); renderArts(); });
     if ($('bon_send')) $('bon_send').onclick = () => {
@@ -522,7 +522,7 @@
     }
     document.querySelectorAll('[data-add]').forEach(el => el.onclick = () => {
       const ref = el.getAttribute('data-add'); const m = (window.CJ.matieres() || []).find(x => x.ref === ref);
-      if (m) { bonLignes.push({ ref: m.ref, nom: m.nom, fournisseur: m.fournisseur, unite: m.unite, qty: 1 }); matQ = ''; renderArts(); }
+      if (m) { bonLignes.push({ ref: m.ref, nom: m.nom, fournisseur: m.fournisseur, unite: m.unite, pu: m.puTTC||m.puHT||0, qty: 1 }); matQ = ''; renderArts(); }
     });
     document.querySelectorAll('.qte').forEach(inp => inp.onchange = () => { const i = +inp.getAttribute('data-q'); bonLignes[i].qty = +inp.value || 1; });
     document.querySelectorAll('[data-del]').forEach(b => b.onclick = () => { bonLignes.splice(+b.getAttribute('data-del'), 1); renderArts(); });

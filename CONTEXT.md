@@ -488,6 +488,14 @@ Articles : Chaise Cartel ×75 @730 ; Tableau 120/80 ×25 @730 ; Tableau 40/40 ×
   atelier OK. 5/5 pages JS OK. Reste possible : matière valorisée auto (prix réf), heures auto depuis
   le chrono ouvrier.
 
+- **2026-05-30 — Coût de revient quasi-automatique (heures chrono + matière valorisée).**
+  (1) **Heures auto** : `CJ.heuresChrono(articleId[,ouvrier])` lit le chrono réel (elapsedMs+t0)
+  des ouvriers sur l'article ; dans `atelier.html`, le champ heures de validation d'étape est
+  **pré-rempli** avec le chrono + bouton « ⏱️ Nh » pour le réinjecter. (2) **Matière valorisée** :
+  `coutArticle` prend le prix réel — d'abord la ligne du bon (pu), sinon le **référentiel 559**
+  (puTTC/puHT par ref ou nom) ; Hanane stocke aussi `pu` à l'ajout d'une matière. Testé node :
+  chrono 7h30 → 7.5h ; bon sans prix sur réf KY2N-D10 → 2×594 = 1188 DH auto. 3/3 fichiers OK.
+
 ## 13. Ordre de construction officiel (structure décidée, à suivre)
 
 > Driss délègue la structuration. On construit dans CET ordre, en s'appuyant sur les

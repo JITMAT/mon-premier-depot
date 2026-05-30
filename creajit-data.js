@@ -246,9 +246,14 @@
                  statut: e.statut, heures: e.heures || 0, coutH: cH, cout: (e.heures || 0) * cH };
       });
       const mo = etapes.reduce((s, e) => s + e.cout, 0);
-      // matière : somme des bons reçus de cet article (si valorisés), sinon 0
+      // matière : somme des bons de cet article, prix réel (ligne, sinon référentiel 559)
+      const refMat = window.CJ_MATIERES || [];
+      const prixMat = (l) => {
+        if (l.pu || l.puTTC) return l.pu || l.puTTC;
+        const m = refMat.find(x => x.ref === l.ref || x.nom === l.nom); return m ? (m.puTTC || m.puHT || 0) : 0;
+      };
       const bons = Object.values(etat.bons).filter(b => b.articleId === articleId);
-      const matiere = bons.reduce((s, b) => s + (b.lignes || []).reduce((ss, l) => ss + ((l.qty || 0) * (l.pu || l.puTTC || 0)), 0), 0);
+      const matiere = bons.reduce((s, b) => s + (b.lignes || []).reduce((ss, l) => ss + ((l.qty || 0) * prixMat(l)), 0), 0);
       const chargesFixes = opts.chargesFixes != null ? opts.chargesFixes : 3935; // §5 cahier des charges
       const total = mo + matiere + chargesFixes;
       return { etapes, mo, matiere, chargesFixes, total,
@@ -302,6 +307,13 @@
         });
       });
       return res;
+    },
+    // Heures de chrono d'un ouvrier (ou tous) sur un article — pour pré-remplir la validation d'étape.
+    heuresChrono: (articleId, ouvrierId) => {
+      const liste = (etat.affArt || {})[articleId] || [];
+      const concernes = ouvrierId ? liste.filter(o => o.ouvrierId === ouvrierId) : liste;
+      const ms = concernes.reduce((s, o) => s + (o.elapsedMs || 0) + (o.t0 ? (Date.now() - o.t0) : 0), 0);
+      return Math.round((ms / 3600000) * 10) / 10; // heures, 1 décimale
     },
     // Met à jour l'état de travail d'un (article, ouvrier)
     majTravail: (articleId, ouvrierId, ch) => {
