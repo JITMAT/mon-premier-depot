@@ -114,6 +114,7 @@
     return '';
   }
   var imgStyle='width:54px;height:54px;border-radius:9px;object-fit:cover;background:#fff';
+  var imgStyle='width:54px;height:54px;border-radius:10px;object-fit:cover;background:#fff';
   function ph(nom){ return '<div style="width:54px;height:54px;border-radius:9px;background:#222c3d;display:grid;place-items:center;font-size:24px">'+iconePour(nom)+'</div>'; }
   function imgTag(src,nom){ return '<span class="cjimg" data-ic="'+iconePour(nom)+'"><img src="'+esc(src)+'" style="'+imgStyle+';display:block" onerror="var s=this.parentNode;s.innerHTML=\'<div style=&quot;width:54px;height:54px;border-radius:9px;background:#222c3d;display:grid;place-items:center;font-size:24px&quot;>\'+s.getAttribute(\'data-ic\')+\'</div>\'"></span>'; }
   const photoOf = a => {
@@ -257,7 +258,6 @@
       const livLib = liv === 'DELIVERED' ? 'Livré' : liv === 'PARTIAL' ? 'Livré partiel' : 'À livrer';
 
       // avancement : combien d'articles affectés / total
-      const arts = c.articles || [];
       const arts = c.articles || [];
       const aff = id => (window.CJ ? window.CJ.affArticle(id) : []);
       const affectes = arts.filter(a => aff(a.id).length).length;
