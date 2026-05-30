@@ -30,7 +30,7 @@ body{background:var(--bg);color:var(--ink);font-family:'Hanken Grotesk',system-u
 .msg{display:flex;gap:11px;animation:in .35s ease}
 @keyframes in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 .av{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;font-size:18px;flex:none}
-.bubble{background:var(--panel2);border:1px solid #1b2230;border-radius:4px 13px 13px 13px;padding:9px 13px;max-width:80%}
+.bubble{background:var(--panel2);border:1px solid #1b2230;border-radius:4px 13px 13px 13px;padding:9px 13px;max-width:82%}
 .who{display:flex;align-items:center;gap:8px;margin-bottom:4px}
 .who b{font-size:13px}.who .role{font-size:10.5px;color:var(--mut2);text-transform:uppercase;letter-spacing:.4px}
 .who .tm{margin-left:6px;font-size:10.5px;color:var(--mut2)}
@@ -41,7 +41,7 @@ body{background:var(--bg);color:var(--ink);font-family:'Hanken Grotesk',system-u
 .ordre{display:inline-block;font-size:10px;font-weight:800;color:#1a0f08;background:var(--orange-b);padding:2px 8px;border-radius:20px;margin-bottom:6px;letter-spacing:.5px}
 .msg.you .bubble{background:linear-gradient(180deg,rgba(34,197,94,.13),rgba(34,197,94,.04));border-color:rgba(34,197,94,.4)}
 .msg.you .who b{color:#7ee2a8}
-.btns{display:flex;gap:7px;margin-top:8px}
+.btns{display:flex;gap:7px;margin-top:8px;flex-wrap:wrap}
 .btn{font-size:12px;font-weight:700;padding:6px 13px;border-radius:9px;border:1px solid #2a3445;background:#0e1420;color:var(--mut)}
 .btn.y{background:rgba(34,197,94,.15);color:#7ee2a8;border-color:rgba(34,197,94,.35)}
 .typing{display:flex;gap:11px;align-items:center}
@@ -54,7 +54,7 @@ body{background:var(--bg);color:var(--ink);font-family:'Hanken Grotesk',system-u
 .card h3{font-size:12px;color:var(--mut);text-transform:uppercase;letter-spacing:.5px;margin-bottom:11px;font-weight:700;display:flex;align-items:center;gap:7px}
 .kpibox{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .kp{background:var(--panel2);border:1px solid #1b2230;border-radius:10px;padding:9px 10px}
-.kp .n{font-size:15px;font-weight:800;line-height:1.1}.kp .l{font-size:10.5px;color:var(--mut);margin-top:3px}
+.kp .n{font-size:14px;font-weight:800;line-height:1.1}.kp .l{font-size:10.5px;color:var(--mut);margin-top:3px}
 .kp.red .n{color:#f3a79c}.kp.grn .n{color:#7ee2a8}
 .team{display:flex;flex-direction:column;gap:8px;overflow-y:auto}
 .mem{display:flex;align-items:center;gap:9px;font-size:13px}
@@ -83,7 +83,7 @@ body{background:var(--bg);color:var(--ink);font-family:'Hanken Grotesk',system-u
       <div class="card" style="flex:none">
         <h3>⚠️ Criticité société</h3>
         <div class="crit"><div class="big" id="critN" style="color:#E74C3C">100</div>
-          <div><div class="l">sur 100</div><div class="l" id="critTxt" style="color:#f3a79c;margin-top:3px">tension trésorerie + production</div></div></div>
+          <div><div class="l">sur 100</div><div class="l" style="color:#f3a79c;margin-top:3px">tension trésorerie</div></div></div>
       </div>
       <div class="card" style="flex:none">
         <h3>📊 Ta société en chiffres</h3>
@@ -98,16 +98,9 @@ body{background:var(--bg);color:var(--ink);font-family:'Hanken Grotesk',system-u
 </div>
 
 <script>
-/* ===== TES VRAIES DONNÉES (calculées par le moteur d'agents le 30/05/2026) ===== */
-var D = {
-  total:186, ca:'3 908 562 DH', paye:'409 510 DH', tauxEnc:10,
-  reste:'3 499 052 DH', impayes:141,
-  enFab:35, enAttente:101, termine:50, aLivrer:145, livre:41, retard:0,
-  articles:442, matieres:559, fournisseurs:40,
-  salaries:39, masse:'221 300 DH', ateliers:9, coutH:60,
-  topVendeur:'Ikram', topCA:'1 552 312 DH', kenza:'1 449 694 DH', laila:'906 555 DH',
-  panier:'21 014 DH', criticite:100
-};
+/* ===== TES VRAIES DONNÉES — extraites de tes 186 commandes le 30/05/2026 ===== */
+var F = {"stats":{"total":186,"ca":3908562,"paye":409510,"reste":3499052,"impayes":141,"enFab":35,"enAttente":101,"termine":50,"aLivrer":145,"livre":41,"articles":442},"fmt":{"ca":"3 908 562 DH","paye":"409 510 DH","reste":"3 499 052 DH"},"impayes":[{"client":"Mr LADI MOUSTAPHA","reste":252300,"total":252300,"vendeur":"Ikram","ref":""},{"client":"Mme Chehrazade ","reste":135392,"total":135392,"vendeur":"Kenza","ref":""},{"client":"Mr Bachar","reste":130000,"total":130000,"vendeur":"Ikram","ref":""},{"client":"Mr Bachar","reste":110000,"total":110000,"vendeur":"Ikram","ref":""},{"client":"Mr Bachar","reste":110000,"total":110000,"vendeur":"Ikram","ref":""},{"client":"Mme Thanina ","reste":106900,"total":106900,"vendeur":"Kenza","ref":""},{"client":"Moulay Rechid","reste":106250,"total":106250,"vendeur":"Laila","ref":""},{"client":"Mr Ludo ","reste":99490,"total":99490,"vendeur":"Kenza","ref":""},{"client":"2A WEDDING","reste":95000,"total":95000,"vendeur":"Ikram","ref":"26040019"},{"client":"Mme Hafida Allali","reste":80000,"total":80000,"vendeur":"Laila","ref":"26040032"}],"gros":[{"client":"Mr LADI MOUSTAPHA","total":252300,"vendeur":"Ikram","art":"Lit Sleep weel"},{"client":"Mme Chehrazade ","total":135392,"vendeur":"Kenza","art":"Bureau Enfant "},{"client":"Mr Bachar","total":130000,"vendeur":"Ikram","art":"Cuisine : -Caissons Mdf Mélanie 18mm -Portes higloss 18mm -Charnières hydrauliques très bon qualité -Tiroirs tendim box -Vitrages 5mm bronze cadre aluminium noir -Plan de travail en SILISTONE "},{"client":"Mr Bachar","total":110000,"vendeur":"Ikram","art":"Cuisine Mr BACHAR: -Caissons Mdf Mélanie 18mm -Portes higloss 18mm -Charnières hydrauliques très bon qualité -Tiroirs tendim box -Vitrages 5mm bronze cadre aluminium noir -Plan de travail en granite glaxi"},{"client":"Mr Bachar","total":110000,"vendeur":"Ikram","art":" Cuisine Mr BACHAR:  -Caissons Mdf Mélanie 18mm  -Portes higloss 18mm  -Charnières hydrauliques très bon qualité  -Tiroirs tendim box   -Vitrages 5mm bronze cadre aluminium noir  -Plan de travail en granite glaxi  Prix 110000 dh"},{"client":"Mme Thanina ","total":106900,"vendeur":"Kenza","art":"EGO I"}],"pending":[{"client":"El Baidouri Chaimaa ","total":7200,"date":"2026-04-06","vendeur":"Ikram"},{"client":"IKRAM","total":4965,"date":"2026-04-06","vendeur":"Laila"},{"client":"Mme Horiya","total":10500,"date":"2026-04-08","vendeur":"Ikram"},{"client":"Mme Kenza","total":5700,"date":"2026-04-08","vendeur":"Ikram"},{"client":"Mme Ghizlane ","total":18992,"date":"2026-04-09","vendeur":"Kenza"},{"client":"Mr Yazid ","total":55400,"date":"2026-04-09","vendeur":"Kenza"}],"vendeurs":[{"v":"Ikram","nb":65,"ca":1552312,"reste":1375082},{"v":"Kenza","nb":63,"ca":1449694,"reste":1341154},{"v":"Laila","nb":53,"ca":906555,"reste":782815},{"v":"Fatima","nb":3,"ca":1,"reste":1}],"topArt":[{"nom":"Chaise Enfant","q":147},{"nom":"Chaise Cartel","q":105},{"nom":"Pose Porte isoplane existante sans finition vernis","q":60},{"nom":"Commode Enfant","q":56},{"nom":"Transat EDGY","q":54},{"nom":"Chaise MARRY","q":53}]};
+
 var TEAM = [
   {em:'🧠',c:'#C4714F',n:'Patron IA',r:'Direction'},
   {em:'⚠️',c:'#E74C3C',n:'Le Veilleur',r:'Supervision'},
@@ -122,43 +115,47 @@ var TEAM = [
   {em:'👷',c:'#f472b6',n:'RH / Paie',r:'Équipe'}
 ];
 var BY={}; TEAM.forEach(function(t){BY[t.n]=t;});
+function fmt(n){return (Math.round(n)||0).toLocaleString('fr-FR')+' DH';}
+function pick(arr,i){return arr[((i%arr.length)+arr.length)%arr.length];}
 
-// sidebar
 document.getElementById('team').innerHTML = TEAM.map(function(t){
   return '<div class="mem"><div class="a" style="background:'+t.c+'22">'+t.em+'</div>'+
     '<div><b>'+t.n+'</b><span>'+t.r+'</span></div><span class="on"></span></div>';}).join('');
-document.getElementById('critN').textContent = D.criticite;
-var KPI=[['CA suivi',D.ca,''],['Reste à encaisser',D.reste,'red'],['En attente prod.',D.enAttente,''],['Livré',D.livre,'grn'],['Salariés',D.salaries,''],['Matières',D.matieres,'']];
+var KPI=[['CA suivi',F.fmt.ca,''],['Reste à encaisser',F.fmt.reste,'red'],['En attente',F.stats.enAttente,''],['Livré',F.stats.livre,'grn'],['Impayés',F.stats.impayes,'red'],['Articles',F.stats.articles,'']];
 document.getElementById('kpibox').innerHTML = KPI.map(function(k){
   return '<div class="kp '+k[2]+'"><div class="n">'+k[1]+'</div><div class="l">'+k[0]+'</div></div>';}).join('');
 
-/* ===== LA DISCUSSION — générée à partir de l'analyse réelle =====
-   Chaque agent "rapporte" ce que le moteur a calculé, le Patron IA croise et ordonne. */
-var SCRIPT = [
- {t:'09:30',a:'Patron IA',boss:1,ordre:'BRIEFING',m:'Bonjour l\'équipe. Analyse du jour lancée sur <span class="k">'+D.total+' commandes</span>. Chacun son point — je veux les chiffres, pas du blabla. On commence.'},
- {t:'09:30',a:'Finance',m:'CA suivi <span class="k">'+D.ca+'</span>, mais encaissé seulement <span class="r">'+D.tauxEnc+'%</span>. Il reste <span class="r">'+D.reste+'</span> dehors sur <span class="r">'+D.impayes+' commandes</span>. C\'est notre vrai problème.'},
- {t:'09:31',a:'Production',m:'Atelier : <span class="k">'+D.enAttente+' commandes en attente</span>, '+D.enFab+' en cours, '+D.termine+' terminées. On a du volume bloqué au démarrage.'},
- {t:'09:31',a:'Coût de revient',m:'Je confirme à Finance : sur les commandes en attente, certaines sont à <span class="r">marge faible</span>. Avant de lancer, je veux trier par marge. Panier moyen : <span class="k">'+D.panier+'</span>.'},
- {t:'09:32',a:'Le Veilleur',m:'Synthèse : criticité <span class="r">'+D.criticite+'/100</span>. Deux tensions — trésorerie ('+D.reste+') et '+D.enAttente+' en attente. Bon point : <span class="g">'+D.retard+' livraison en retard</span>.'},
- {t:'09:32',a:'Patron IA',boss:1,ordre:'ANALYSE',m:'Donc tout est lié : on produit beaucoup mais on encaisse peu. <span class="k">On débloque le cash AVANT de lancer plus de production.</span> Voici les ordres 👇'},
- {t:'09:33',a:'Patron IA',boss:1,ordre:'ORDRE',m:'<span class="k">Finance</span> → relance aujourd\'hui les 5 plus gros impayés. <span class="k">Coût de revient</span> → classe les '+D.enAttente+' en attente par marge. <span class="k">Production</span> → lance d\'abord celles déjà payées.'},
- {t:'09:33',a:'Finance',m:'Reçu 👍 Je prépare 5 relances. La plus grosse : <span class="r">Mme Naani — 22 000 DH</span>, échue depuis 12 j. J\'envoie en douceur.'},
- {t:'09:34',a:'Coût de revient',m:'Tri en cours. Je sors la liste des commandes rentables à lancer en priorité et je la passe à Production + Planning.'},
- {t:'09:34',a:'Achats',m:'Pour les commandes prioritaires en Travertin, je compare : <span class="k">Fourn. A 1 450 DH/m² · Fourn. B 1 290</span>. Je propose B → économie <span class="g">~6 400 DH</span>.'},
- {t:'09:35',a:'Planning',m:'Je reçois la liste de Coût de revient. ⚠️ Attention : l\'atelier <span class="k">Peinture</span> sera saturé demain. Je décale 2 commandes non urgentes.'},
- {t:'09:35',a:'Commercial',m:'Côté ventes ce mois : <span class="k">'+D.topVendeur+' '+D.topCA+'</span> 🥇, Kenza '+D.kenza+', Laila '+D.laila+'. Ikram porte l\'équipe.'},
- {t:'09:36',a:'Service client',m:'3 clients demandent leur statut sur WhatsApp, je réponds avec le réel. 1 demande de remise → je remonte au Patron.'},
- {t:'09:36',a:'Marketing',m:'Je pousse nos best-sellers (NUAGE, OLIA) aujourd\'hui : 2 posts + relance pub. Objectif : alimenter le carnet pendant qu\'on assainit la caisse.'},
- {t:'09:37',a:'Patron IA',boss:1,you:1,m:'Driss, une décision pour toi 👇 La cliente <span class="k">Naani</span> demande -15% sur 22 000 DH → marge tomberait à <span class="r">6%</span>. Je propose <span class="k">-8% max</span>. Tu valides ?'},
- {t:'09:38',a:'Le Veilleur',m:'Plan du jour acté : encaisser d\'abord, produire le rentable, optimiser les achats. Je surveille et je te préviens, Driss, si ça bouge. 👁️'}
-];
+/* ===== GÉNÉRATEUR DE DISCUSSION — pioche de vrais faits, change à chaque tour ===== */
+function buildScript(cy){
+  var imp1=pick(F.impayes,cy), imp2=pick(F.impayes,cy+1), imp3=pick(F.impayes,cy+2);
+  var gro=pick(F.gros,cy), pend=pick(F.pending,cy), art=pick(F.topArt,cy);
+  var vTop=F.vendeurs[0]||{v:'—',ca:0,reste:0,nb:0};
+  var vFoc=pick(F.vendeurs,cy);
+  var fournA=1450, fournB=1290, m2=Math.max(2,(cy%6)+2), eco=(fournA-fournB)*m2;
+  return [
+   {a:'Patron IA',boss:1,ordre:'BRIEFING',m:'On reprend l\'analyse — '+F.stats.total+' commandes, <span class="k">'+F.fmt.ca+'</span> de CA. Mais regardez la caisse : encaissé seulement <span class="r">'+F.fmt.paye+'</span>. Chacun son point.'},
+   {a:'Finance',m:'Le gros morceau aujourd\'hui : <span class="r">'+imp1.client+'</span> nous doit <span class="r">'+fmt(imp1.reste)+'</span> (vente '+imp1.vendeur+'). Juste derrière : '+imp2.client+' '+fmt(imp2.reste)+'. Total impayés : <span class="r">'+F.fmt.reste+'</span> sur '+F.stats.impayes+' commandes.'},
+   {a:'Le Veilleur',m:'Criticité <span class="r">100/100</span>, tirée par la trésorerie. Le client le plus à risque : <span class="r">'+imp1.client+'</span>. Côté livraison par contre, tout est clean : <span class="g">0 retard</span>.'},
+   {a:'Commercial',m:'Attention : <span class="k">'+vTop.v+'</span> fait le plus gros CA ('+fmt(vTop.ca)+', '+vTop.nb+' cmd) mais traîne <span class="r">'+fmt(vTop.reste)+'</span> d\'impayés. Nos meilleures ventes encaissent mal — c\'est là qu\'il faut serrer.'},
+   {a:'Patron IA',boss:1,ordre:'ORDRE',m:'Clair. <span class="k">Finance</span> → relance <span class="k">'+imp1.client+'</span> ('+fmt(imp1.reste)+') en priorité aujourd\'hui, puis '+imp2.client+' et '+imp3.client+'. <span class="k">'+vTop.v+'</span> rappelle ses clients en personne.'},
+   {a:'Finance',m:'C\'est parti 👍 Message de relance prêt pour <span class="r">'+imp1.client+'</span>. Je propose un échéancier si gros montant, pour pas braquer le client.'},
+   {a:'Production',m:'Atelier : <span class="k">'+F.stats.enAttente+' en attente</span>, '+F.stats.enFab+' en cours, '+F.stats.termine+' terminées. La plus vieille qui traîne : <span class="k">'+pend.client+'</span> du '+pend.date+' ('+fmt(pend.total)+'). On la lance ?'},
+   {a:'Coût de revient',m:'Grosse commande à sécuriser : <span class="k">'+gro.client+'</span> — '+fmt(gro.total)+' ('+(gro.art||'').slice(0,40)+'…). À ce montant je veux valider la marge AVANT de lancer la matière.'},
+   {a:'Achats',m:'Pour cette commande il faut de la matière. Je compare 2 fournisseurs : <span class="k">A '+fournA+' DH/m² · B '+fournB+' DH/m²</span>. Sur '+m2+' m² → on économise <span class="g">'+fmt(eco)+'</span> avec B.'},
+   {a:'Planning',m:'Je cale le planning : je lance d\'abord '+pend.client+' (déjà ancienne). ⚠️ L\'atelier Peinture sature jeudi — je décale 2 commandes non urgentes pour pas créer de retard.'},
+   {a:'Marketing',m:'Pendant qu\'on assainit la caisse, je remplis le carnet : notre best-seller du moment c\'est <span class="k">'+art.nom+'</span> ('+art.q+' vendus). Je pousse 2 posts dessus + relance pub.'},
+   {a:'Service client',m:'3 clients demandent leur statut sur WhatsApp, je réponds avec le réel. '+vFoc.v+' m\'a transmis 1 demande de remise → je remonte au Patron.'},
+   {a:'Patron IA',boss:1,you:1,m:'Driss, décision 👇 <span class="k">'+imp1.client+'</span> ('+fmt(imp1.reste)+' dû) demande un délai de paiement supplémentaire. Je propose un <span class="k">échéancier 3x</span> plutôt qu\'une remise. Tu valides ?'},
+   {a:'Le Veilleur',m:'Plan acté : relancer '+imp1.client+' & '+imp2.client+', lancer '+pend.client+', valider la marge sur '+gro.client+', acheter chez le fournisseur B. Je surveille et je te ping si ça bouge, Driss. 👁️'}
+  ];
+}
 
 var feed=document.getElementById('feed');
 function bubble(item){
   var t=BY[item.a]||{em:'•',c:'#888',r:''};
   var cls='msg'+(item.boss?' boss':'')+(item.you?' you':'');
   var ordre=item.ordre?'<div class="ordre">'+item.ordre+'</div>':'';
-  var btns=item.you?'<div class="btns"><span class="btn y">✓ Oui (-8%)</span><span class="btn">Non</span><span class="btn">Je gère</span></div>':'';
+  var btns=item.you?'<div class="btns"><span class="btn y">✓ Échéancier 3x</span><span class="btn">Remise</span><span class="btn">Je gère</span></div>':'';
   var el=document.createElement('div'); el.className=cls;
   el.innerHTML='<div class="av" style="background:'+t.c+'22">'+t.em+'</div>'+
     '<div class="bubble">'+ordre+'<div class="who"><b>'+item.a+'</b><span class="role">'+(t.r||'')+'</span><span class="tm mono">'+item.t+'</span></div>'+
@@ -170,14 +167,19 @@ function typing(item,cb){
   var el=document.createElement('div'); el.className='typing';
   el.innerHTML='<div class="av" style="background:'+t.c+'22">'+t.em+'</div><div class="tdots"><i></i><i></i><i></i></div>';
   feed.appendChild(el); feed.scrollTop=feed.scrollHeight;
-  setTimeout(function(){ if(el.parentNode)feed.removeChild(el); bubble(item); cb&&cb(); }, item.boss?950:680);
+  setTimeout(function(){ if(el.parentNode)feed.removeChild(el); bubble(item); cb&&cb(); }, item.boss?900:680);
 }
-var i=0;
+var cycle=0, script=buildScript(0), i=0;
+var baseMin = 9*60+30;
+function stamp(k){var tot=baseMin+k; var h=Math.floor(tot/60)%24, mn=tot%60; return (h<10?'0':'')+h+':'+(mn<10?'0':'')+mn;}
 function next(){
-  if(i>=SCRIPT.length){ document.getElementById('cnt').textContent='analyse terminée · '+SCRIPT.length+' échanges';
-    setTimeout(function(){ feed.innerHTML=''; i=0; document.getElementById('cnt').textContent='nouvelle analyse…'; next(); }, 7000); return; }
-  var item=SCRIPT[i++]; document.getElementById('clock').textContent=item.t;
-  typing(item, function(){ setTimeout(next, 1000); });
+  if(i>=script.length){
+    document.getElementById('cnt').textContent='analyse #'+(cycle+1)+' terminée';
+    setTimeout(function(){ feed.innerHTML=''; cycle++; script=buildScript(cycle); i=0;
+      document.getElementById('cnt').textContent='nouvelle analyse…'; next(); }, 6500); return;
+  }
+  var item=script[i]; item.t=stamp(i); document.getElementById('clock').textContent=item.t;
+  i++; typing(item, function(){ setTimeout(next, 950); });
 }
 next();
 </script>
