@@ -353,6 +353,16 @@ Articles : Chaise Cartel ×75 @730 ; Tableau 120/80 ×25 @730 ; Tableau 40/40 ×
   Note honnête : un agent IA du navigateur **analyse, détecte et propose/exécute des actions de
   données** ; il ne réécrit pas le code source (ça reste le rôle de Claude Code).
 
+- **2026-05-30 — Fiche ouvrier : ce que Hanane a préparé est VISIBLE.** L'ouvrier voyait les
+  articles mais pas le travail de Hanane. Corrigé : à l'affectation, l'article voyage avec son
+  **meta** (photo, qté, prix, client, réf) stocké dans `etat.artMeta` (`ajouterAffArticle(...,meta)`,
+  `artMetaDe`). `tachesOuvrier` renvoie désormais **photo + fiche de production + bons matière**.
+  `creajit-ouvrier-sync.js` les passe dans TASKS (+ repli photo via `CJ_ORDERS` pour les anciennes
+  affectations). `ouvrier.html` : `pic()` affiche la vraie photo, `ficheBloc()` montre sous CHAQUE
+  article (en cours / file / fini) la **fiche de production** (dimensions, tissu, accoudoirs,
+  coutures, notes, dessin validé ✓/⚠️) et la **matière première** (bons + statut envoyé/commandé/reçu).
+  Testé node : chaîne Hanane→ouvrier complète (photo+fiche+bons) + 13/13 régression.
+
 ## 13. Ordre de construction officiel (structure décidée, à suivre)
 
 > Driss délègue la structuration. On construit dans CET ordre, en s'appuyant sur les

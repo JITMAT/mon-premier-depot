@@ -12,6 +12,20 @@
 
   function atName(c) { var a = (window.CJ_ATELIERS || []).find(function (x) { return x.code === c; }); return a ? a.nom : ('Atelier ' + c); }
   function th(c) { return (window.coutHoraire ? window.coutHoraire(c) : 60); }
+  // Repli photo : retrouve l'article dans les vraies commandes par son id
+  function photoCommande(articleId) {
+    try {
+      var ord = window.CJ_ORDERS; if (!ord || !ord.all) return '';
+      var found = '';
+      ord.all().some(function (o) {
+        return (o.articles || []).some(function (a) {
+          if (a.id === articleId) { found = a.photo || (a.photos && a.photos[0]) || ''; return true; }
+          return false;
+        });
+      });
+      return found;
+    } catch (e) { return ''; }
+  }
 
   // Garde anti-réentrance : pendant une action locale (start/pause/fini), on
   // NE resynchronise PAS depuis CJ. Sinon l'évènement émis par la maquette
@@ -30,8 +44,8 @@
       var pv = (t.qte || 1) * (t.prix || 0);
       var taux = th(t.atelierCode);
       TASKS.push({
-        art: t.articleId, nm: t.nom, etape: atName(t.atelierCode), qty: t.qte, client: t.client || '',
-        pv: pv, moTot: 0, taux: taux,
+        art: t.articleId, nm: t.nom, etape: atName(t.atelierCode), qty: t.qte, client: t.client || '', ref: t.ref || '',
+        pv: pv, moTot: 0, taux: taux, photo: t.photo || photoCommande(t.articleId), fiche: t.fiche || {}, bons: t.bons || [],
         state: t.statut === 'encours' ? 'en_cours' : (t.statut === 'pause' ? 'pause' : (t.statut === 'fini' ? 'fini' : 'attente')),
         t0: t.t0 || null, el: t.elapsedMs || 0, motif: t.motif || '', _cj: true
       });

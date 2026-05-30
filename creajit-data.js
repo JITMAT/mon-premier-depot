@@ -197,12 +197,17 @@
     // ===== PAR ARTICLE (multi-ouvriers, fiche, achats) =====
     // Plusieurs ouvriers/étapes par article
     affArticle: (articleId) => (etat.affArt && etat.affArt[articleId]) ? etat.affArt[articleId] : [],
-    ajouterAffArticle: (articleId, ouvrierId, atelierCode, nom) => {
+    // meta = { photo, qty, pu, client, ref } : ce que Hanane a préparé, voyage avec l'affectation
+    ajouterAffArticle: (articleId, ouvrierId, atelierCode, nom, meta) => {
       etat.affArt = etat.affArt || {};
+      etat.artMeta = etat.artMeta || {};
+      if (meta) etat.artMeta[articleId] = Object.assign({}, etat.artMeta[articleId], meta);
+      if (nom) { etat.artMeta[articleId] = etat.artMeta[articleId] || {}; if (!etat.artMeta[articleId].nom) etat.artMeta[articleId].nom = nom; }
       const liste = etat.affArt[articleId] = etat.affArt[articleId] || [];
       if (!liste.some(x => x.ouvrierId === ouvrierId)) liste.push({ ouvrierId, atelierCode: atelierCode || '', nom: nom || '', statut: 'affecte' });
       sauver();
     },
+    artMetaDe: (articleId) => (etat.artMeta && etat.artMeta[articleId]) || {},
     retirerAffArticle: (articleId, ouvrierId) => {
       if (etat.affArt && etat.affArt[articleId]) { etat.affArt[articleId] = etat.affArt[articleId].filter(x => x.ouvrierId !== ouvrierId); sauver(); }
     },
@@ -221,9 +226,14 @@
         (aff[aid] || []).forEach(o => {
           if (o.ouvrierId === ouvrierId) {
             const x = CJ.article(aid);
-            res.push({ articleId: aid, nom: o.nom || (x && x.article.nom) || aid, atelierCode: o.atelierCode || '',
-              client: x ? x.commande.client : (o.client || ''), ref: x ? x.commande.ref : '',
-              qte: x ? (x.article.qte || x.article.qty || 1) : 1, prix: x ? (x.article.prix || x.article.pu || 0) : 0,
+            const m = (etat.artMeta || {})[aid] || {};
+            const photo = m.photo || (x && x.article && (x.article.photo || (x.article.photos && x.article.photos[0]))) || '';
+            res.push({ articleId: aid, nom: o.nom || m.nom || (x && x.article.nom) || aid, atelierCode: o.atelierCode || '',
+              client: x ? x.commande.client : (m.client || o.client || ''), ref: x ? x.commande.ref : (m.ref || ''),
+              qte: x ? (x.article.qte || x.article.qty || 1) : (m.qty || 1), prix: x ? (x.article.prix || x.article.pu || 0) : (m.pu || 0),
+              photo: photo,
+              fiche: (etat.fichesArt && etat.fichesArt[aid]) || {},
+              bons: Object.values(etat.bons).filter(b => b.articleId === aid).sort((a, b) => (b.t0 || 0) - (a.t0 || 0)),
               statut: o.statut || 'affecte', t0: o.t0 || null, elapsedMs: o.elapsedMs || 0, motif: o.motif || '' });
           }
         });

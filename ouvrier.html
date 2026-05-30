@@ -244,16 +244,41 @@ function show(s){document.querySelectorAll('.mi').forEach(m=>m.classList.toggle(
   document.querySelectorAll('.sec').forEach(x=>x.classList.remove('on'));document.getElementById('sec-'+s).classList.add('on');
   if(s==='fab')renderFab();if(s==='point')renderPoint();if(s==='plan')renderPlan();if(s==='ai')renderChat();if(s==='bon')renderBons();if(s==='renta')renderRenta();}
 
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function pic(t){return (t&&t.photo)?`<img src="${t.photo}" onerror="this.style.display='none'">`:img(t&&t.art);}
+// Tout ce que Hanane a préparé pour l'article : fiche de production + matière première
+function ficheBloc(t){
+  const f=(t&&t.fiche)||{}, bons=(t&&t.bons)||[];
+  const rows=[];
+  if(f.dimensions)rows.push(['Dimensions',f.dimensions]);
+  if(f.tissu)rows.push(['Tissu / matériau',f.tissu]);
+  if(f.accoudoirs)rows.push(['Accoudoirs',f.accoudoirs]);
+  if(f.coutures)rows.push(['Coutures / finition',f.coutures]);
+  const hasFiche=rows.length||f.notes||('dessinValide' in f);
+  const box='background:#0f1622;border:1px solid var(--line);border-radius:11px;padding:11px;margin-top:10px';
+  const hd='font-size:12px;font-weight:700;color:var(--orange-b);margin-bottom:6px';
+  let h=`<div style="${box}"><div style="${hd}">📋 Fiche de production (préparée par Hanane)</div>`;
+  if(hasFiche){
+    h+=rows.map(r=>`<div style="display:flex;justify-content:space-between;gap:10px;font-size:13px;padding:3px 0;border-bottom:1px solid rgba(255,255,255,.05)"><span style="color:var(--mut)">${r[0]}</span><b>${esc(r[1])}</b></div>`).join('');
+    if(f.notes)h+=`<div style="font-size:13px;margin-top:6px">📝 ${esc(f.notes)}</div>`;
+    h+=`<div style="font-size:12px;margin-top:7px;font-weight:700;color:${f.dessinValide?'var(--green)':'var(--red)'}">${f.dessinValide?'🎨 Dessin validé par le client':'⚠️ Dessin client PAS validé — à confirmer avant de produire'}</div>`;
+  } else h+=`<div style="font-size:12px;color:var(--mut)">En attente de la fiche de Hanane.</div>`;
+  h+=`<div style="${hd};margin-top:10px">🧰 Matière première</div>`;
+  if(bons.length){
+    h+=bons.map(b=>{const st=b.statut==='recu'?'<span style="color:var(--green)">✅ reçu</span>':(b.statut==='commande'?'<span style="color:var(--yellow)">🛒 commandé</span>':'<span style="color:var(--mut)">📤 envoyé au magasin</span>');return `<div style="font-size:13px;padding:3px 0">${esc((b.lignes||[]).map(x=>x.nom).join(', ')||'Bon')} <span class="pc">· ${(b.lignes||[]).length} ligne(s)</span> — ${st}</div>`;}).join('');
+  } else h+=`<div style="font-size:12px;color:var(--mut)">Aucun bon matière pour cet article.</div>`;
+  return h+'</div>';
+}
 function renderWork(){const active=cur();let h='';
-  if(active){h+=`<div class="cur"><div class="top">${img(active.art)}<div><div class="tn">${active.nm}</div><div class="tm">${active.etape} · ${active.qty} pièces${active.client?(' · '+active.client):''}</div></div></div>
+  if(active){h+=`<div class="cur"><div class="top">${pic(active)}<div><div class="tn">${active.nm}</div><div class="tm">${active.etape} · ${active.qty} pièces${active.client?(' · '+active.client):''}</div></div></div>
     <div class="grid"><div><div class="chrono" id="chrono">${fmt(curEl(active))}</div><div class="moline">main d'œuvre ≈ <b id="moNow">${nb(curEl(active)/3600000*TAUX)}</b> DH</div></div>
     <div class="btns"><button class="cbtn pause" onclick="togglePause()">⏸ Pause</button><button class="cbtn fini" onclick="finish()">✅ Fini</button></div></div>
-    <div class="motifs" id="motifPanel" style="display:none"></div></div>`;}
+    <div class="motifs" id="motifPanel" style="display:none"></div>${ficheBloc(active)}</div>`;}
   const others=TASKS.filter(t=>t!==active && t.state!=='fini');
   others.forEach(t=>{const i=TASKS.indexOf(t);const paused=t.state==='pause';
-    h+=`<div class="qrow${paused?' pause':''}">${img(t.art)}<div><div class="qn">${t.nm}</div><div class="qm">${t.etape} · ${t.qty} pc${paused?` · <span class="mt">⏸ ${t.motif||'en pause'} (${fmt(t.el||0)})</span>`:''}</div></div>
-      <button class="minirun" onclick="startTask(${i})">${paused?'▶ Reprendre':'▶ Commencer'}</button></div>`;});
-  TASKS.filter(t=>t.state==='fini').forEach(t=>h+=`<div class="qrow done">${img(t.art)}<div><div class="qn">${t.nm}</div><div class="qm">${t.etape} · ${fmt(t.el)}</div></div><span class="pos">✓ fini</span></div>`);
+    h+=`<div style="margin-bottom:10px"><div class="qrow${paused?' pause':''}" style="margin-bottom:0">${pic(t)}<div><div class="qn">${t.nm}</div><div class="qm">${t.etape} · ${t.qty} pc${paused?` · <span class="mt">⏸ ${t.motif||'en pause'} (${fmt(t.el||0)})</span>`:''}</div></div>
+      <button class="minirun" onclick="startTask(${i})">${paused?'▶ Reprendre':'▶ Commencer'}</button></div>${ficheBloc(t)}</div>`;});
+  TASKS.filter(t=>t.state==='fini').forEach(t=>h+=`<div class="qrow done">${pic(t)}<div><div class="qn">${t.nm}</div><div class="qm">${t.etape} · ${fmt(t.el)}</div></div><span class="pos">✓ fini</span></div>`);
   if(!active && !others.length)h+=`<div class="card" style="text-align:center;color:var(--mut)">🎉 Tout est fini ! En attente d'une affectation de Hanane.</div>`;
   document.getElementById('work').innerHTML=h;
   document.getElementById('bWork').textContent=TASKS.filter(t=>t.state!=='fini').length||'';updKpi();}

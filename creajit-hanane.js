@@ -540,8 +540,12 @@
     const btn = document.querySelector(`[data-sel="${(window.CSS && CSS.escape) ? CSS.escape(itemId) : itemId}"]`);
     const nom = btn ? (btn.getAttribute('data-nom') || itemId) : itemId;
     const client = btn ? btn.getAttribute('data-client') : '';
+    // ce que Hanane a préparé (photo, qté, prix, client, réf) voyage avec l'affectation -> visible côté ouvrier
+    const c = cmd(curRef);
+    const art = c ? articlesDe(c).find(a => a.id === itemId) : null;
+    const meta = art ? { photo: art.photo || '', qty: art.qty || art.qte || 1, pu: art.pu || art.prix || 0, client: client || (c ? c.client : ''), ref: c ? (c.ref || '') : '' } : { client: client };
     if (window.CJ) {
-      window.CJ.ajouterAffArticle(itemId, wid, w.at, nom);
+      window.CJ.ajouterAffArticle(itemId, wid, w.at, nom, meta);
       window.CJ.evenement('info', 'Hanane', `Hanane a ajouté ${w.nm} (${atName(w.at)}) sur « ${nom} » — ${client}.`, '→ ' + w.nm);
     }
     toastMsg(`✓ ${w.nm} ajouté sur « ${nom} »`);
