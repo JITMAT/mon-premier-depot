@@ -255,6 +255,15 @@ Articles : Chaise Cartel ×75 @730 ; Tableau 120/80 ×25 @730 ; Tableau 40/40 ×
   **Reste : photos/dessin IA validé client, QC par étape+anomalies, consignes patron→agents,
   agents Fatima/Kenza, temps réel multi-appareils.**
 
+- **2026-05-30 — Agents IA connectés + personnalisés + photos réelles.**
+  • Photos extraites des badges PDF → `creajit-photos.js` (Hanane, Mohamed Moumen,
+  Hassan Laagouri, Fatima) affichées cockpit + page « Tous les agents » (`agents.html`) + fiches.
+  • Page **`agents.html`** : tous les agents (direction + ouvriers/atelier) en grand, clic → mini-site.
+  • Cockpit : tous les responsables cliquables (dont Mohamed magasin + Hassan).
+  • **Agents IA CONNECTÉS** : `CJ.contexteIA()` (affectations, bons, consignes, événements)
+  injecté dans chaque assistant ; **IA personnalisée par personne** (`window.CJ_SYS`).
+  **Reste : QC par étape+anomalies, dessin IA validé client, consignes patron→agents (UI), Hikvision/WhatsApp, temps réel multi-appareils.**
+
 ## 13. Ordre de construction officiel (structure décidée, à suivre)
 
 > Driss délègue la structuration. On construit dans CET ordre, en s'appuyant sur les
