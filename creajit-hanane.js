@@ -258,12 +258,13 @@
 
       // avancement : combien d'articles affectés / total
       const arts = c.articles || [];
-      const affectes = arts.filter(a => A[a.id]).length;
+      const arts = c.articles || [];
+      const aff = id => (window.CJ ? window.CJ.affArticle(id) : []);
+      const affectes = arts.filter(a => aff(a.id).length).length;
       const pctAff = arts.length ? Math.round(affectes / arts.length * 100) : 0;
-      // qui travaille dessus (noms des ouvriers affectés)
-      const noms = Array.from(new Set(arts.filter(a => A[a.id]).map(a => {
-        const w = WORKERS.find(x => x.id === A[a.id].ouvrierId); return w ? w.nm.split(' ')[0] : '';
-      }).filter(Boolean)));
+      const noms = Array.from(new Set([].concat.apply([], arts.map(a => aff(a.id).map(o => {
+        const w = WORKERS.find(x => x.id === o.ouvrierId); return w ? w.nm.split(' ')[0] : '';
+      }))).filter(Boolean)));
 
       h += `<div class="cjcli" data-open="${esc(c.cle || c.ref)}">
         <div class="cjvig">${vignette}</div>
@@ -506,15 +507,13 @@
   function affecter(itemId, wid) {
     const w = WORKERS.find(x => x.id === wid); if (!w) return;
     const btn = document.querySelector(`[data-sel="${(window.CSS && CSS.escape) ? CSS.escape(itemId) : itemId}"]`);
-    const g = k => btn ? btn.getAttribute(k) : '';
-    const nom = g('data-nom') || itemId, ref = g('data-ref'), client = g('data-client');
-    const qty = +g('data-qty') || 0, pu = +g('data-pu') || 0;
+    const nom = btn ? (btn.getAttribute('data-nom') || itemId) : itemId;
+    const client = btn ? btn.getAttribute('data-client') : '';
     if (window.CJ) {
-      window.CJ.affecterDetail({ articleId: itemId, ouvrierId: wid, atelierCode: w.at, nom, qty, pu, ref, client });
-      window.CJ.evenement('info', 'Hanane', `Hanane a affecté « ${nom} » (${client}) à ${w.nm} — ${atName(w.at)}.`, '→ ' + w.nm);
+      window.CJ.ajouterAffArticle(itemId, wid, w.at, nom);
+      window.CJ.evenement('info', 'Hanane', `Hanane a ajouté ${w.nm} (${atName(w.at)}) sur « ${nom} » — ${client}.`, '→ ' + w.nm);
     }
-    selA = null;
-    toastMsg(`✓ « ${nom} » affecté à ${w.nm} (${atName(w.at)})`);
+    toastMsg(`✓ ${w.nm} ajouté sur « ${nom} »`);
     render();
   }
 
