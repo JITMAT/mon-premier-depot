@@ -79,6 +79,13 @@ td.red{color:#f3a79c;font-weight:700}td.grn{color:#7ee2a8}td.mut{color:var(--mut
 .tdots i{width:5px;height:5px;border-radius:50%;background:var(--mut2);animation:bl 1.2s infinite}
 .tdots i:nth-child(2){animation-delay:.2s}.tdots i:nth-child(3){animation-delay:.4s}
 @keyframes bl{0%,60%,100%{opacity:.25}30%{opacity:1}}
+.chatbar{flex:none;border-top:1px solid var(--line);padding:10px;display:flex;gap:8px;background:#0c121d}
+.chatbar input{flex:1;background:var(--panel2);border:1px solid #25304326;border:1px solid #232c3d;color:var(--ink);border-radius:10px;padding:10px 12px;font-size:13px;font-family:inherit;outline:none}
+.chatbar input:focus{border-color:var(--orange)}
+.chatbar button{background:var(--orange);color:#1a0f08;border:none;border-radius:10px;padding:0 14px;font-weight:800;font-size:15px;cursor:pointer}
+.hintq{padding:0 13px 10px;display:flex;gap:6px;flex-wrap:wrap}
+.hintq span{font-size:10.5px;color:var(--mut);background:var(--panel2);border:1px solid #232c3d;border-radius:20px;padding:4px 9px;cursor:pointer}
+.hintq span:hover{border-color:var(--orange);color:var(--orange-b)}
 .mtog{display:none}
 @media(max-width:1080px){.layout{grid-template-columns:64px 1fr}.salon{position:fixed;right:0;top:0;bottom:0;width:330px;transform:translateX(100%);transition:.25s;z-index:20}
  .salon.open{transform:none}.item b,.item span,.nl,.brand b,.brand span{display:none}.item{justify-content:center}.item .pin{display:none}
@@ -98,6 +105,15 @@ td.red{color:#f3a79c;font-weight:700}td.grn{color:#7ee2a8}td.mut{color:var(--mut
       <div class="crit"><div class="big">100</div><div><div class="l" style="color:#f3a79c;font-weight:700">criticité /100</div><div class="l">tension trésorerie</div></div></div>
     </div>
     <div class="feed" id="feed"></div>
+    <div class="hintq" id="hintq">
+      <span onclick="ask('Qui me doit le plus ?')">Qui me doit le plus ?</span>
+      <span onclick="ask('Combien il reste à encaisser ?')">Reste à encaisser ?</span>
+      <span onclick="ask('Quelles commandes lancer en premier ?')">Quoi lancer ?</span>
+    </div>
+    <div class="chatbar">
+      <input id="qinput" placeholder="Écris au Patron IA… (question ou mission)" onkeydown="if(event.key==='Enter')send()">
+      <button onclick="send()">➤</button>
+    </div>
   </aside>
 </div>
 <button class="mtog" id="mtog" onclick="document.getElementById('salon').classList.toggle('open')">💬 Salon</button>
@@ -178,7 +194,83 @@ function bubble(it){var t=team[it.a]||{em:'•',c:'#888'};var el=document.create
 function typing(it,cb){var t=team[it.a]||{em:'•',c:'#888'};var el=document.createElement('div');el.className='typing';
  el.innerHTML='<div class="av" style="background:'+t.c+'22">'+t.em+'</div><div class="tdots"><i></i><i></i><i></i></div>';
  feed.appendChild(el);feed.scrollTop=feed.scrollHeight;setTimeout(function(){if(el.parentNode)feed.removeChild(el);bubble(it);cb&&cb();},it.boss?850:620);}
-function step(){if(i>=script.length){setTimeout(function(){feed.innerHTML='';cycle++;script=build(cycle);i=0;step();},5000);return;}var it=script[i++];typing(it,function(){setTimeout(step,900);});}
+function step(){if(window.__manual)return;if(i>=script.length){setTimeout(function(){if(window.__manual)return;feed.innerHTML='';cycle++;script=build(cycle);i=0;step();},5000);return;}var it=script[i++];typing(it,function(){setTimeout(step,900);});}
+
+/* ===== TOI ↔ PATRON IA : questions & missions ===== */
+team['Toi']={em:'👑',c:'#22C55E'};
+function sayUser(txt){var t=team['Toi'];var el=document.createElement('div');el.className='msg you';
+ el.innerHTML='<div class="av" style="background:'+t.c+'22">'+t.em+'</div><div class="bubble"><div class="who"><b>Toi (Driss)</b></div><div class="txt">'+esc(txt)+'</div></div>';
+ feed.appendChild(el);feed.scrollTop=feed.scrollHeight;}
+function sayBoss(html){var t=team['Patron IA'];var el=document.createElement('div');el.className='msg boss';
+ el.innerHTML='<div class="av" style="background:'+t.c+'22">'+t.em+'</div><div class="bubble"><div class="who"><b>Patron IA</b></div><div class="txt">'+html+'</div></div>';
+ feed.appendChild(el);feed.scrollTop=feed.scrollHeight;}
+function bossThinking(cb){var t=team['Patron IA'];var el=document.createElement('div');el.className='typing';
+ el.innerHTML='<div class="av" style="background:'+t.c+'22">'+t.em+'</div><div class="tdots"><i></i><i></i><i></i></div>';
+ feed.appendChild(el);feed.scrollTop=feed.scrollHeight;return function(html){if(el.parentNode)feed.removeChild(el);sayBoss(html);};}
+
+var SYS = "Tu es le Patron IA de CreaJit (fabricant de meubles à Marrakech), le directeur général virtuel de Driss. Réponds en français, court, concret, comme un bras droit fiable. Tu reçois des questions ET des missions. Quand c'est une mission, confirme que tu la répartis à l'agent concerné (Finance, Production, Achats, Livraison, Commercial, Marketing...) et décris l'action en 1-2 lignes. N'invente jamais un chiffre. Données réelles:\n"
+ +"- "+num(APP.stats.total)+" commandes, CA "+APP.fmt.ca+", encaissé "+APP.fmt.paye+" ("+APP.raw.tauxEnc+"%), reste dû "+APP.fmt.reste+" sur "+APP.stats.impayes+" impayés.\n"
+ +"- Production: "+APP.stats.enAttente+" en attente, "+APP.stats.enFab+" en cours, "+APP.stats.termine+" terminées. Livraison: "+APP.stats.aLivrer+" à livrer, 0 retard.\n"
+ +"- Top impayés: "+APP.finance.slice(0,8).map(function(o){return o.client+' '+fmt(o.reste);}).join('; ')+".\n"
+ +"- Commerciaux: "+APP.vendeurs.map(function(v){return v.v+' CA '+fmt(v.ca)+' (reste '+fmt(v.reste)+')';}).join('; ')+".\n"
+ +"- 39 salariés, masse "+APP.fmt.masse+"/mois, 9 ateliers, 559 matières.";
+
+function localAnswer(q){
+ var s=q.toLowerCase();
+ function impList(n){return APP.finance.slice(0,n).map(function(o,i){return '<b>'+(i+1)+'.</b> '+esc(o.client)+' — <span class="r">'+fmt(o.reste)+'</span> <span style="color:var(--mut2)">('+esc(o.vendeur)+')</span>';}).join('<br>');}
+ // mission ?
+ if(/relanc|lance|envoi|prépar|prepar|appel|contact|achèt|achet|mission|fais |faire |pousse|publi|programme/.test(s)){
+   var who='l\'agent concerné';
+   if(/impay|relanc|encaiss|client.*doit|paiement/.test(s))who='💰 Finance';
+   else if(/lance|fabriqu|produc|atelier/.test(s))who='🏭 Production';
+   else if(/achèt|achet|fournisseur|matier|matière|appro/.test(s))who='📦 Achats';
+   else if(/livr/.test(s))who='🚚 Livraison';
+   else if(/pub|post|market|insta|facebook|promo/.test(s))who='📣 Marketing';
+   else if(/devis|client|vente|prospect/.test(s))who='👥 Commercial';
+   return '✅ <b>Mission notée</b>, Driss. Je la confie à <b>'+who+'</b> et je te fais un retour dès que c\'est traité.<br><span style="color:var(--mut2)">(Pour exécuter pour de vrai — envoi WhatsApp/mail — il faut activer mon cerveau Claude en ligne.)</span>';
+ }
+ if(/bonjour|salut|coucou|ça va|cava|hello/.test(s)) return 'Bonjour Driss 👋 Je surveille tes '+num(APP.stats.total)+' commandes. Demande-moi les impayés, le reste à encaisser, quoi lancer, un commercial, un salarié…';
+ if(/doit le plus|qui.*doit|impay|créanc|crenc|gros.*dû|dette/.test(s)) return 'Tes plus gros impayés :<br>'+impList(5)+'<br><br>Total à récupérer : <span class="r">'+APP.fmt.reste+'</span> sur '+APP.stats.impayes+' commandes.';
+ if(/encaiss|trésor|tresor|caisse|cash|liquid/.test(s)) return 'CA total : <b>'+APP.fmt.ca+'</b>. Encaissé : <span class="g">'+APP.fmt.paye+'</span> ('+APP.raw.tauxEnc+'%). <br>Reste à encaisser : <span class="r">'+APP.fmt.reste+'</span> sur '+APP.stats.impayes+' commandes. C\'est la priorité.';
+ if(/lancer|à lancer|attente|à faire|produc|fabriqu|en cours/.test(s)){var p=APP.production.slice(0,5).map(function(o){return '• '+esc(o.client)+' ('+esc(o.date)+', '+fmt(o.total)+')';}).join('<br>');return '<b>'+APP.stats.enAttente+'</b> commandes en attente. Les plus anciennes à lancer :<br>'+p;}
+ if(/livr/.test(s)){var l=APP.livraison.slice(0,5).map(function(o){return '• '+esc(o.client)+' — '+fmt(o.total)+' ('+esc(o.etat)+')';}).join('<br>');return '<b>'+APP.stats.aLivrer+'</b> à livrer, 0 en retard. Les plus grosses :<br>'+l;}
+ if(/vendeur|commercial|vente|ikram|kenza|laila|fatima/.test(s)){
+   var v=APP.vendeurs.filter(function(x){return s.indexOf(x.v.toLowerCase())>=0;})[0];
+   if(v)return '<b>'+esc(v.v)+'</b> : '+v.nb+' commandes, CA '+fmt(v.ca)+', encaissé <span class="g">'+fmt(v.enc)+'</span>, reste <span class="r">'+fmt(v.reste)+'</span>.';
+   return 'Performance commerciale :<br>'+APP.vendeurs.slice(0,4).map(function(x){return '• <b>'+esc(x.v)+'</b> — '+fmt(x.ca)+' ('+x.nb+' cmd, reste '+fmt(x.reste)+')';}).join('<br>');
+ }
+ if(/stock|matier|matière|fournisseur|appro/.test(s)) return 'Catalogue : <b>'+num(APP.stats.matieres)+' matières</b> chez '+APP.fournisseurs.length+'+ fournisseurs. Top fournisseurs : '+APP.fournisseurs.slice(0,3).map(function(f){return esc(f.f)+' ('+f.n+')';}).join(', ')+'. Article le plus commandé : '+esc((APP.topArt[0]||{}).nom)+'.';
+ if(/salaire|salari|masse|paie|employ|effectif|équipe|equipe/.test(s)){
+   var emp=APP.salaries.filter(function(e){return e.n&&s.indexOf(e.n.toLowerCase().split(' ')[0])>=0;})[0];
+   if(emp)return '<b>'+esc(emp.n)+'</b> — '+esc(emp.poste)+' (atelier '+esc(emp.atelier)+'). Salaire '+fmt(emp.sal)+', coût/h '+emp.coutH+'.';
+   return '<b>39 salariés</b>, masse salariale <b>'+APP.fmt.masse+'/mois</b>, répartis sur 9 ateliers.';
+ }
+ if(/atelier/.test(s)) return '9 ateliers : '+APP.ateliers.slice(0,5).map(function(a){return esc(a.nom)+' ('+a.effectif+' pers., '+a.coutH+' DH/h)';}).join('; ')+'…';
+ if(/marge|rentab|bénéf|benef|coût de revient|cout de revient/.test(s)) return 'Panier moyen : <b>'+APP.fmt.panier+'</b>/commande. CA potentiel '+APP.fmt.ca+' vs masse salariale '+APP.fmt.masse+'/mois. Marge précise par commande = à brancher (coût matière+main d\'œuvre).';
+ // recherche d'un client
+ var toks=s.split(/[^a-zàâçéèêëîïôûùü]+/).filter(function(w){return w.length>=4;});
+ var hit=APP.finance.concat(APP.gros).filter(function(o){return toks.some(function(t){return (o.client||'').toLowerCase().indexOf(t)>=0;});})[0];
+ if(hit)return 'Client <b>'+esc(hit.client)+'</b> : commande '+fmt(hit.total)+(hit.reste!=null?', reste dû <span class="r">'+fmt(hit.reste)+'</span>':'')+' (vente '+esc(hit.vendeur)+').';
+ return 'Bonne question. Mon cerveau Claude complet s\'active une fois l\'app en ligne (avec ta clé API). En attendant je réponds sur tes données : essaie « qui me doit le plus », « reste à encaisser », « quoi lancer », un nom de client, un commercial, un salarié, le stock…';
+}
+
+function ask(q){document.getElementById('qinput').value=q;send();}
+function send(){
+ var inp=document.getElementById('qinput');var q=(inp.value||'').trim();if(!q)return;inp.value='';
+ if(!window.__manual){window.__manual=true;feed.innerHTML='';
+   sayBoss('Je t\'écoute, Driss. Pose ta question ou donne-moi une mission. 👇');}
+ sayUser(q);
+ var done=bossThinking();
+ var finished=false;
+ var to=setTimeout(function(){if(!finished){finished=true;done(localAnswer(q));}},15000);
+ try{
+  fetch('/api/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:q,system:SYS})})
+   .then(function(r){return r.json();})
+   .then(function(d){if(finished)return;finished=true;clearTimeout(to);
+     var t=(d&&d.text)?d.text:null; done(t?esc(t).replace(/\n/g,'<br>'):localAnswer(q));})
+   .catch(function(){if(finished)return;finished=true;clearTimeout(to);done(localAnswer(q));});
+ }catch(e){if(!finished){finished=true;clearTimeout(to);done(localAnswer(q));}}
+}
 
 show('overview');
 step();
