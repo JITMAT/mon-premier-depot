@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CreaJit OS · Salle IA — les agents analysent ta société</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&family=Hanken+Grotesk:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0e15;--panel:#121927;--panel2:#0e1420;--line:rgba(196,113,79,.16);
+ --orange:#C4714F;--orange-b:#e69a76;--green:#22C55E;--red:#E74C3C;--yellow:#EAB308;--blue:#3b82f6;
+ --ink:#ece9e3;--mut:#8d96a5;--mut2:#586273}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:'Hanken Grotesk',system-ui,sans-serif;-webkit-font-smoothing:antialiased;height:100vh;overflow:hidden;
+ background-image:radial-gradient(1000px 500px at 88% -8%,rgba(196,113,79,.12),transparent 60%)}
+.serif{font-family:'Fraunces',serif}.mono{font-family:'JetBrains Mono',monospace}
+.app{max-width:1200px;margin:0 auto;height:100vh;display:flex;flex-direction:column;padding:14px 16px 16px}
+.hd{display:flex;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap}
+.logo{width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,#C4714F,#e69a76);display:grid;place-items:center;font-size:19px;color:#1a0f08;font-weight:800}
+.hd .ti b{font-size:16px}.hd .ti span{display:block;color:var(--mut);font-size:12px}
+.live{margin-left:auto;display:inline-flex;align-items:center;gap:8px;background:#10241a;border:1px solid rgba(34,197,94,.3);color:#7ee2a8;padding:7px 13px;border-radius:30px;font-weight:700;font-size:12.5px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--green);animation:pulse 1.6s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(34,197,94,.5)}70%{box-shadow:0 0 0 8px rgba(34,197,94,0)}100%{box-shadow:0 0 0 0 rgba(34,197,94,0)}}
+.clock{color:var(--mut);font-size:13px;font-weight:600}
+.main{flex:1;display:grid;grid-template-columns:1fr 280px;gap:14px;min-height:0}
+.feedwrap{background:var(--panel);border:1px solid var(--line);border-radius:18px;display:flex;flex-direction:column;min-height:0;overflow:hidden}
+.feedwrap .fh{padding:13px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:9px;font-weight:700;font-size:14px;flex:none}
+.feedwrap .fh .tagn{margin-left:auto;font-size:11px;color:var(--mut);font-weight:600}
+.feed{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:13px}
+.feed::-webkit-scrollbar{width:8px}.feed::-webkit-scrollbar-thumb{background:#222c3d;border-radius:8px}
+.msg{display:flex;gap:11px;animation:in .35s ease}
+@keyframes in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.av{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;font-size:18px;flex:none}
+.bubble{background:var(--panel2);border:1px solid #1b2230;border-radius:4px 13px 13px 13px;padding:9px 13px;max-width:80%}
+.who{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.who b{font-size:13px}.who .role{font-size:10.5px;color:var(--mut2);text-transform:uppercase;letter-spacing:.4px}
+.who .tm{margin-left:6px;font-size:10.5px;color:var(--mut2)}
+.txt{font-size:13.6px;line-height:1.5;color:var(--ink)}
+.txt .k{color:var(--orange-b);font-weight:700}.txt .r{color:#f3a79c;font-weight:700}.txt .g{color:#7ee2a8;font-weight:700}
+.msg.boss .bubble{background:linear-gradient(180deg,rgba(196,113,79,.16),rgba(196,113,79,.05));border-color:rgba(196,113,79,.4)}
+.msg.boss .who b{color:var(--orange-b)}
+.ordre{display:inline-block;font-size:10px;font-weight:800;color:#1a0f08;background:var(--orange-b);padding:2px 8px;border-radius:20px;margin-bottom:6px;letter-spacing:.5px}
+.msg.you .bubble{background:linear-gradient(180deg,rgba(34,197,94,.13),rgba(34,197,94,.04));border-color:rgba(34,197,94,.4)}
+.msg.you .who b{color:#7ee2a8}
+.btns{display:flex;gap:7px;margin-top:8px}
+.btn{font-size:12px;font-weight:700;padding:6px 13px;border-radius:9px;border:1px solid #2a3445;background:#0e1420;color:var(--mut)}
+.btn.y{background:rgba(34,197,94,.15);color:#7ee2a8;border-color:rgba(34,197,94,.35)}
+.typing{display:flex;gap:11px;align-items:center}
+.tdots{background:var(--panel2);border:1px solid #1b2230;border-radius:13px;padding:11px 14px;display:flex;gap:4px}
+.tdots i{width:6px;height:6px;border-radius:50%;background:var(--mut2);animation:bl 1.2s infinite}
+.tdots i:nth-child(2){animation-delay:.2s}.tdots i:nth-child(3){animation-delay:.4s}
+@keyframes bl{0%,60%,100%{opacity:.25}30%{opacity:1}}
+.side{display:flex;flex-direction:column;gap:14px;min-height:0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px}
+.card h3{font-size:12px;color:var(--mut);text-transform:uppercase;letter-spacing:.5px;margin-bottom:11px;font-weight:700;display:flex;align-items:center;gap:7px}
+.kpibox{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.kp{background:var(--panel2);border:1px solid #1b2230;border-radius:10px;padding:9px 10px}
+.kp .n{font-size:15px;font-weight:800;line-height:1.1}.kp .l{font-size:10.5px;color:var(--mut);margin-top:3px}
+.kp.red .n{color:#f3a79c}.kp.grn .n{color:#7ee2a8}
+.team{display:flex;flex-direction:column;gap:8px;overflow-y:auto}
+.mem{display:flex;align-items:center;gap:9px;font-size:13px}
+.mem .a{width:27px;height:27px;border-radius:8px;display:grid;place-items:center;font-size:14px;flex:none}
+.mem b{font-size:12.5px}.mem span{display:block;color:var(--mut2);font-size:10.5px}
+.mem .on{margin-left:auto;width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 0 3px rgba(34,197,94,.12)}
+.crit{display:flex;align-items:center;gap:12px}
+.crit .big{font-size:34px;font-weight:800;font-family:'Fraunces',serif}.crit .l{font-size:11px;color:var(--mut)}
+@media(max-width:840px){.main{grid-template-columns:1fr}.side{display:none}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="hd">
+    <div class="logo serif">C</div>
+    <div class="ti"><b>CreaJit OS · Salle IA</b><span>Tes agents analysent ta société — en direct</span></div>
+    <span class="clock mono" id="clock">09:30</span>
+    <span class="live"><span class="dot"></span> 11 agents en ligne</span>
+  </div>
+  <div class="main">
+    <div class="feedwrap">
+      <div class="fh">💬 Les agents discutent <span class="tagn" id="cnt">analyse en cours…</span></div>
+      <div class="feed" id="feed"></div>
+    </div>
+    <div class="side">
+      <div class="card" style="flex:none">
+        <h3>⚠️ Criticité société</h3>
+        <div class="crit"><div class="big" id="critN" style="color:#E74C3C">100</div>
+          <div><div class="l">sur 100</div><div class="l" id="critTxt" style="color:#f3a79c;margin-top:3px">tension trésorerie + production</div></div></div>
+      </div>
+      <div class="card" style="flex:none">
+        <h3>📊 Ta société en chiffres</h3>
+        <div class="kpibox" id="kpibox"></div>
+      </div>
+      <div class="card" style="flex:1;min-height:0;overflow:auto">
+        <h3>👥 Agents connectés</h3>
+        <div class="team" id="team"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ===== TES VRAIES DONNÉES (calculées par le moteur d'agents le 30/05/2026) ===== */
+var D = {
+  total:186, ca:'3 908 562 DH', paye:'409 510 DH', tauxEnc:10,
+  reste:'3 499 052 DH', impayes:141,
+  enFab:35, enAttente:101, termine:50, aLivrer:145, livre:41, retard:0,
+  articles:442, matieres:559, fournisseurs:40,
+  salaries:39, masse:'221 300 DH', ateliers:9, coutH:60,
+  topVendeur:'Ikram', topCA:'1 552 312 DH', kenza:'1 449 694 DH', laila:'906 555 DH',
+  panier:'21 014 DH', criticite:100
+};
+var TEAM = [
+  {em:'🧠',c:'#C4714F',n:'Patron IA',r:'Direction'},
+  {em:'⚠️',c:'#E74C3C',n:'Le Veilleur',r:'Supervision'},
+  {em:'🏭',c:'#3b82f6',n:'Production',r:'Hanane'},
+  {em:'📅',c:'#06b6d4',n:'Planning',r:'Délais'},
+  {em:'💰',c:'#EAB308',n:'Finance',r:'Encaissement'},
+  {em:'🧮',c:'#34d399',n:'Coût de revient',r:'Marge'},
+  {em:'📦',c:'#a78bfa',n:'Achats',r:'Moumen'},
+  {em:'🚚',c:'#22C55E',n:'Livraison',r:'Fatima'},
+  {em:'👥',c:'#e69a76',n:'Commercial',r:'Ventes'},
+  {em:'📣',c:'#f59e0b',n:'Marketing',r:'Pub & leads'},
+  {em:'👷',c:'#f472b6',n:'RH / Paie',r:'Équipe'}
+];
+var BY={}; TEAM.forEach(function(t){BY[t.n]=t;});
+
+// sidebar
+document.getElementById('team').innerHTML = TEAM.map(function(t){
+  return '<div class="mem"><div class="a" style="background:'+t.c+'22">'+t.em+'</div>'+
+    '<div><b>'+t.n+'</b><span>'+t.r+'</span></div><span class="on"></span></div>';}).join('');
+document.getElementById('critN').textContent = D.criticite;
+var KPI=[['CA suivi',D.ca,''],['Reste à encaisser',D.reste,'red'],['En attente prod.',D.enAttente,''],['Livré',D.livre,'grn'],['Salariés',D.salaries,''],['Matières',D.matieres,'']];
+document.getElementById('kpibox').innerHTML = KPI.map(function(k){
+  return '<div class="kp '+k[2]+'"><div class="n">'+k[1]+'</div><div class="l">'+k[0]+'</div></div>';}).join('');
+
+/* ===== LA DISCUSSION — générée à partir de l'analyse réelle =====
+   Chaque agent "rapporte" ce que le moteur a calculé, le Patron IA croise et ordonne. */
+var SCRIPT = [
+ {t:'09:30',a:'Patron IA',boss:1,ordre:'BRIEFING',m:'Bonjour l\'équipe. Analyse du jour lancée sur <span class="k">'+D.total+' commandes</span>. Chacun son point — je veux les chiffres, pas du blabla. On commence.'},
+ {t:'09:30',a:'Finance',m:'CA suivi <span class="k">'+D.ca+'</span>, mais encaissé seulement <span class="r">'+D.tauxEnc+'%</span>. Il reste <span class="r">'+D.reste+'</span> dehors sur <span class="r">'+D.impayes+' commandes</span>. C\'est notre vrai problème.'},
+ {t:'09:31',a:'Production',m:'Atelier : <span class="k">'+D.enAttente+' commandes en attente</span>, '+D.enFab+' en cours, '+D.termine+' terminées. On a du volume bloqué au démarrage.'},
+ {t:'09:31',a:'Coût de revient',m:'Je confirme à Finance : sur les commandes en attente, certaines sont à <span class="r">marge faible</span>. Avant de lancer, je veux trier par marge. Panier moyen : <span class="k">'+D.panier+'</span>.'},
+ {t:'09:32',a:'Le Veilleur',m:'Synthèse : criticité <span class="r">'+D.criticite+'/100</span>. Deux tensions — trésorerie ('+D.reste+') et '+D.enAttente+' en attente. Bon point : <span class="g">'+D.retard+' livraison en retard</span>.'},
+ {t:'09:32',a:'Patron IA',boss:1,ordre:'ANALYSE',m:'Donc tout est lié : on produit beaucoup mais on encaisse peu. <span class="k">On débloque le cash AVANT de lancer plus de production.</span> Voici les ordres 👇'},
+ {t:'09:33',a:'Patron IA',boss:1,ordre:'ORDRE',m:'<span class="k">Finance</span> → relance aujourd\'hui les 5 plus gros impayés. <span class="k">Coût de revient</span> → classe les '+D.enAttente+' en attente par marge. <span class="k">Production</span> → lance d\'abord celles déjà payées.'},
+ {t:'09:33',a:'Finance',m:'Reçu 👍 Je prépare 5 relances. La plus grosse : <span class="r">Mme Naani — 22 000 DH</span>, échue depuis 12 j. J\'envoie en douceur.'},
+ {t:'09:34',a:'Coût de revient',m:'Tri en cours. Je sors la liste des commandes rentables à lancer en priorité et je la passe à Production + Planning.'},
+ {t:'09:34',a:'Achats',m:'Pour les commandes prioritaires en Travertin, je compare : <span class="k">Fourn. A 1 450 DH/m² · Fourn. B 1 290</span>. Je propose B → économie <span class="g">~6 400 DH</span>.'},
+ {t:'09:35',a:'Planning',m:'Je reçois la liste de Coût de revient. ⚠️ Attention : l\'atelier <span class="k">Peinture</span> sera saturé demain. Je décale 2 commandes non urgentes.'},
+ {t:'09:35',a:'Commercial',m:'Côté ventes ce mois : <span class="k">'+D.topVendeur+' '+D.topCA+'</span> 🥇, Kenza '+D.kenza+', Laila '+D.laila+'. Ikram porte l\'équipe.'},
+ {t:'09:36',a:'Service client',m:'3 clients demandent leur statut sur WhatsApp, je réponds avec le réel. 1 demande de remise → je remonte au Patron.'},
+ {t:'09:36',a:'Marketing',m:'Je pousse nos best-sellers (NUAGE, OLIA) aujourd\'hui : 2 posts + relance pub. Objectif : alimenter le carnet pendant qu\'on assainit la caisse.'},
+ {t:'09:37',a:'Patron IA',boss:1,you:1,m:'Driss, une décision pour toi 👇 La cliente <span class="k">Naani</span> demande -15% sur 22 000 DH → marge tomberait à <span class="r">6%</span>. Je propose <span class="k">-8% max</span>. Tu valides ?'},
+ {t:'09:38',a:'Le Veilleur',m:'Plan du jour acté : encaisser d\'abord, produire le rentable, optimiser les achats. Je surveille et je te préviens, Driss, si ça bouge. 👁️'}
+];
+
+var feed=document.getElementById('feed');
+function bubble(item){
+  var t=BY[item.a]||{em:'•',c:'#888',r:''};
+  var cls='msg'+(item.boss?' boss':'')+(item.you?' you':'');
+  var ordre=item.ordre?'<div class="ordre">'+item.ordre+'</div>':'';
+  var btns=item.you?'<div class="btns"><span class="btn y">✓ Oui (-8%)</span><span class="btn">Non</span><span class="btn">Je gère</span></div>':'';
+  var el=document.createElement('div'); el.className=cls;
+  el.innerHTML='<div class="av" style="background:'+t.c+'22">'+t.em+'</div>'+
+    '<div class="bubble">'+ordre+'<div class="who"><b>'+item.a+'</b><span class="role">'+(t.r||'')+'</span><span class="tm mono">'+item.t+'</span></div>'+
+    '<div class="txt">'+item.m+'</div>'+btns+'</div>';
+  feed.appendChild(el); feed.scrollTop=feed.scrollHeight;
+}
+function typing(item,cb){
+  var t=BY[item.a]||{em:'•',c:'#888'};
+  var el=document.createElement('div'); el.className='typing';
+  el.innerHTML='<div class="av" style="background:'+t.c+'22">'+t.em+'</div><div class="tdots"><i></i><i></i><i></i></div>';
+  feed.appendChild(el); feed.scrollTop=feed.scrollHeight;
+  setTimeout(function(){ if(el.parentNode)feed.removeChild(el); bubble(item); cb&&cb(); }, item.boss?950:680);
+}
+var i=0;
+function next(){
+  if(i>=SCRIPT.length){ document.getElementById('cnt').textContent='analyse terminée · '+SCRIPT.length+' échanges';
+    setTimeout(function(){ feed.innerHTML=''; i=0; document.getElementById('cnt').textContent='nouvelle analyse…'; next(); }, 7000); return; }
+  var item=SCRIPT[i++]; document.getElementById('clock').textContent=item.t;
+  typing(item, function(){ setTimeout(next, 1000); });
+}
+next();
+</script>
+</body>
+</html>
