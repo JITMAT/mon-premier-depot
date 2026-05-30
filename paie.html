@@ -1,0 +1,180 @@
+<!-- CREAJIT — Paie / RH : salaires réels (doc Tous les Ateliers) + articles fabriqués + rentabilité -->
+<script src="creajit-matieres.js"></script>
+<script src="creajit-ateliers.js"></script>
+<script src="creajit-couthoraire.js"></script>
+<script src="creajit-departements.js"></script>
+<script src="creajit-salaires.js"></script>
+<script src="creajit-workers.js"></script>
+<script src="creajit-data.js"></script>
+<script src="creajit-commandes-reelles.js"></script>
+<script src="creajit-orders.js"></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<title>CREAJIT — Paie & RH</title>
+<style>
+:root{--bg:#0d111b;--card:#161d2b;--line:#283449;--ink:#eef2f8;--mut:#94a3b8;--green:#34d399;--red:#f87171;--yellow:#fbbf24;--blue:#60a5fa;--orange:#C4714F;--orange-b:#e69a76}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:'Hanken Grotesk',system-ui,sans-serif;padding:18px;max-width:1100px;margin:0 auto;padding-bottom:80px}
+h1{font-family:'Fraunces',serif;font-size:24px}.sub{color:var(--mut);font-size:13px}
+.head{display:flex;align-items:center;gap:13px;margin-bottom:16px;flex-wrap:wrap}
+.av0{width:50px;height:50px;border-radius:13px;background:linear-gradient(135deg,#C4714F,#8a4d34);display:grid;place-items:center;font-size:22px;flex:none}
+.menu{margin-left:auto;display:flex;gap:7px;flex-wrap:wrap}
+.menu a{font-size:12px;color:var(--mut);text-decoration:none;background:var(--card);border:1px solid var(--line);padding:7px 11px;border-radius:9px}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-bottom:18px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:13px 15px}
+.kpi .v{font-family:Fraunces;font-weight:700;font-size:21px}.kpi .l{color:var(--mut);font-size:12px;margin-top:3px}
+.seg{display:flex;background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-bottom:14px;width:fit-content;flex-wrap:wrap}
+.seg button{background:none;border:none;color:var(--mut);font-family:inherit;font-size:13px;font-weight:600;padding:10px 16px;cursor:pointer}
+.seg button.on{background:rgba(196,113,79,.18);color:var(--orange-b)}
+input.q{width:100%;background:#0f1622;border:1px solid var(--line);color:var(--ink);border-radius:10px;padding:11px 13px;font-family:inherit;font-size:14px;margin-bottom:14px}
+.sec{font-family:'Fraunces',serif;font-weight:600;font-size:17px;margin:18px 0 10px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:12px 14px;margin-bottom:9px}
+.atrow{display:flex;align-items:center;gap:11px;cursor:pointer}
+.atpill{width:36px;height:36px;border-radius:9px;display:grid;place-items:center;font-weight:700;color:#fff;flex:none;font-size:14px}
+.nm{font-weight:600;font-size:14.5px}.mt{color:var(--mut);font-size:12px;margin-top:2px}
+.right{margin-left:auto;text-align:right;flex:none}
+.right .v{font-family:Fraunces;font-weight:700;font-size:17px}.right .l{font-size:11px;color:var(--mut)}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{text-align:left;color:var(--mut);font-weight:600;font-size:11.5px;padding:7px 8px;border-bottom:1px solid var(--line)}
+.tbl td{padding:9px 8px;border-bottom:1px solid rgba(255,255,255,.05)}
+.tbl tr:hover td{background:rgba(255,255,255,.02)}
+.num{text-align:right;font-variant-numeric:tabular-nums}
+.tag{font-size:10.5px;padding:2px 7px;border-radius:20px;font-weight:600}
+.pos{color:var(--green)}.neg{color:var(--red)}
+.bar{height:6px;background:#0c1018;border-radius:6px;overflow:hidden;margin-top:8px}.bar i{height:100%;display:block}
+.dept{margin-top:10px;border-top:1px dashed var(--line);padding-top:9px}
+.depth{font-size:12px;font-weight:600;color:var(--orange-b)}
+.empty{color:var(--mut);font-size:13px;padding:16px;text-align:center;background:var(--card);border:1px dashed var(--line);border-radius:13px;margin-top:10px}
+@media(max-width:640px){.kpis{grid-template-columns:repeat(2,1fr)}.hide-m{display:none}}
+</style>
+
+<div class="head">
+  <div class="av0">💼</div>
+  <div><h1>Paie & RH</h1><div class="sub">Salaires réels (doc « Tous les Ateliers »), articles fabriqués et rentabilité</div></div>
+  <div class="menu"><a href="index.html">🏠 Cockpit</a><a href="cout-revient.html">📊 Coûts</a><a href="hanane.html">📋 Hanane</a></div>
+</div>
+
+<div class="kpis" id="kpis"></div>
+<div class="seg" id="seg">
+  <button data-v="ateliers" class="on">Par atelier</button>
+  <button data-v="ouvriers">Par ouvrier</button>
+  <button data-v="paie">Paie du mois</button>
+</div>
+<input class="q" id="q" placeholder="🔎 Chercher un ouvrier…" style="display:none">
+<div id="content"></div>
+
+<script>
+(function(){
+  var vue='ateliers', recherche='', ouvert={};
+  function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+  function dh(n){return Math.round(n||0).toLocaleString('fr-FR')+' DH';}
+
+  // stats de travail par nom normalisé (relie le vrai travail aux salaires)
+  function statsParNom(){
+    var stats=(window.CJ&&CJ.statsOuvriers)?CJ.statsOuvriers():{};
+    var OUV=window.CJ_OUVRIERS||[], out={};
+    OUV.forEach(function(w){var s=stats[w.id];if(s)out[window.cjNormNom(w.nm)]=s;});
+    return out;
+  }
+  // une ligne par ouvrier (salaire réel + son travail réel)
+  function ligneOuvrier(e,byName){
+    var s=byName[e.key]||{};
+    var faits=s.faits||0,enCours=s.enCours||0,rapporte=s.rapporte||0,coutMO=s.coutMO||0,heures=s.heures||0;
+    var benef=rapporte-coutMO, prime=Math.max(0,Math.round(benef*0.01));
+    return {n:e.n,key:e.key,atelier:e.atelier,atColor:e.atColor,tenue:e.tenue,poste:e.poste,sal:e.sal,note:e.note,
+            faits:faits,enCours:enCours,rapporte:rapporte,coutMO:coutMO,heures:heures,prime:prime};
+  }
+
+  function render(){
+    var SAL=window.CJ_SALAIRES||[], byName=statsParNom();
+    var L=SAL.map(function(e){return ligneOuvrier(e,byName);});
+    var masse=window.CJ_MASSE_SALARIALE||L.reduce(function(s,x){return s+x.sal;},0);
+    var faitsTot=L.reduce(function(s,x){return s+x.faits;},0);
+    var rapporteTot=L.reduce(function(s,x){return s+x.rapporte;},0);
+    document.getElementById('kpis').innerHTML=
+      kpi(L.length,'Ouvriers')+kpi(dh(masse),'Masse salariale / mois')+
+      kpi(faitsTot,'Articles fabriqués')+kpi(dh(rapporteTot),'Production valorisée');
+    document.querySelectorAll('#seg button').forEach(function(b){b.classList.toggle('on',b.getAttribute('data-v')===vue);b.onclick=function(){vue=b.getAttribute('data-v');document.getElementById('q').style.display=(vue==='ateliers')?'none':'block';render();};});
+    if(vue==='ateliers') renderAteliers(byName);
+    else if(vue==='ouvriers') renderOuvriers(L);
+    else renderPaie(L);
+  }
+
+  // PAR ATELIER : accordéon avec départements, équipes, salaires, heures, coût/h
+  function renderAteliers(byName){
+    var ATS=window.CJ_ATELIERS_DOC||[];
+    var arr=ATS.slice().sort(function(a,b){return b.salaires-a.salaires;});
+    var maxM=arr[0]?arr[0].salaires:1;
+    document.getElementById('content').innerHTML='<div class="sec">🏭 Salaires & production par atelier</div>'+arr.map(function(a){
+      var ouv=!!ouvert[a.code];
+      // production réelle de l'atelier (somme du travail de ses ouvriers)
+      var faits=0,rapporte=0;
+      a.depts.forEach(function(d){d.equipe.forEach(function(m){var s=byName[window.cjNormNom(m.n)];if(s){faits+=s.faits||0;rapporte+=s.rapporte||0;}});});
+      var head='<div class="atrow" data-at="'+a.code+'">'+
+        '<div class="atpill" style="background:'+a.couleur+'">'+a.code+'</div>'+
+        '<div style="flex:1;min-width:0"><div class="nm">Atelier '+a.code+' — '+esc(a.produits.split('•')[0].trim())+' <span class="tag" style="background:'+a.couleur+'33;color:'+a.couleur+'">🧥 '+a.tenue+'</span></div>'+
+        '<div class="mt">Chef : '+esc(a.chef)+' · '+a.nbOuvriers+' ouvriers · '+a.depts.length+' dépt · '+a.heures+'h/mois'+(faits?(' · '+faits+' fabriqués'):'')+'</div></div>'+
+        '<div class="right"><div class="v">'+dh(a.salaires)+'</div><div class="l">salaires/mois</div></div></div>'+
+        '<div class="bar"><i style="width:'+(a.salaires/maxM*100)+'%;background:'+a.couleur+'"></i></div>';
+      var body='';
+      if(ouv){
+        body=a.depts.map(function(d){
+          var salD=d.equipe.reduce(function(s,m){return s+m.sal;},0);
+          return '<div class="dept"><div class="depth">'+d.code+' · '+esc(d.nom)+' <span class="mt" style="font-weight:400">('+d.coutH+' DH/h · '+d.heures+'h)</span></div>'+
+            '<div class="mt" style="margin:3px 0 6px">Fabrique : '+esc(d.fabrique)+'</div>'+
+            d.equipe.map(function(m){var s=byName[window.cjNormNom(m.n)]||{};
+              return '<div style="display:flex;justify-content:space-between;font-size:12.5px;padding:2px 0">'+
+                '<span>'+(d.chef===m.n?'⭐ ':'')+esc(m.n)+(s.faits?' <span class="mt">('+s.faits+' faits)</span>':'')+(m.note?' <span class="mt">— '+esc(m.note)+'</span>':'')+'</span>'+
+                '<b>'+dh(m.sal)+'</b></div>';
+            }).join('')+
+            '<div style="text-align:right;font-size:11px;color:var(--mut);margin-top:3px">sous-total : '+dh(salD)+'</div></div>';
+        }).join('');
+      }
+      return '<div class="card">'+head+body+'</div>';
+    }).join('');
+    document.querySelectorAll('[data-at]').forEach(function(b){b.onclick=function(){var c=b.getAttribute('data-at');ouvert[c]=!ouvert[c];render();};});
+  }
+
+  function renderOuvriers(L){
+    if(recherche){var q=recherche.toLowerCase();L=L.filter(function(x){return (x.n+' '+x.poste).toLowerCase().indexOf(q)>=0;});}
+    L=L.sort(function(a,b){return b.rapporte-a.rapporte || b.faits-a.faits || b.sal-a.sal;});
+    if(!L.length){document.getElementById('content').innerHTML='<div class="empty">Aucun ouvrier trouvé.</div>';return;}
+    var rows=L.map(function(x,i){
+      return '<tr><td>'+(i+1)+'</td><td><div class="nm" style="font-size:13px">'+esc(x.n)+'</div><div class="mt">Atelier '+x.atelier+' · '+esc(x.poste)+'</div></td>'+
+        '<td class="num hide-m">'+x.faits+(x.enCours?' <span class="mt">(+'+x.enCours+')</span>':'')+'</td>'+
+        '<td class="num hide-m">'+(x.heures?x.heures+'h':'—')+'</td>'+
+        '<td class="num">'+(x.rapporte?dh(x.rapporte):'—')+'</td>'+
+        '<td class="num">'+dh(x.sal)+'</td>'+
+        '<td class="num">'+(x.prime?'<span class="pos">+'+dh(x.prime)+'</span>':'—')+'</td></tr>';
+    }).join('');
+    document.getElementById('content').innerHTML='<div class="sec">👷 Classement ouvriers (production réelle)</div>'+
+      '<div class="card" style="padding:4px 10px"><table class="tbl"><thead><tr><th>#</th><th>Ouvrier</th><th class="num hide-m">Faits</th><th class="num hide-m">Temps</th><th class="num">Production</th><th class="num">Salaire</th><th class="num">Prime 1%</th></tr></thead><tbody>'+rows+'</tbody></table></div>'+
+      '<div class="mt" style="margin-top:8px">« Faits » = articles terminés (en cours entre parenthèses). « Production » = prix de vente des articles terminés. « Prime » = 1% du bénéfice (production − coût main d\'œuvre).</div>';
+  }
+
+  function renderPaie(L){
+    if(recherche){var q=recherche.toLowerCase();L=L.filter(function(x){return (x.n).toLowerCase().indexOf(q)>=0;});}
+    L=L.sort(function(a,b){return (b.sal+b.prime)-(a.sal+a.prime);});
+    var totalAPayer=L.reduce(function(s,x){return s+x.sal+x.prime;},0);
+    var rows=L.map(function(x){
+      var aPayer=x.sal+x.prime;
+      return '<tr><td><div class="nm" style="font-size:13px">'+esc(x.n)+'</div><div class="mt">Atelier '+x.atelier+' · '+esc(x.poste)+'</div></td>'+
+        '<td class="num">'+dh(x.sal)+'</td>'+
+        '<td class="num">'+(x.prime?'<span class="pos">+'+dh(x.prime)+'</span>':'—')+'</td>'+
+        '<td class="num"><b>'+dh(aPayer)+'</b></td>'+
+        '<td class="hide-m">'+(x.note?'<span class="mt">'+esc(x.note)+'</span>':'')+'</td></tr>';
+    }).join('');
+    document.getElementById('content').innerHTML='<div class="sec">💰 Paie du mois — total : '+dh(totalAPayer)+'</div>'+
+      '<div class="card" style="padding:4px 10px"><table class="tbl"><thead><tr><th>Ouvrier</th><th class="num">Salaire</th><th class="num">Prime</th><th class="num">À payer</th><th class="hide-m">Note</th></tr></thead><tbody>'+rows+'</tbody></table></div>'+
+      '<div class="mt" style="margin-top:8px">Salaire de base + prime 1% du bénéfice des articles terminés. (Acomptes/retenues : à brancher avec la pointeuse.)</div>';
+  }
+
+  function kpi(v,l){return '<div class="kpi"><div class="v">'+v+'</div><div class="l">'+l+'</div></div>';}
+
+  document.getElementById('q').oninput=function(){recherche=this.value;render();};
+  window.addEventListener('load',render);
+  if(window.CJ&&CJ.abonner) CJ.abonner(render);
+  render();
+})();
+</script>
