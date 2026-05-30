@@ -1,17 +1,16 @@
 /* ============================================================
    CREAJIT IA — Assistant IA réutilisable (bouton flottant 🤖)
    Chaque page agent définit window.CJ_AGENT_PROMPT (son rôle) puis inclut
-   ce script. L'IA = Claude (clé navigateur, partagée), CONNECTÉE au cerveau
-   commun (CJ.contexteIA) → l'agent voit ce que font les autres.
+   ce script. L'IA = Claude (clé navigateur), CONNECTÉE au cerveau commun
+   (CJ.contexteIA) → l'agent voit ce que font les autres.
 
-   ⬆️ Version « vrai agent » : VOIX (micro darija + lecture à voix haute) +
-   ACTIONS (outils Claude : commander matière, signaler, relancer…) selon le
-   rôle de l'agent (window.CJ_AGENT_ROLE).
+   Version « vrai agent » : VOIX (micro darija + lecture à voix haute) +
+   ACTIONS (outils Claude) selon le rôle (window.CJ_AGENT_ROLE).
    ============================================================ */
 (function () {
   var BASE = window.CJ_AGENT_PROMPT;
   if (!BASE) return;
-  var ROLE = window.CJ_AGENT_ROLE || '';     // 'magasin' | 'reception' | 'logistique' | 'commercial' | 'compta' | ...
+  var ROLE = window.CJ_AGENT_ROLE || '';     // magasin | reception | logistique | commercial | compta | exploitation
   var QUI = window.CJ_AGENT_NOM || 'Agent';
 
   var st = document.createElement('style');
@@ -50,10 +49,13 @@
   function outilsPourRole() {
     var t = [];
     if (ROLE === 'magasin') {
-      t.push({ name: 'traiter_bon', description: "Traiter un bon de matière en attente : retrait magasin ou achat fournisseur. Le chrono d'appro continue.", input_schema: { type: 'object', properties: { client: { type: 'string', description: 'client du bon (ou laisser vide pour le plus ancien en attente)' }, mode: { type: 'string', description: "'Retrait magasin' ou 'Achat fournisseur'" } }, required: ['mode'] } });
+      t.push({ name: 'traiter_bon', description: "Traiter un bon de matière en attente : retrait magasin ou achat fournisseur. Le chrono d'appro continue.", input_schema: { type: 'object', properties: { client: { type: 'string', description: 'client du bon (vide = le plus ancien en attente)' }, mode: { type: 'string', description: "'Retrait magasin' ou 'Achat fournisseur'" } }, required: ['mode'] } });
     }
     if (ROLE === 'reception') {
       t.push({ name: 'receptionner', description: 'Marquer la marchandise reçue : le bon passe au VERT chez Mohamed, Hanane et l\'ouvrier.', input_schema: { type: 'object', properties: { client: { type: 'string', description: 'client du bon à réceptionner' } }, required: [] } });
+    }
+    if (ROLE === 'exploitation') {
+      t.push({ name: 'commander_matiere', description: "Créer un bon de matière (envoyé au magasin Mohamed) pour une commande client. Le chrono d'appro démarre.", input_schema: { type: 'object', properties: { client: { type: 'string' }, matiere: { type: 'string' }, quantite: { type: 'number' }, unite: { type: 'string' } }, required: ['matiere'] } });
     }
     // tous les agents peuvent alerter le patron
     t.push({ name: 'alerter_patron', description: 'Remonter une alerte/question importante à Driss (le patron) dans le fil du cockpit.', input_schema: { type: 'object', properties: { message: { type: 'string' } }, required: ['message'] } });
@@ -84,6 +86,11 @@
       window.CJ.majBon(b2.id, { statut: 'recu', tRecu: Date.now() });
       window.CJ.evenement('success', QUI, QUI + ' a réceptionné la matière pour ' + (b2.client || '') + '. Bon au VERT.', '→ Mohamed + Hanane + ouvrier');
       return 'Reçu ✅ ' + (b2.client || '') + ' — tout le monde voit le vert.';
+    }
+    if (name === 'commander_matiere') {
+      window.CJ.bon({ ref: '', client: args.client || '', par: QUI, statut: 'envoye', lignes: [{ nom: args.matiere, qty: args.quantite || 1, unite: args.unite || '' }] });
+      window.CJ.evenement('warn', QUI, QUI + ' a commandé : ' + (args.quantite || 1) + ' ' + (args.unite || '') + ' ' + args.matiere + (args.client ? (' (pour ' + args.client + ')') : '') + '.', '→ Mohamed (magasin)');
+      return 'Bon envoyé au magasin : ' + (args.quantite || 1) + ' ' + (args.unite || '') + ' ' + args.matiere + '.';
     }
     if (name === 'alerter_patron') {
       window.CJ.evenement('alert', QUI, '📣 ' + args.message, '→ Driss');
@@ -122,7 +129,7 @@
       var guard = 0;
       while (guard++ < 4) {
         var r = await appel(k); var data = await r.json();
-        if (data && data.error) { pend.remove(); bub('assistant', '⚠️ ' + (data.error.message || 'Erreur IA') + ' (clé ?)'); break; }
+        if (data && data.error) { if (pend && pend.parentNode) pend.remove(); bub('assistant', '⚠️ ' + (data.error.message || 'Erreur IA') + ' (clé ?)'); break; }
         var blocks = data.content || [];
         var texte = blocks.filter(function (x) { return x.type === 'text'; }).map(function (x) { return x.text; }).join('\n').trim();
         var tools = blocks.filter(function (x) { return x.type === 'tool_use'; });

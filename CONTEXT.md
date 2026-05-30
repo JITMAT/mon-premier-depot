@@ -444,6 +444,15 @@ Articles : Chaise Cartel ×75 @730 ; Tableau 120/80 ×25 @730 ; Tableau 40/40 ×
   traite un bon → commande, Hassan réceptionne → reçu/vert ; 5/5 pages OK. (Reste sans agent dédié :
   Hanane et consignes — à voir.)
 
+- **2026-05-30 — Agent IA donné à Hanane + assistant partagé fiabilisé.** Hanane (exploitation)
+  a maintenant son agent (voix darija + outil `commander_matiere` → bon au magasin + `alerter_patron`).
+  `creajit-assistant.js` réécrit proprement (un édit avait introduit des doublons → réécriture
+  complète, 152 lignes, chaque outil défini une seule fois). Rôles : magasin=traiter_bon,
+  reception=receptionner, exploitation=commander_matiere, tous=alerter_patron. consignes.html laissé
+  tel quel (c'est DÉJÀ le canal Driss→agents, pas besoin d'un agent flottant). Testé node :
+  commander_matiere crée le bon ; 6/6 pages agents OK syntaxe. Tous les salariés à mini-site ont
+  désormais un vrai agent (voix + actions).
+
 ## 13. Ordre de construction officiel (structure décidée, à suivre)
 
 > Driss délègue la structuration. On construit dans CET ordre, en s'appuyant sur les
