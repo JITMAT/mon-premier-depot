@@ -61,7 +61,7 @@
       tenue: 'Rouge', couleur: '#ef4444',
       depts: [
         { code: 'DF01', nom: 'Peinture', chef: 'Mohamed Elkarmani', fabrique: 'Peinture meubles, Laque, Finitions, Patine', heures: 880, coutH: 55,
-          equipe: [{ n: 'Mohamed Elkarmani', sal: 5500 }, { n: 'Abdelaaziz Ben Amer', sal: 5000 }, { n: 'Mohamed Elmoussaoui', sal: 5000 }, { n: 'Mouad Elmaamlem', sal: 4000 }, { n: 'Milouda El Azaoui', sal: 3500 }] },
+          equipe: [{ n: 'Mohamed Elkarmani', sal: 5500 }, { n: 'Abdelaaziz Ben Amer', sal: 5000 }, { n: 'Mohamed Elmoussaoui', sal: 5000 }, { n: 'Mouad Elmaamlem', sal: 4000 }, { n: 'Milouda El Azaoui', sal: 3500 }, { n: 'Youssef Ibnradiya', sal: 5000 }] },
       ] },
     { code: 'G', chef: 'Mohamed Boualili', produits: 'Ferronnerie • Soudure • Métal',
       tenue: 'Grise', couleur: '#6b7280',
@@ -116,10 +116,30 @@
   window.CJ_SALAIRES = FLAT;                              // 1 ligne par personne (dédupliquée)
   window.CJ_MASSE_SALARIALE = FLAT.reduce(function (s, e) { return s + e.sal; }, 0); // masse réelle (sans double compte)
   window.cjNormNom = norm;
+  // mots non distinctifs (initiales, particules) à ignorer pour la correspondance
+  var STOP = { m: 1, el: 1, le: 1, de: 1, ben: 1, ait: 1, dit: 1, la: 1, du: 1 };
+  function motsCles(nom) {
+    return String(nom || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
+      .split(/[^a-z]+/).filter(function (w) { return w.length >= 3 && !STOP[w]; });
+  }
+  // retrouve le salaire d'un ouvrier — tolère les variantes d'orthographe
+  // (ex. « M. Fadil El Mouaden » = « Mohamed Fadil El Mouaden », « Mustapha Boudrif » = « Le Boudrif De Mustapha »)
   window.cjSalaire = function (nom) {
     var k = norm(nom);
-    return FLAT.find(function (e) { return e.key === k; })
-        || FLAT.find(function (e) { return e.key.indexOf(k) >= 0 || k.indexOf(e.key) >= 0; })
-        || null;
+    var exact = FLAT.find(function (e) { return e.key === k; });
+    if (exact) return exact;
+    var sub = FLAT.find(function (e) { return e.key.indexOf(k) >= 0 || k.indexOf(e.key) >= 0; });
+    if (sub) return sub;
+    // correspondance par mots-clés : tous les mots distinctifs du plus court présents dans l'autre
+    var mc = motsCles(nom);
+    if (!mc.length) return null;
+    return FLAT.find(function (e) {
+      var me = motsCles(e.n);
+      if (!me.length) return false;
+      var court = mc.length <= me.length ? mc : me;
+      var longSet = {}; (mc.length <= me.length ? me : mc).forEach(function (w) { longSet[w] = 1; });
+      var communs = court.filter(function (w) { return longSet[w]; }).length;
+      return communs >= court.length && communs >= 2; // au moins 2 mots-clés tous partagés
+    }) || null;
   };
 })();
