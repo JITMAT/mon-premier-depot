@@ -243,6 +243,18 @@ Articles : Chaise Cartel ×75 @730 ; Tableau 120/80 ×25 @730 ; Tableau 40/40 ×
   ⚠️ Bouton overlay inventé = SUPPRIMÉ. **Reste : E (QC Fatima), F (matière Mohamed/Hassan),
   H (dessin IA), fiche technique, autres agents, temps réel multi-appareils.**
 
+- **2026-05-30 — Module F (pré-production) + fiche perso ouvrier.**
+  • Chaque ouvrier a SA fiche : `ouvrier.html?w=<id>` (registre `creajit-workers.js`), le
+  bouton « Voir » de Hanane ouvre le bon agent (fini le renvoi à Youssef).
+  • Hanane (détail client) : **fiche technique** (dimensions/tissu/accoudoirs/coutures/notes)
+  + **matière première** (recherche 559 réf., bon → magasin) + suivi des bons avec **chrono**.
+  • Nouveaux agents : **`magasin.html` (Mohamed)** traite (retrait/achat) ; **`reception.html`
+  (Hassan)** réceptionne → bon au VERT. Menu nav : +Magasin +Réception. Événements → fil cockpit.
+  • ⚠️ Connecteur CreaJit : pas de détail article/photo par commande (sauf 26040019) → viendra
+  via la fiche technique (photos/dessin IA) ou connecteur enrichi.
+  **Reste : photos/dessin IA validé client, QC par étape+anomalies, consignes patron→agents,
+  agents Fatima/Kenza, temps réel multi-appareils.**
+
 ## 13. Ordre de construction officiel (structure décidée, à suivre)
 
 > Driss délègue la structuration. On construit dans CET ordre, en s'appuyant sur les
