@@ -10,6 +10,18 @@
   var moi = reg.find(function (w) { return w.id === wid; }) || { id: 'ibnradiya', nm: 'Youssef Ibnradiya', at: 'F' };
   window.CJ_MOI = moi.id;
 
+  // System prompt PERSONNALISÉ pour l'IA de cette personne (sinon tout le monde = Youssef)
+  (function () {
+    var at = (window.CJ_ATELIERS || []).find(function (x) { return x.code === moi.at; });
+    var poste = moi.role ? moi.role
+      : (at ? ('ouvrier à l\'atelier ' + at.nom + ' (atelier ' + moi.at + ', ~' + at.coutH + ' DH/h)') : 'ouvrier');
+    var prenom = (moi.nm || '').split(' ')[0];
+    window.CJ_SYS = "Tu es l'assistant IA personnel de " + moi.nm + ", " + poste + " chez CREAJIT (meubles sur mesure, Marrakech). "
+      + "Tu l'aides concrètement : estimer le temps et le coût de main d'œuvre, calculer les quantités de matière (coefficient de chute), vérifier le stock, rédiger des messages courts au magasin (Mohamed) ou à Fatima (logistique), et comprendre sa paie/prime (1% du bénéfice par article). "
+      + "Tu es CONNECTÉ aux autres agents (voir l'état partagé temps réel ci-dessous). "
+      + "Réponds en français, simple et court, et adresse-toi à " + prenom + " (jamais à quelqu'un d'autre).";
+  })();
+
   function atName(c) { var a = (window.CJ_ATELIERS || []).find(function (x) { return x.code === c; }); return a ? a.nom : ('Atelier ' + c); }
   function ini(nm) { return nm.split(' ').map(function (x) { return x[0]; }).slice(0, 2).join('').toUpperCase(); }
 
