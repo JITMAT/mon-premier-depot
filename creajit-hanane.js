@@ -319,7 +319,7 @@
     });
     box.innerHTML = h;
     box.querySelectorAll('[data-voir]').forEach(b => b.onclick = e => { e.stopPropagation(); location.href = 'ouvrier.html?w=' + b.getAttribute('data-voir'); });
-    box.querySelectorAll('[data-assign]').forEach(el => el.onclick = () => { if (selA) affecter(selA, el.getAttribute('data-assign')); });
+    box.querySelectorAll('[data-assign]').forEach(el => el.onclick = () => { var wid=el.getAttribute('data-assign'); if (selA) affecter(selA, wid); else location.href='ouvrier.html?w='+wid; });
   }
 
   function affecter(itemId, wid) {
