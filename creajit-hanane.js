@@ -60,14 +60,19 @@
   if (window.CJ_COMMANDES_REELLES && window.CJ_COMMANDES_REELLES.length) {
     COMMANDES.length = 0;
     window.CJ_COMMANDES_REELLES.forEach(function (o) {
+      var paye = o.paye != null ? o.paye : (o.paid || 0);
+      var statut = o.statut || o.productionStatus || 'confirmed';
       COMMANDES.push({
         ref: o.ref, client: o.client || '', com: o.vendeur || o.com || '',
-        statut: o.statut || 'confirmed', livr: o.livr || null, retard: o.retard || 0,
-        total: o.total || 0, paye: o.paye || 0, reste: o.reste || 0,
+        statut: statut, livr: o.livr || o.date || null, retard: o.retard || 0,
+        date: o.date || '', tel: o.telephone || '',
+        paiement: o.paymentStatus || '', livraison: o.deliveryStatus || '',
+        total: o.total || 0, paye: paye, reste: (o.reste != null ? o.reste : (o.total || 0) - paye),
         nb: (o.articles || []).length,
         articles: (o.articles || []).map(function (a, i) {
+          var ph = a.photo || (Array.isArray(a.photos) && a.photos[0]) || '';
           return { id: (o.ref || 'cmd') + '_a' + i, nm: a.nom || a.name || ('Article ' + (i + 1)),
-                   qty: a.qty || a.quantity || '', pu: a.pu || a.price || '', photo: a.photo || '' };
+                   qty: a.qte || a.qty || a.quantity || '', pu: a.prix || a.pu || a.price || '', photo: ph };
         })
       });
     });
