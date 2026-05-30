@@ -93,6 +93,13 @@ body{background:var(--bg);color:var(--ink);font-family:'Hanken Grotesk',sans-ser
 .al.high{background:rgba(232,88,74,.08);border-color:rgba(232,88,74,.35)}.al.mid{background:rgba(232,181,59,.07);border-color:rgba(232,181,59,.3)}
 .al .ai2{font-size:20px}.al .an{font-weight:600;font-size:13.5px}.al .am{font-size:11.5px;color:var(--mut)}
 .al .act{margin-left:auto;font-size:11.5px;font-weight:600;color:var(--blue);background:rgba(91,155,243,.1);border:1px solid rgba(91,155,243,.25);padding:6px 11px;border-radius:20px;cursor:pointer}
+.seg-b{background:var(--card);border:1px solid var(--line);color:var(--mut);font-family:inherit;font-size:12.5px;font-weight:600;padding:8px 13px;border-radius:9px;cursor:pointer}
+.seg-b.on{background:rgba(196,113,79,.18);color:var(--orange-b);border-color:rgba(196,113,79,.4)}
+.scard{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:11px 13px;margin-bottom:9px}
+.sline{display:flex;flex-wrap:wrap;gap:7px;margin-top:5px;align-items:center}
+.scell{font-size:11.5px;color:var(--mut)}
+.stag{font-size:11px;padding:2px 8px;border-radius:20px;font-weight:600;border:1px solid;white-space:nowrap}
+.sprog{height:6px;background:#0c1018;border-radius:6px;overflow:hidden;margin-top:9px}
 
 /* modal worker detail */
 .ov{display:none;position:fixed;inset:0;background:rgba(5,8,14,.74);backdrop-filter:blur(4px);z-index:60;padding:20px;overflow-y:auto}
@@ -137,6 +144,7 @@ body{background:var(--bg);color:var(--ink);font-family:'Hanken Grotesk',sans-ser
     <nav>
       <button class="mi on" data-s="board" onclick="show('board')"><span class="mic">🧭</span> Tableau de bord</button>
       <button class="mi" data-s="feed" onclick="show('feed')"><span class="mic">📰</span> Fil d'actualité</button>
+      <button class="mi" data-s="suivi" onclick="show('suivi')"><span class="mic">🏭</span> Suivi des commandes <span class="badge" id="bSuivi"></span></button>
       <button class="mi" data-s="team" onclick="show('team')"><span class="mic">👥</span> Tous les ouvriers</button>
       <button class="mi" data-s="late" onclick="show('late')"><span class="mic">⏰</span> Ouvriers en retard <span class="badge" id="bLate"></span></button>
       <button class="mi" data-s="renta" onclick="show('renta')"><span class="mic">💰</span> Rentabilité articles</button>
@@ -168,6 +176,9 @@ body{background:var(--bg);color:var(--ink);font-family:'Hanken Grotesk',sans-ser
       <div class="h2s">Chaque agent IA remonte ce qui se passe en direct.</div><div id="feed"></div></div>
 
     <!-- TEAM -->
+    <div class="sec" id="sec-suivi"><div class="h2">🏭 Suivi des commandes</div><div class="h2s">L'état réel de chaque commande, de l'atelier à la livraison — la coordination de toute l'usine.</div>
+      <div id="suiviFiltres" style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px"></div>
+      <div id="suiviList"></div></div>
     <div class="sec" id="sec-team"><div class="h2">👥 Tous les ouvriers</div><div class="h2s">🟢 au travail · 🟡 en pause · 🔴 sans commande · clique un ouvrier pour tout voir.</div>
       <div class="sortbar"><button class="sortb on" data-k="rapporte" onclick="sortTeam('rapporte')">💰 Rentabilité</button>
         <button class="sortb" data-k="faits" onclick="sortTeam('faits')">🔨 Articles faits</button>
@@ -359,7 +370,50 @@ async function send(){const inp=document.getElementById('inp');const txt=inp.val
 
 function show(s){document.querySelectorAll('.mi').forEach(m=>m.classList.toggle('on',m.dataset.s===s));
   document.querySelectorAll('.sec').forEach(x=>x.classList.remove('on'));document.getElementById('sec-'+s).classList.add('on');
-  if(s==='board')renderDir();if(s==='feed')renderFeed();if(s==='team')renderTeam();if(s==='late')renderLate();if(s==='renta')renderRenta();if(s==='alerts')renderAlerts();if(s==='ai')renderChat();}
+  if(s==='board')renderDir();if(s==='feed')renderFeed();if(s==='team')renderTeam();if(s==='late')renderLate();if(s==='renta')renderRenta();if(s==='alerts')renderAlerts();if(s==='ai')renderChat();if(s==='suivi')renderSuivi();}
+
+/* ===== Suivi des commandes (vue unifiée atelier -> livraison) ===== */
+var suiviFiltre='actifs';
+function _atNom(c){var a=(window.CJ_ATELIERS||[]).find(function(x){return x.code===c;});return a?a.nom:('Atelier '+c);}
+function _escS(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+function renderSuivi(){
+  if(!window.CJ_ORDERS||!window.CJ||!window.CJ.suivi){document.getElementById('suiviList').innerHTML='<div class="h2s">Données indisponibles.</div>';return;}
+  var ORD=window.CJ_ORDERS.all();
+  var rows=ORD.map(function(o){return {o:o,s:window.CJ.suivi(o)};});
+  // filtres
+  var defs=[['actifs','🔧 Suivis en interne'],['probleme','🔴 À problème'],['pret','✅ Prêts à livrer'],['tous','Tous']];
+  document.getElementById('suiviFiltres').innerHTML=defs.map(function(d){return '<button class="seg-b'+(suiviFiltre===d[0]?' on':'')+'" data-sf="'+d[0]+'">'+d[1]+'</button>';}).join('');
+  document.querySelectorAll('[data-sf]').forEach(function(b){b.onclick=function(){suiviFiltre=b.getAttribute('data-sf');renderSuivi();};});
+  var list=rows;
+  if(suiviFiltre==='actifs')list=rows.filter(function(r){return r.s.source!=='creajit'&&!r.s.livree;});
+  else if(suiviFiltre==='probleme')list=rows.filter(function(r){return r.s.qcAnomalie||r.s.pause||r.s.bonsEnAttente;});
+  else if(suiviFiltre==='pret')list=rows.filter(function(r){return r.s.pretALivrer&&!r.s.livree;});
+  document.getElementById('bSuivi').textContent=rows.filter(function(r){return r.s.source!=='creajit'&&!r.s.livree;}).length||'';
+  if(!list.length){document.getElementById('suiviList').innerHTML='<div class="h2s" style="padding:14px">Rien dans ce filtre. Dès qu\'un atelier travaille sur une commande, elle apparaît ici en temps réel.</div>';return;}
+  // tri : problèmes puis avancement décroissant
+  list.sort(function(a,b){var pa=(a.s.qcAnomalie||a.s.pause||a.s.bonsEnAttente)?1:0,pb=(b.s.qcAnomalie||b.s.pause||b.s.bonsEnAttente)?1:0;if(pa!==pb)return pb-pa;return b.s.progression-a.s.progression;});
+  document.getElementById('suiviList').innerHTML=list.slice(0,80).map(function(r){
+    var o=r.o,s=r.s;
+    var col=s.pretALivrer?'#34d399':(/anomalie|pause/i.test(s.etape)?'#f87171':(/fabrication|contrôle/i.test(s.etape)?'#fbbf24':'#94a3b8'));
+    var a0=(o.articles||[])[0]||{};
+    var vig=a0.photo?'<img src="'+_escS(a0.photo)+'" style="width:46px;height:46px;border-radius:9px;object-fit:cover;background:#0c1018">':'<div style="width:46px;height:46px;border-radius:9px;background:#0c1018;display:grid;place-items:center">🛋️</div>';
+    var bits=['<span class="stag" style="color:'+col+';border-color:'+col+'66">🏭 '+_escS(s.etape)+'</span>'];
+    if(s.ateliers.length)bits.push('<span class="scell">🔧 '+s.ateliers.map(_atNom).map(_escS).join(', ')+'</span>');
+    if(s.ouvriers.length)bits.push('<span class="scell">👷 '+s.ouvriers.map(_escS).join(', ')+'</span>');
+    if(s.totalArticles)bits.push('<span class="scell">'+s.finis+'/'+s.totalArticles+' fini</span>');
+    if(s.qcEnAttente)bits.push('<span class="stag" style="color:#fbbf24;border-color:#fbbf2466">🔎 '+s.qcEnAttente+' à contrôler</span>');
+    if(s.qcAnomalie)bits.push('<span class="stag" style="color:#f87171;border-color:#f8717166">⚠️ anomalie</span>');
+    if(s.bonsEnAttente)bits.push('<span class="stag" style="color:#f87171;border-color:#f8717166">📦 '+s.bonsEnAttente+' matière</span>');
+    if(s.pause&&s.motifs.length)bits.push('<span class="stag" style="color:#f87171;border-color:#f8717166">⏸️ '+_escS(s.motifs[0])+'</span>');
+    if(s.moTotal>0)bits.push('<span class="scell">💰 '+Math.round(s.moTotal).toLocaleString('fr-FR')+' DH MO</span>');
+    var pct=s.progression||0;
+    return '<div class="scard"><div style="display:flex;align-items:center;gap:11px">'+vig+
+      '<div style="flex:1;min-width:0"><div style="font-weight:600">'+_escS(o.client)+'<span style="color:#94a3b8;font-weight:400;font-size:12px"> · '+_escS(o.ref||'')+'</span></div>'+
+      '<div class="sline">'+bits.join('')+'</div></div>'+
+      '<div style="text-align:right"><div style="font-family:Fraunces,serif;font-weight:700">'+Math.round(o.total||0).toLocaleString('fr-FR')+' DH</div></div></div>'+
+      '<div class="sprog"><div style="height:100%;width:'+pct+'%;border-radius:6px;background:'+(pct>=100?'#34d399':(pct>=50?'#fbbf24':'#C4714F'))+'"></div></div></div>';
+  }).join('');
+}
 let tt;function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),3000);}
 renderDir();renderLate();renderAlerts();
 if(window.CJ)CJ.abonner(function(){var s=document.getElementById('sec-alerts');renderAlerts();if(s&&!s.classList.contains('on')){}});

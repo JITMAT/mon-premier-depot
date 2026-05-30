@@ -407,8 +407,13 @@ Articles : Chaise Cartel ×75 @730 ; Tableau 120/80 ×25 @730 ; Tableau 40/40 ×
   vraie commande (atelier travaille → Fatima voit l'atelier/ouvrier/avancement). Fatima : chaque
   carte livraison affiche désormais la **ligne de coordination atelier** (étape, ateliers, ouvriers,
   N/total finis, QC, matière en attente, pause, barre de progression) ; bouton « Marquer livrée »
-  seulement si réellement prêt, sinon « livrer quand même ». Prochaine étape : même backbone dans
-  le cockpit (boss) et la page Hanane pour une vue unifiée partout.
+  seulement si réellement prêt, sinon « livrer quand même ».
+- **2026-05-30 — Cockpit : section « 🏭 Suivi des commandes » (vue unifiée).** Le boss voit
+  l'état réel de chaque commande via le MÊME `CJ.suivi()` que Fatima : photo, étape, ateliers,
+  ouvriers, finis/total, QC, matière en attente, motif de pause, coût MO, barre de progression.
+  Filtres : 🔧 Suivis en interne · 🔴 À problème · ✅ Prêts à livrer · Tous. Tri problèmes d'abord
+  puis avancement. Badge menu = nb de commandes suivies en interne. Testé node sur les 186 vraies
+  commandes (filtres actifs/problème/prêt cohérents). Reste : même bloc dans la page Hanane.
 
 ## 13. Ordre de construction officiel (structure décidée, à suivre)
 
