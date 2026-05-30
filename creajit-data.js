@@ -222,6 +222,7 @@
           res.push({ articleId, ouvrierId, statut: o.statut || 'affecte', motif: o.motif || '',
             nom: o.nom || meta.nom || 'article', client: meta.client || '', ref: meta.ref || '',
             photo: meta.photo || '', qty: meta.qty || 1, pu: meta.pu || 0,
+            t0: o.t0 || null, debutLe: o.debutLe || null, elapsedMs: o.elapsedMs || 0, msVivant: ms,
             heures: Math.round((ms / 3600000) * 10) / 10, coutRevient: cout ? cout.total : 0, cout });
         });
       });
@@ -342,8 +343,19 @@
     demarrerTravail: (articleId, ouvrierId) => {
       const liste = (etat.affArt || {})[articleId]; if (!liste) return;
       const o = liste.find(x => x.ouvrierId === ouvrierId); if (!o) return;
-      o.statut = 'encours'; o.t0 = Date.now(); o.motif = ''; sauver();
-      CJ.evenement('info', nomOuvrier(ouvrierId), `🔧 démarre « ${o.nom || libArticle(articleId)} »${clientDe(articleId)}.`, 'Atelier ' + (o.atelierCode || ''));
+      // un ouvrier ne fait qu'UNE chose à la fois : on met en pause ses autres articles en cours
+      let pauses = 0;
+      Object.keys(etat.affArt || {}).forEach(aid => {
+        if (aid === articleId) return;
+        (etat.affArt[aid] || []).forEach(x => {
+          if (x.ouvrierId === ouvrierId && x.statut === 'encours') {
+            if (x.t0) { x.elapsedMs = (x.elapsedMs || 0) + (Date.now() - x.t0); x.t0 = null; }
+            x.statut = 'pause'; x.motif = 'a démarré une autre commande'; pauses++;
+          }
+        });
+      });
+      o.statut = 'encours'; o.t0 = Date.now(); o.motif = ''; if (!o.debutLe) o.debutLe = Date.now(); sauver();
+      CJ.evenement('info', nomOuvrier(ouvrierId), `🔧 démarre « ${o.nom || libArticle(articleId)} »${clientDe(articleId)}${pauses ? ' (autre commande mise en pause)' : ''}.`, 'Atelier ' + (o.atelierCode || ''));
     },
     pauserTravail: (articleId, ouvrierId, motif) => {
       const liste = (etat.affArt || {})[articleId]; if (!liste) return;

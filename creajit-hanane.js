@@ -584,7 +584,16 @@
         h += `<div style="padding:4px 10px 10px;display:flex;flex-direction:column;gap:7px">`;
         groups[at].forEach(w => {
           const jobs = window.CJ ? CJ.affectationsOuvrier(w.id).filter(x => x.statut !== 'fini') : [];
-          h += `<div style="background:#161d2b;border:1px solid ${selA ? 'rgba(196,113,79,.5)' : 'rgba(196,113,79,.18)'};border-radius:11px;padding:10px">
+          // cadre coloré selon l'état de l'ouvrier (visibilité d'un coup d'œil)
+          const actif = jobs.some(x => x.statut === 'encours');
+          const enPause = jobs.some(x => x.statut === 'pause');
+          const aDemarrer = jobs.some(x => x.statut === 'affecte');
+          let bord = 'rgba(196,113,79,.18)', fond = '#161d2b', barre = '';
+          if (selA) { bord = 'rgba(196,113,79,.5)'; }
+          else if (actif) { bord = '#37c98a'; fond = 'rgba(55,201,138,.07)'; barre = '#37c98a'; }
+          else if (enPause) { bord = '#f0a23b'; fond = 'rgba(240,162,59,.07)'; barre = '#f0a23b'; }
+          else if (aDemarrer) { bord = '#e69a76'; fond = 'rgba(230,154,118,.06)'; barre = '#e69a76'; }
+          h += `<div style="background:${fond};border:1px solid ${bord};border-left:${barre ? '4px solid ' + barre : '1px solid ' + bord};border-radius:11px;padding:10px">
             <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
               <div data-assign="${w.id}" style="cursor:${selA ? 'copy' : 'pointer'};flex:1;min-width:0">
                 <span style="font-weight:600;font-size:13px">${esc(w.nm)}${w.chef ? ' · chef' : ''}</span>
@@ -604,8 +613,9 @@
                   </div>
                 </div>
                 <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;font-size:11px">
+                  <span class="cjchip" data-chrono="${esc(j.articleId)}|${esc(w.id)}" data-base="${j.elapsedMs || 0}" data-t0="${j.t0 || ''}">⏱️ ${fmtDuree(j.msVivant)}${j.statut === 'encours' ? ' 🟢' : ''}</span>
+                  ${j.debutLe ? `<span class="cjchip">🕒 ${fmtHeureDate(j.debutLe)}</span>` : ''}
                   <span class="cjchip">💰 revient ${dhW(j.coutRevient)}</span>
-                  ${j.heures ? `<span class="cjchip">⏱️ ${j.heures} h</span>` : ''}
                   ${j.pu ? `<span class="cjchip">🏷️ ${dhW(j.qty * j.pu)}</span>` : ''}
                 </div>
                 <div style="display:flex;gap:6px;margin-top:7px">
@@ -635,6 +645,7 @@
     box.querySelectorAll('[data-start]').forEach(b => b.onclick = e => { e.stopPropagation(); const [aid, wid] = b.getAttribute('data-start').split('|'); CJ.demarrerTravail(aid, wid); toastMsg('▶️ Travail démarré'); renderWorkers(); });
     box.querySelectorAll('[data-pause]').forEach(b => b.onclick = e => { e.stopPropagation(); const [aid, wid] = b.getAttribute('data-pause').split('|'); CJ.pauserTravail(aid, wid, ''); toastMsg('⏸️ En pause'); renderWorkers(); });
     box.querySelectorAll('[data-done]').forEach(b => b.onclick = e => { e.stopPropagation(); const [aid, wid] = b.getAttribute('data-done').split('|'); CJ.finirTravail(aid, wid); toastMsg('✅ Terminé'); renderWorkers(); });
+    lancerChrono();
   }
 
   function affecter(itemId, wid) {
