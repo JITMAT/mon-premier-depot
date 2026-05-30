@@ -290,6 +290,14 @@ Articles : Chaise Cartel ×75 @730 ; Tableau 120/80 ×25 @730 ; Tableau 40/40 ×
   Statuts réels : productionStatus / paymentStatus / deliveryStatus. CA carnet ~3,9 M DH.
   ⚠️ Snapshot navigateur (re-extraire pour rafraîchir). Token JWT expirant -> régénérer.
 
+- **2026-05-30 — Module Rentabilité & Coût de revient (conçu par Driss) intégré.**
+  `rentabilite.html` (React via CDN + Babel) : Dashboard (CA vs seuil/objectif, charges,
+  coût horaire chargé par atelier), Coût de revient produit (routing ateliers + matières +
+  transport + commission -> marge + PV conseillé), Catalogue produits chiffrés, Historique
+  mensuel, Paramètres (charges fixes, ateliers, marge cible). Persistance localStorage
+  (clés creajit:rent:v2:*). Logique = charges absorbées au prorata des salaires, coût horaire
+  chargé ~50-60 DH/h. Source originale conservée dans `src-rentabilite/`. Lien menu partout.
+
 ## 13. Ordre de construction officiel (structure décidée, à suivre)
 
 > Driss délègue la structuration. On construit dans CET ordre, en s'appuyant sur les
