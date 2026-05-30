@@ -298,6 +298,12 @@ Articles : Chaise Cartel ×75 @730 ; Tableau 120/80 ×25 @730 ; Tableau 40/40 ×
   (clés creajit:rent:v2:*). Logique = charges absorbées au prorata des salaires, coût horaire
   chargé ~50-60 DH/h. Source originale conservée dans `src-rentabilite/`. Lien menu partout.
 
+- **2026-05-30 — Hanane : fabrication PAR ARTICLE.** Détail commande refait : chaque article
+  = une carte avec (1) **plusieurs ouvriers** possibles (chips +/-), (2) sa **fiche de production**
+  (dimensions/tissu/accoudoirs/coutures/notes/dessin validé), (3) ses **achats matière** (bon dédié
+  par article → magasin). CJ: affArticle/ajouterAffArticle/retirerAffArticle, ficheArticle(De),
+  bonsArticle. Placeholders intelligents (icône par type) + fallback photo catalogue. Testé jsdom.
+
 ## 13. Ordre de construction officiel (structure décidée, à suivre)
 
 > Driss délègue la structuration. On construit dans CET ordre, en s'appuyant sur les
