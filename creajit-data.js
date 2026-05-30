@@ -21,6 +21,7 @@
     fiches: {},         // ref -> { dimensions, tissu, accoudoirs, coutures, notes, dessinValide }
     articlesSaisis: {}, // ref -> [ { id, nm, qty, pu, photo(base64) } ] saisis par Hanane
     qc: {},             // articleId -> { ok, par, obs, date }
+    parcours: {},       // articleId -> [ { dept, statut, ouvrierId, heures, valideLe } ] chaîne de départements
     livraisons: {},     // ref -> { ref, date, par }
     consignes: [],      // { id, cible:'tous'|ouvrierId, texte, par, date }
     evenements: [],     // fil d'actualité { id, type, qui, texte, route, date }
@@ -208,6 +209,68 @@
       sauver();
     },
     artMetaDe: (articleId) => (etat.artMeta && etat.artMeta[articleId]) || {},
+
+    // ===== PARCOURS PAR DÉPARTEMENTS (atelier = chaîne d'étapes) =====
+    // Définit / lit la chaîne de départements qu'un article traverse.
+    setParcours: (articleId, codesDept) => {
+      etat.parcours = etat.parcours || {};
+      etat.parcours[articleId] = (codesDept || []).map(code => {
+        const existant = (etat.parcours[articleId] || []).find(e => e.dept === code);
+        return existant || { dept: code, statut: 'attente', ouvrierId: '', heures: 0, valideLe: null };
+      });
+      sauver();
+    },
+    parcoursDe: (articleId) => (etat.parcours && etat.parcours[articleId]) || [],
+    // Valide une étape : enregistre les heures réelles -> le coût de l'étape est figé.
+    validerEtape: (articleId, deptCode, heures, ouvrierId) => {
+      const p = (etat.parcours || {})[articleId]; if (!p) return;
+      const e = p.find(x => x.dept === deptCode); if (!e) return;
+      e.heures = +heures || 0; e.ouvrierId = ouvrierId || e.ouvrierId; e.statut = 'valide'; e.valideLe = Date.now();
+      sauver();
+      const d = window.cjDept ? window.cjDept(deptCode) : null;
+      CJ.evenement('ok', (d && d.chef) || 'Atelier', `✅ Étape ${deptCode} validée (${e.heures} h) — « ${libArticle(articleId)} »${clientDe(articleId)}.`, 'Atelier ' + (d ? d.atelier : ''));
+    },
+    majEtape: (articleId, deptCode, ch) => {
+      const p = (etat.parcours || {})[articleId]; if (!p) return;
+      const e = p.find(x => x.dept === deptCode); if (!e) return;
+      Object.assign(e, ch); sauver();
+    },
+    // Coût de revient COMPLET d'un article : main d'œuvre (somme des étapes) + matière + charges fixes.
+    coutArticle: (articleId, opts) => {
+      opts = opts || {};
+      const p = (etat.parcours || {})[articleId] || [];
+      const etapes = p.map(e => {
+        const cH = window.cjCoutDept ? window.cjCoutDept(e.dept) : 60;
+        const d = window.cjDept ? window.cjDept(e.dept) : null;
+        return { dept: e.dept, nom: d ? d.nom : e.dept, atelier: d ? d.atelier : '', chef: d ? d.chef : '',
+                 statut: e.statut, heures: e.heures || 0, coutH: cH, cout: (e.heures || 0) * cH };
+      });
+      const mo = etapes.reduce((s, e) => s + e.cout, 0);
+      // matière : somme des bons reçus de cet article (si valorisés), sinon 0
+      const bons = Object.values(etat.bons).filter(b => b.articleId === articleId);
+      const matiere = bons.reduce((s, b) => s + (b.lignes || []).reduce((ss, l) => ss + ((l.qty || 0) * (l.pu || l.puTTC || 0)), 0), 0);
+      const chargesFixes = opts.chargesFixes != null ? opts.chargesFixes : 3935; // §5 cahier des charges
+      const total = mo + matiere + chargesFixes;
+      return { etapes, mo, matiere, chargesFixes, total,
+               etapesValidees: etapes.filter(e => e.statut === 'valide').length, etapesTotal: etapes.length };
+    },
+
+    // Coût agrégé par atelier (pour la vue direction)
+    coutParAtelier: () => {
+      const par = {};
+      const pc = etat.parcours || {};
+      Object.keys(pc).forEach(aid => {
+        (pc[aid] || []).forEach(e => {
+          const d = window.cjDept ? window.cjDept(e.dept) : null; if (!d) return;
+          const cH = window.cjCoutDept ? window.cjCoutDept(e.dept) : 60;
+          par[d.atelier] = par[d.atelier] || { atelier: d.atelier, heures: 0, cout: 0, etapes: 0 };
+          par[d.atelier].heures += (e.heures || 0);
+          par[d.atelier].cout += (e.heures || 0) * cH;
+          if (e.statut === 'valide') par[d.atelier].etapes++;
+        });
+      });
+      return Object.values(par).sort((a, b) => b.cout - a.cout);
+    },
     retirerAffArticle: (articleId, ouvrierId) => {
       if (etat.affArt && etat.affArt[articleId]) { etat.affArt[articleId] = etat.affArt[articleId].filter(x => x.ouvrierId !== ouvrierId); sauver(); }
     },

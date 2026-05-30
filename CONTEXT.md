@@ -462,6 +462,20 @@ Articles : Chaise Cartel ×75 @730 ; Tableau 120/80 ×25 @730 ; Tableau 40/40 ×
   dessin non validé=BLOQUÉ, validé=OK + image conservée. Reste optionnel : vraie génération d'image IA
   (nécessite une clé d'un service d'images).
 
+- **2026-05-30 — DÉPARTEMENTS + coût de revient par ÉTAPES (doc « Tous les Ateliers » de Driss).**
+  Insight clé du document : un atelier = plusieurs DÉPARTEMENTS (A et B en ont 6 chacun), chacun avec
+  son chef et SON coût horaire ; un article traverse une CHAÎNE de départements (ex. canapé : DA02
+  carcasse → DA01 tapisserie → DA05 couture → DA06 rideaux). Donc coût de revient = Σ(étapes) + matière
+  + charges. (1) `creajit-departements.js` : 19 départements réels avec coutH exact du doc (DA01 67,
+  DA02-04 64, DA05 71, DA06 68, DB01 67…DB06 68, DC01 28, DD01 71, DE01 70, DF01 55, DG01 63, DH01 72,
+  DI01 73) + parcours typiques par produit + helpers (cjDept, cjCoutDept, cjParcoursPour). (2) Cerveau :
+  `setParcours/parcoursDe`, `validerEtape(article,dept,heures,ouvrier)` (fige le coût de l'étape),
+  `majEtape`, `coutArticle` (étapes + MO + matière valorisée par les bons + charges 3935 → total +
+  étapesValidées/total), `coutParAtelier` (agrégat direction). État : `parcours:{}`. Testé node : canapé
+  4 départements → MO 1338 (6×64+10×67+4×71) + matière 3300 + charges 3935 = 8573 DH, coût/atelier OK.
+  Driss a choisi le suivi « par étapes/départements ». PROCHAIN : écrans — Hanane affecte un PARCOURS,
+  espace chef d'atelier (valide les étapes + commande matière + fiche), tableau coût par article/atelier.
+
 ## 13. Ordre de construction officiel (structure décidée, à suivre)
 
 > Driss délègue la structuration. On construit dans CET ordre, en s'appuyant sur les
