@@ -222,6 +222,7 @@ render();
   <div id="cjlinks">
     <a href="index.html">🏠 Accueil (Cockpit)</a>
     <a href="agents.html">👥 Tous les agents</a>
+    <a href="consignes.html">🎙️ Consignes (Driss)</a>
     <a href="hanane.html">🗂️ Agent Hanane</a>
     <a href="ouvrier.html">👷 Agent Ouvrier</a>
     <a href="cockpit.html">👁️ Cockpit (v2)</a>
@@ -229,6 +230,8 @@ render();
     <a href="magasin.html">🧰 Magasin (Mohamed)</a>
     <a href="reception.html">📦 Réception (Hassan)</a>
     <a href="fatima.html">🚚 Logistique (Fatima)</a>
+    <a href="kenza.html">💼 Commercial (Kenza)</a>
+    <a href="sabiri.html">💰 Compta (Sabiri)</a>
   </div>
 </div>
 <style>
@@ -236,7 +239,7 @@ render();
 #cjbar{display:flex;gap:8px}
 #cjhome{display:inline-flex;align-items:center;background:#C4714F;color:#1a0f08;border-radius:24px;padding:10px 15px;font-weight:700;font-size:14px;text-decoration:none;box-shadow:0 6px 20px rgba(0,0,0,.45)}
 #cjtog{background:#1a2230;color:#eef2f8;border:1px solid #2c3850;border-radius:24px;padding:10px 13px;font-weight:700;font-size:14px;cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,.45)}
-#cjlinks{display:none;flex-direction:column;gap:6px;background:#1a2230;border:1px solid #2c3850;border-radius:12px;padding:8px;box-shadow:0 10px 30px rgba(0,0,0,.55)}
+#cjlinks{display:none;flex-direction:column;gap:6px;background:#1a2230;border:1px solid #2c3850;border-radius:12px;padding:8px;box-shadow:0 10px 30px rgba(0,0,0,.55);max-height:80vh;overflow:auto}
 #cjmenu.open #cjlinks{display:flex}
 #cjlinks a{color:#eef2f8;text-decoration:none;font-weight:600;font-size:14px;padding:9px 14px;border-radius:9px;white-space:nowrap}
 #cjlinks a:hover{background:#222c3d;color:#e69a76}

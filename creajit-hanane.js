@@ -234,6 +234,7 @@
         <input id="ft_cout" placeholder="Coutures / finition" value="${esc(f.coutures || '')}">
       </div>
       <textarea id="ft_notes" placeholder="Notes / détails vus avec le client" style="width:100%;margin-top:7px">${esc(f.notes || '')}</textarea>
+      <label style="display:flex;align-items:center;gap:8px;margin-top:9px;font-size:13px"><input type="checkbox" id="ft_dessin" ${f.dessinValide?'checked':''}> 🎨 Dessin validé par le client <span class="pc">(à valider avant de lancer la fabrication)</span></label>
       <div style="display:flex;align-items:center;gap:10px;margin-top:8px;flex-wrap:wrap">
         <button class="cjbtn2" id="ft_save">💾 Enregistrer la fiche</button>
         <span class="pc">📸 Photos / 🎨 dessin IA validé client — à brancher (module suivant)</span>
@@ -260,7 +261,7 @@
   function wireFicheMatiere(c) {
     const $ = id => document.getElementById(id);
     if ($('ft_save')) $('ft_save').onclick = () => {
-      window.CJ && window.CJ.fiche(c.ref, { dimensions: $('ft_dim').value, tissu: $('ft_tissu').value, accoudoirs: $('ft_acc').value, coutures: $('ft_cout').value, notes: $('ft_notes').value });
+      window.CJ && window.CJ.fiche(c.ref, { dimensions: $('ft_dim').value, tissu: $('ft_tissu').value, accoudoirs: $('ft_acc').value, coutures: $('ft_cout').value, notes: $('ft_notes').value, dessinValide: $('ft_dessin') ? $('ft_dessin').checked : false });
       window.CJ && window.CJ.evenement('info', 'Hanane', `Fiche technique enregistrée pour ${c.client} (${c.ref}).`);
       if ($('ft_ok')) $('ft_ok').textContent = '✓ enregistrée';
     };

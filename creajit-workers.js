@@ -5,8 +5,8 @@
   // Direction & agents à mini-site dédié
   var DIRECTION = [
     { id: 'driss',   nm: 'Driss',          role: 'Patron',                  page: 'index.html' },
-    { id: 'kenza',   nm: 'Kenza',          role: 'Commerciale' },
-    { id: 'sabiri',  nm: 'Mohamed Sabiri', role: 'Comptable / Finance' },
+    { id: 'kenza',   nm: 'Kenza',          role: 'Commerciale', page: 'kenza.html' },
+    { id: 'sabiri',  nm: 'Mohamed Sabiri', role: 'Comptable / Finance', page: 'sabiri.html' },
     { id: 'hanane',  nm: 'Hanane Ajdi',    role: 'Exploitation',            page: 'hanane.html' },
     { id: 'said',    nm: 'Said Chnitifa',  role: 'Chef de tous les ateliers' },
     { id: 'fatima',  nm: 'Fatima Ezzahra', role: 'Qualité & Logistique', page: 'fatima.html' },

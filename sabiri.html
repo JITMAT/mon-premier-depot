@@ -1,0 +1,101 @@
+<!-- Socle de données partagées CREAJIT IA -->
+<script src="creajit-matieres.js"></script>
+<script src="creajit-ateliers.js"></script>
+<script src="creajit-data.js"></script>
+<script src="creajit-photos.js"></script>
+<script src="creajit-workers.js"></script>
+<script src="creajit-commandes.js"></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<title>CREAJIT — Comptabilité (Sabiri)</title>
+<style>
+  :root{--bg:#0d111b;--card:#161d2b;--card2:#10151f;--line:rgba(196,113,79,.18);--orange:#C4714F;--orange-b:#e69a76;--green:#37c98a;--red:#E74C3C;--yellow:#EAB308;--ink:#ece9e3;--mut:#8d96a5}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font-family:'Hanken Grotesk',sans-serif;padding:24px 18px 80px}
+  .wrap{max-width:980px;margin:0 auto}
+  .head{display:flex;align-items:center;gap:14px;margin-bottom:18px}
+  .av0{width:58px;height:58px;border-radius:16px;background:linear-gradient(145deg,#37c98a,#1c7a52);display:grid;place-items:center;font-family:'Fraunces';font-weight:700;font-size:20px;color:#06210f}
+  h1{font-family:'Fraunces';font-weight:700;font-size:21px}.sub{font-size:12px;color:var(--mut)}
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:10px}
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+  .kpi .v{font-family:'Fraunces';font-weight:700;font-size:22px}.kpi .l{font-size:11px;color:var(--mut);margin-top:2px}
+  .note{font-size:11px;color:var(--mut);margin:8px 0 16px}
+  .sec{font-family:'Fraunces';font-weight:700;font-size:17px;margin:20px 0 11px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th{text-align:left;color:var(--mut);font-weight:600;padding:8px 10px}
+  td{padding:9px 10px;border-top:1px solid var(--line)}
+  .b{font-size:11px;padding:2px 9px;border-radius:20px;font-weight:700}
+  .ok{background:rgba(55,201,138,.16);color:var(--green)}.part{background:rgba(231,76,60,.16);color:var(--red)}
+</style>
+
+<div class="wrap">
+  <div class="head"><div class="av0">MS</div><div><h1>Comptabilité — Mohamed Sabiri</h1><div class="sub">Encaissements, avances et masse salariale</div></div></div>
+  <div class="kpis" id="kpis"></div>
+  <div class="note">⚠️ Chiffres indicatifs (instantané CreaJit + ateliers). Ne remplacent pas une validation comptable (OEC).</div>
+  <div class="sec">💳 À encaisser (commandes avec reste à payer)</div>
+  <div style="background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden"><table id="tbl"></table></div>
+</div>
+
+<script>
+(function(){
+  var C=window.CJ_CMD||[];
+  var ATE=window.CJ_ATELIERS||[];
+  function dh(n){return Math.round(n||0).toLocaleString('fr-FR')+' DH';}
+  function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]);});}
+  // masse salariale (somme salaires ateliers réels)
+  var SAL={A:52800,B:53500,C:5000,D:25000,E:29000,F:23000,G:10500,H:18000,I:6000};
+  var masse=Object.keys(SAL).reduce(function(s,k){return s+SAL[k];},0);
+  var enc=C.reduce(function(s,x){return s+x.paye;},0), rest=C.reduce(function(s,x){return s+x.reste;},0), ca=C.reduce(function(s,x){return s+x.total;},0);
+  document.getElementById('kpis').innerHTML=
+    '<div class="kpi"><div class="v" style="color:var(--green)">'+dh(enc)+'</div><div class="l">Encaissé (commandes en cours)</div></div>'+
+    '<div class="kpi"><div class="v" style="color:var(--red)">'+dh(rest)+'</div><div class="l">Reste à encaisser</div></div>'+
+    '<div class="kpi"><div class="v" style="color:var(--yellow)">333 289 DH</div><div class="l">Avances ce mois (257)</div></div>'+
+    '<div class="kpi"><div class="v">'+dh(masse)+'</div><div class="l">Masse salariale / mois</div></div>'+
+    '<div class="kpi"><div class="v">'+dh(ca)+'</div><div class="l">Carnet commandes en cours</div></div>';
+  var rows=C.filter(function(x){return x.reste>0;}).sort(function(a,b){return b.reste-a.reste;});
+  var h='<tr><th>Réf</th><th>Client</th><th style="text-align:right">Total</th><th style="text-align:right">Payé</th><th style="text-align:right">Reste</th><th>État</th></tr>';
+  rows.forEach(function(x){
+    h+='<tr><td>'+esc(x.ref)+'</td><td>'+esc(x.client)+'</td><td style="text-align:right">'+dh(x.total)+'</td>'+
+      '<td style="text-align:right;color:var(--green)">'+dh(x.paye)+'</td><td style="text-align:right;color:var(--red);font-weight:700">'+dh(x.reste)+'</td>'+
+      '<td><span class="b part">À relancer</span></td></tr>';
+  });
+  if(!rows.length) h+='<tr><td colspan="6" style="color:var(--mut);text-align:center;padding:18px">Tout est encaissé 🎉</td></tr>';
+  document.getElementById('tbl').innerHTML=h;
+})();
+</script>
+
+<script>window.CJ_AGENT_PROMPT="Tu es l'assistant IA de Mohamed Sabiri, comptable/finance chez CREAJIT (meubles sur mesure, Marrakech). Tu l'aides a : suivre les encaissements et les restes a payer, les avances sur salaire, la masse salariale, calculer marges et rentabilite (charges fixes 3935 DH/article), et preparer les paiements. Connecte aux autres agents. Rappelle que les chiffres ne remplacent pas une validation comptable. Francais, court et concret.";</script>
+<script src="creajit-assistant.js"></script>
+
+<!-- ===== Menu de navigation CREAJIT IA ===== -->
+<div id="cjmenu">
+  <div id="cjbar">
+    <a id="cjhome" href="index.html">← Accueil</a>
+    <button id="cjtog" type="button" onclick="document.getElementById('cjmenu').classList.toggle('open')">☰ Menu</button>
+  </div>
+  <div id="cjlinks">
+    <a href="index.html">🏠 Accueil (Cockpit)</a>
+    <a href="agents.html">👥 Tous les agents</a>
+    <a href="consignes.html">🎙️ Consignes (Driss)</a>
+    <a href="hanane.html">🗂️ Agent Hanane</a>
+    <a href="ouvrier.html">👷 Agent Ouvrier</a>
+    <a href="magasin.html">🧰 Magasin (Mohamed)</a>
+    <a href="reception.html">📦 Réception (Hassan)</a>
+    <a href="fatima.html">🚚 Logistique (Fatima)</a>
+    <a href="kenza.html">💼 Commercial (Kenza)</a>
+    <a href="sabiri.html">💰 Compta (Sabiri)</a>
+    <a href="cockpit.html">👁️ Cockpit (v2)</a>
+    <a href="banc-test.html">🔀 Banc de test</a>
+  </div>
+</div>
+<style>
+#cjmenu{position:fixed;left:12px;top:12px;z-index:2147483000;font-family:'Hanken Grotesk',Arial,sans-serif;display:flex;flex-direction:column;align-items:flex-start;gap:8px}
+#cjbar{display:flex;gap:8px}
+#cjhome{display:inline-flex;align-items:center;background:#C4714F;color:#1a0f08;border-radius:24px;padding:10px 15px;font-weight:700;font-size:14px;text-decoration:none;box-shadow:0 6px 20px rgba(0,0,0,.45)}
+#cjtog{background:#1a2230;color:#eef2f8;border:1px solid #2c3850;border-radius:24px;padding:10px 13px;font-weight:700;font-size:14px;cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,.45)}
+#cjlinks{display:none;flex-direction:column;gap:6px;background:#1a2230;border:1px solid #2c3850;border-radius:12px;padding:8px;box-shadow:0 10px 30px rgba(0,0,0,.55);max-height:80vh;overflow:auto}
+#cjmenu.open #cjlinks{display:flex}
+#cjlinks a{color:#eef2f8;text-decoration:none;font-weight:600;font-size:14px;padding:9px 14px;border-radius:9px;white-space:nowrap}
+#cjlinks a:hover{background:#222c3d;color:#e69a76}
+</style>

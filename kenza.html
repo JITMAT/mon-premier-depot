@@ -1,0 +1,102 @@
+<!-- Socle de données partagées CREAJIT IA -->
+<script src="creajit-matieres.js"></script>
+<script src="creajit-ateliers.js"></script>
+<script src="creajit-data.js"></script>
+<script src="creajit-photos.js"></script>
+<script src="creajit-workers.js"></script>
+<script src="creajit-commandes.js"></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<title>CREAJIT — Commercial (Kenza)</title>
+<style>
+  :root{--bg:#0d111b;--card:#161d2b;--card2:#10151f;--line:rgba(196,113,79,.18);--orange:#C4714F;--orange-b:#e69a76;--green:#37c98a;--red:#E74C3C;--yellow:#EAB308;--violet:#a78bfa;--ink:#ece9e3;--mut:#8d96a5}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font-family:'Hanken Grotesk',sans-serif;padding:24px 18px 80px}
+  .wrap{max-width:980px;margin:0 auto}
+  .head{display:flex;align-items:center;gap:14px;margin-bottom:18px}
+  .av0{width:58px;height:58px;border-radius:16px;background:linear-gradient(145deg,#a78bfa,#5b3fb3);display:grid;place-items:center;font-family:'Fraunces';font-weight:700;font-size:20px;color:#fff}
+  h1{font-family:'Fraunces';font-weight:700;font-size:21px}.sub{font-size:12px;color:var(--mut)}
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:18px}
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+  .kpi .v{font-family:'Fraunces';font-weight:700;font-size:24px}.kpi .l{font-size:11px;color:var(--mut);margin-top:2px}
+  .sec{font-family:'Fraunces';font-weight:700;font-size:17px;margin:20px 0 11px}
+  .filt{margin-bottom:10px}
+  select{background:#10151f;border:1px solid var(--line);color:var(--ink);border-radius:9px;padding:9px 11px;font-size:13px;font-family:inherit}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th{text-align:left;color:var(--mut);font-weight:600;padding:8px 10px}
+  td{padding:9px 10px;border-top:1px solid var(--line)}
+  .b{font-size:11px;padding:2px 9px;border-radius:20px;font-weight:700}
+  .ok{background:rgba(55,201,138,.16);color:var(--green)}.part{background:rgba(234,179,8,.16);color:var(--yellow)}
+</style>
+
+<div class="wrap">
+  <div class="head"><div class="av0">K</div><div><h1>Commercial — Kenza</h1><div class="sub">Ventes, clients et encaissements</div></div></div>
+  <div class="kpis" id="kpis"></div>
+  <div class="sec">🧾 Commandes & clients</div>
+  <div class="filt"><select id="fc"><option value="">Tous les commerciaux</option></select></div>
+  <div style="background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden"><table id="tbl"></table></div>
+</div>
+
+<script>
+(function(){
+  var C=window.CJ_CMD||[];
+  function dh(n){return Math.round(n||0).toLocaleString('fr-FR')+' DH';}
+  function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]);});}
+  var coms=Array.from(new Set(C.map(function(x){return x.com;})));
+  var sel=document.getElementById('fc'); coms.forEach(function(c){var o=document.createElement('option');o.value=c;o.textContent=c;sel.appendChild(o);});
+  function render(){
+    var f=sel.value, rows=f?C.filter(function(x){return x.com===f;}):C;
+    var total=rows.reduce(function(s,x){return s+x.total;},0), enc=rows.reduce(function(s,x){return s+x.paye;},0), rest=rows.reduce(function(s,x){return s+x.reste;},0);
+    document.getElementById('kpis').innerHTML=
+      '<div class="kpi"><div class="v">'+dh(total)+'</div><div class="l">Ventes</div></div>'+
+      '<div class="kpi"><div class="v" style="color:var(--green)">'+dh(enc)+'</div><div class="l">Encaissé</div></div>'+
+      '<div class="kpi"><div class="v" style="color:var(--red)">'+dh(rest)+'</div><div class="l">Reste à encaisser</div></div>'+
+      '<div class="kpi"><div class="v">'+rows.length+'</div><div class="l">Commandes</div></div>';
+    var h='<tr><th>Réf</th><th>Client</th><th>Commercial</th><th style="text-align:right">Total</th><th style="text-align:right">Payé</th><th style="text-align:right">Reste</th><th>Paiement</th></tr>';
+    rows.sort(function(a,b){return b.total-a.total;}).forEach(function(x){
+      h+='<tr><td>'+esc(x.ref)+'</td><td>'+esc(x.client)+'</td><td style="color:var(--mut)">'+esc(x.com)+'</td>'+
+        '<td style="text-align:right;font-weight:700">'+dh(x.total)+'</td><td style="text-align:right;color:var(--green)">'+dh(x.paye)+'</td>'+
+        '<td style="text-align:right;color:'+(x.reste>0?'var(--red)':'var(--mut)')+'">'+dh(x.reste)+'</td>'+
+        '<td>'+(x.reste>0?'<span class="b part">Partiel</span>':'<span class="b ok">Payé</span>')+'</td></tr>';
+    });
+    document.getElementById('tbl').innerHTML=h;
+  }
+  sel.onchange=render; render();
+})();
+</script>
+
+<script>window.CJ_AGENT_PROMPT="Tu es l'assistant IA de Kenza, responsable commerciale chez CREAJIT (meubles sur mesure, Marrakech). Tu l'aides a : suivre les ventes et les encaissements, relancer les clients qui ont un reste a payer, prioriser les devis, et coordonner avec Hanane (production) et Fatima (livraison). Connecte aux autres agents. Reponds en francais, court et concret.";</script>
+<script src="creajit-assistant.js"></script>
+
+<!-- ===== Menu de navigation CREAJIT IA ===== -->
+<div id="cjmenu">
+  <div id="cjbar">
+    <a id="cjhome" href="index.html">← Accueil</a>
+    <button id="cjtog" type="button" onclick="document.getElementById('cjmenu').classList.toggle('open')">☰ Menu</button>
+  </div>
+  <div id="cjlinks">
+    <a href="index.html">🏠 Accueil (Cockpit)</a>
+    <a href="agents.html">👥 Tous les agents</a>
+    <a href="consignes.html">🎙️ Consignes (Driss)</a>
+    <a href="hanane.html">🗂️ Agent Hanane</a>
+    <a href="ouvrier.html">👷 Agent Ouvrier</a>
+    <a href="magasin.html">🧰 Magasin (Mohamed)</a>
+    <a href="reception.html">📦 Réception (Hassan)</a>
+    <a href="fatima.html">🚚 Logistique (Fatima)</a>
+    <a href="kenza.html">💼 Commercial (Kenza)</a>
+    <a href="sabiri.html">💰 Compta (Sabiri)</a>
+    <a href="cockpit.html">👁️ Cockpit (v2)</a>
+    <a href="banc-test.html">🔀 Banc de test</a>
+  </div>
+</div>
+<style>
+#cjmenu{position:fixed;left:12px;top:12px;z-index:2147483000;font-family:'Hanken Grotesk',Arial,sans-serif;display:flex;flex-direction:column;align-items:flex-start;gap:8px}
+#cjbar{display:flex;gap:8px}
+#cjhome{display:inline-flex;align-items:center;background:#C4714F;color:#1a0f08;border-radius:24px;padding:10px 15px;font-weight:700;font-size:14px;text-decoration:none;box-shadow:0 6px 20px rgba(0,0,0,.45)}
+#cjtog{background:#1a2230;color:#eef2f8;border:1px solid #2c3850;border-radius:24px;padding:10px 13px;font-weight:700;font-size:14px;cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,.45)}
+#cjlinks{display:none;flex-direction:column;gap:6px;background:#1a2230;border:1px solid #2c3850;border-radius:12px;padding:8px;box-shadow:0 10px 30px rgba(0,0,0,.55);max-height:80vh;overflow:auto}
+#cjmenu.open #cjlinks{display:flex}
+#cjlinks a{color:#eef2f8;text-decoration:none;font-weight:600;font-size:14px;padding:9px 14px;border-radius:9px;white-space:nowrap}
+#cjlinks a:hover{background:#222c3d;color:#e69a76}
+</style>
