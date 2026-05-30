@@ -18,7 +18,7 @@
     var rlEl = document.querySelector('.profile .rl');
     var av = document.getElementById('pAv');
     if (nmEl) nmEl.textContent = moi.nm;
-    if (rlEl) rlEl.textContent = atName(moi.at) + ' · Atelier ' + moi.at + (moi.chef ? ' · chef' : '');
+    if (rlEl) rlEl.textContent = moi.role ? moi.role : (atName(moi.at) + ' · Atelier ' + moi.at + (moi.chef ? ' · chef' : ''));
     if (av) av.innerHTML = '<div class="ini">' + ini(moi.nm) + '</div>';
     // Pour un autre ouvrier que celui de la maquette : on vide la file de démo,
     // il ne voit QUE ses vraies affectations de Hanane.

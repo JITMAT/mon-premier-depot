@@ -1,0 +1,99 @@
+<!-- Socle de données partagées CREAJIT IA -->
+<script src="creajit-matieres.js"></script>
+<script src="creajit-ateliers.js"></script>
+<script src="creajit-data.js"></script>
+<script src="creajit-workers.js"></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<title>CREAJIT — Tous les agents</title>
+<style>
+  :root{--bg:#0d111b;--card:#161d2b;--line:rgba(196,113,79,.18);--orange:#C4714F;--orange-b:#e69a76;--green:#37c98a;--ink:#ece9e3;--mut:#8d96a5}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font-family:'Hanken Grotesk',sans-serif;padding:24px 18px 80px}
+  .wrap{max-width:1080px;margin:0 auto}
+  h1{font-family:'Fraunces';font-weight:700;font-size:24px;margin-bottom:2px}
+  .sub{font-size:13px;color:var(--mut);margin-bottom:18px}
+  .sec{font-family:'Fraunces';font-weight:700;font-size:16px;margin:22px 0 12px;display:flex;align-items:center;gap:9px}
+  .sec .code{width:24px;height:24px;border-radius:7px;display:grid;place-items:center;color:#fff;font-size:12px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px}
+  .ag{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px 12px;text-align:center;cursor:pointer;transition:transform .1s,border-color .15s;text-decoration:none;color:inherit;display:block}
+  .ag:hover{border-color:var(--orange);transform:translateY(-3px)}
+  .av{width:92px;height:92px;border-radius:24px;margin:0 auto 10px;display:grid;place-items:center;font-family:'Fraunces';font-weight:700;font-size:30px;color:#fff;object-fit:cover;border:3px solid rgba(255,255,255,.08)}
+  .ag .nm{font-weight:700;font-size:14px;line-height:1.2}
+  .ag .rl{font-size:11.5px;color:var(--mut);margin-top:3px}
+  .ag .go{margin-top:9px;color:var(--orange-b);font-weight:700;font-size:12px}
+  .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--green);margin-left:5px}
+</style>
+
+<div class="wrap">
+  <h1>👥 Tous les agents</h1>
+  <div class="sub">Clique sur une personne pour ouvrir son <b>mini-site</b> (sa fiche, ses tâches, son récap).</div>
+  <div id="dir"></div>
+  <div id="ate"></div>
+</div>
+
+<script>
+(function () {
+  function atObj(c){ return (window.CJ_ATELIERS||[]).find(function(x){return x.code===c;}) || {nom:'Atelier '+c,couleur:'#C4714F'}; }
+  function ini(nm){ return nm.split(' ').map(function(x){return x[0];}).slice(0,2).join('').toUpperCase(); }
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]);}); }
+  var PHOTOS = window.CJ_PHOTOS || {}; // base64 par id quand fournies (sinon initiales)
+
+  function carte(p, couleur, role) {
+    var href = p.page ? p.page : ('ouvrier.html?w=' + p.id);
+    var av = PHOTOS[p.id]
+      ? '<img class="av" src="' + PHOTOS[p.id] + '">'
+      : '<div class="av" style="background:linear-gradient(145deg,' + couleur + ',#0c1018)">' + ini(p.nm) + '</div>';
+    return '<a class="ag" href="' + href + '">' + av +
+      '<div class="nm">' + esc(p.nm) + (p.chef ? ' ·chef' : '') + '</div>' +
+      '<div class="rl">' + esc(role || '') + '</div>' +
+      '<div class="go">Ouvrir →</div></a>';
+  }
+
+  // Direction & agents
+  var dir = (window.CJ_DIRECTION || []);
+  document.getElementById('dir').innerHTML =
+    '<div class="sec">🏢 Direction & agents</div><div class="grid">' +
+    dir.map(function (p) { return carte(p, '#C4714F', p.role); }).join('') + '</div>';
+
+  // Ouvriers par atelier
+  var ouv = (window.CJ_OUVRIERS || []);
+  var groups = {}; ouv.forEach(function (w) { (groups[w.at] = groups[w.at] || []).push(w); });
+  var html = '';
+  Object.keys(groups).sort().forEach(function (at) {
+    var a = atObj(at);
+    html += '<div class="sec"><span class="code" style="background:' + a.couleur + '">' + at + '</span>' + esc(a.nom) + '</div>' +
+      '<div class="grid">' + groups[at].map(function (w) { return carte(w, a.couleur, esc(a.nom) + (w.chef ? ' · chef' : '')); }).join('') + '</div>';
+  });
+  document.getElementById('ate').innerHTML = html;
+})();
+</script>
+
+<!-- ===== Menu de navigation CREAJIT IA ===== -->
+<div id="cjmenu">
+  <div id="cjbar">
+    <a id="cjhome" href="index.html">← Accueil</a>
+    <button id="cjtog" type="button" onclick="document.getElementById('cjmenu').classList.toggle('open')">☰ Menu</button>
+  </div>
+  <div id="cjlinks">
+    <a href="index.html">🏠 Accueil (Cockpit)</a>
+    <a href="agents.html">👥 Tous les agents</a>
+    <a href="hanane.html">🗂️ Agent Hanane</a>
+    <a href="ouvrier.html">👷 Agent Ouvrier</a>
+    <a href="magasin.html">🧰 Magasin (Mohamed)</a>
+    <a href="reception.html">📦 Réception (Hassan)</a>
+    <a href="cockpit.html">👁️ Cockpit (v2)</a>
+    <a href="banc-test.html">🔀 Banc de test</a>
+  </div>
+</div>
+<style>
+#cjmenu{position:fixed;left:12px;top:12px;z-index:2147483000;font-family:'Hanken Grotesk',Arial,sans-serif;display:flex;flex-direction:column;align-items:flex-start;gap:8px}
+#cjbar{display:flex;gap:8px}
+#cjhome{display:inline-flex;align-items:center;background:#C4714F;color:#1a0f08;border-radius:24px;padding:10px 15px;font-weight:700;font-size:14px;text-decoration:none;box-shadow:0 6px 20px rgba(0,0,0,.45)}
+#cjtog{background:#1a2230;color:#eef2f8;border:1px solid #2c3850;border-radius:24px;padding:10px 13px;font-weight:700;font-size:14px;cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,.45)}
+#cjlinks{display:none;flex-direction:column;gap:6px;background:#1a2230;border:1px solid #2c3850;border-radius:12px;padding:8px;box-shadow:0 10px 30px rgba(0,0,0,.55)}
+#cjmenu.open #cjlinks{display:flex}
+#cjlinks a{color:#eef2f8;text-decoration:none;font-weight:600;font-size:14px;padding:9px 14px;border-radius:9px;white-space:nowrap}
+#cjlinks a:hover{background:#222c3d;color:#e69a76}
+</style>
