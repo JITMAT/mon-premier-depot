@@ -453,6 +453,15 @@ Articles : Chaise Cartel ×75 @730 ; Tableau 120/80 ×25 @730 ; Tableau 40/40 ×
   commander_matiere crée le bon ; 6/6 pages agents OK syntaxe. Tous les salariés à mini-site ont
   désormais un vrai agent (voix + actions).
 
+- **2026-05-30 — Point 2 : validation client AVANT fabrication (anti-retours).** Honnêteté technique :
+  Claude ne génère pas d'images → pas de « dessin IA » auto sans clé image séparée (DALL·E/etc.).
+  À la place, le verrou pratique qui résout le vrai problème : Hanane attache une **image de référence**
+  (photo client/Pinterest, `fa_img` → `imageRef` base64 dans la fiche article) + coche « 🎨 dessin/modèle
+  validé par le client ». Côté ouvrier, `startTask` est désormais **bloquant** : si `dessinValide===false`,
+  impossible de lancer (alert ⛔), il doit demander la validation à Hanane. Testé node : sans fiche=OK,
+  dessin non validé=BLOQUÉ, validé=OK + image conservée. Reste optionnel : vraie génération d'image IA
+  (nécessite une clé d'un service d'images).
+
 ## 13. Ordre de construction officiel (structure décidée, à suivre)
 
 > Driss délègue la structuration. On construit dans CET ordre, en s'appuyant sur les

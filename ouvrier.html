@@ -324,6 +324,12 @@ function selfOrder(){show('bon');toast('📝 Passe ton bon de commande au magasi
 // Matière prête ? (bons reçus). Renvoie {ok, attente, total}
 function matierePrete(t){var b=(t&&t.bons)||[];if(!b.length)return{ok:null,attente:0,total:0};var att=b.filter(function(x){return x.statut!=='recu';}).length;return{ok:att===0,attente:att,total:b.length};}
 function startTask(i){const t=TASKS[i];
+  // Point 2 : INTERDIT de lancer si le dessin n'est PAS validé par le client (anti-retours)
+  const f=t.fiche||{};
+  if(('dessinValide' in f) && !f.dessinValide){
+    alert('⛔ Interdit de lancer « '+t.nm+' » : le dessin n\'est PAS encore validé par le client.\n\nDemande à Hanane de faire valider le dessin avant de commencer (ça évite les retours).');
+    toast('⛔ Dessin client non validé'); return;
+  }
   // Point 3 : ne pas lancer la fabrication sans la matière (on prévient, on ne bloque pas de force)
   const m=matierePrete(t);
   if(m.total>0 && !m.ok){

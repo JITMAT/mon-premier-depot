@@ -371,7 +371,11 @@
             <input id="fa_cout" placeholder="Coutures / finition" value="${esc(fa.coutures||'')}">
           </div>
           <textarea id="fa_notes" placeholder="Notes / détails client" style="width:100%;margin-top:7px">${esc(fa.notes||'')}</textarea>
-          <label style="display:flex;align-items:center;gap:8px;margin-top:8px;font-size:13px"><input type="checkbox" id="fa_dessin" ${fa.dessinValide?'checked':''}> 🎨 Dessin validé par le client</label>
+          <div style="display:flex;align-items:center;gap:10px;margin-top:9px">
+            ${fa.imageRef?`<img src="${esc(fa.imageRef)}" style="width:56px;height:56px;border-radius:9px;object-fit:cover;border:1px solid var(--line)">`:''}
+            <label style="font-size:12px;color:var(--mut);cursor:pointer">🖼️ Image de référence (photo client / Pinterest)<br><input id="fa_img" type="file" accept="image/*" style="margin-top:4px"></label>
+          </div>
+          <label style="display:flex;align-items:center;gap:8px;margin-top:9px;font-size:13px;padding:8px;border-radius:9px;background:${fa.dessinValide?'rgba(55,201,138,.12)':'rgba(231,76,60,.1)'}"><input type="checkbox" id="fa_dessin" ${fa.dessinValide?'checked':''}> 🎨 <b>Dessin/modèle validé par le client</b> <span class="pc">(la fabrication est bloquée tant que ce n'est pas coché)</span></label>
           <button class="cjbtn2" id="fa_save" style="margin-top:9px">💾 Enregistrer la fiche de cet article</button>
           <span id="fa_ok" style="color:#37c98a;font-weight:700;font-size:12px;margin-left:8px"></span>
         </div>`;
@@ -410,9 +414,17 @@
   function wireArticlePanels(c) {
     const $ = id => document.getElementById(id);
     if ($('fa_save')) $('fa_save').onclick = () => {
-      window.CJ.ficheArticle(openArt, { dimensions:$('fa_dim').value, tissu:$('fa_tissu').value, accoudoirs:$('fa_acc').value, coutures:$('fa_cout').value, notes:$('fa_notes').value, dessinValide:$('fa_dessin').checked });
-      window.CJ.evenement('info','Hanane',`Fiche article enregistrée (${c.client}).`);
-      if ($('fa_ok')) $('fa_ok').textContent='✓ enregistrée';
+      const aid = openArt;
+      const sauve = (imgRef) => {
+        const data = { dimensions:$('fa_dim').value, tissu:$('fa_tissu').value, accoudoirs:$('fa_acc').value, coutures:$('fa_cout').value, notes:$('fa_notes').value, dessinValide:$('fa_dessin').checked };
+        if (imgRef !== undefined) data.imageRef = imgRef;
+        window.CJ.ficheArticle(aid, data);
+        window.CJ.evenement(data.dessinValide?'success':'info','Hanane',`Fiche article enregistrée (${c.client})${data.dessinValide?' — dessin VALIDÉ client ✅':''}.`);
+        if ($('fa_ok')) $('fa_ok').textContent='✓ enregistrée';
+      };
+      const fimg = $('fa_img');
+      if (fimg && fimg.files && fimg.files[0]) { const r=new FileReader(); r.onload=()=>sauve(r.result); r.readAsDataURL(fimg.files[0]); }
+      else sauve();
     };
     if ($('mat_q')) $('mat_q').oninput = e => { matQ=e.target.value; const pos=e.target.selectionStart; renderArts(); const m=$('mat_q'); if(m){m.focus(); try{m.setSelectionRange(pos,pos);}catch(x){}} };
     document.querySelectorAll('[data-add]').forEach(el => el.onclick = () => { const ref=el.getAttribute('data-add'); const m=(window.CJ.matieres()||[]).find(x=>x.ref===ref); if(m){bonLignes.push({ref:m.ref,nom:m.nom,fournisseur:m.fournisseur,unite:m.unite,qty:1}); matQ=''; renderArts();} });
