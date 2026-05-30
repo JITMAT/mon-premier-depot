@@ -476,6 +476,18 @@ Articles : Chaise Cartel ×75 @730 ; Tableau 120/80 ×25 @730 ; Tableau 40/40 ×
   Driss a choisi le suivi « par étapes/départements ». PROCHAIN : écrans — Hanane affecte un PARCOURS,
   espace chef d'atelier (valide les étapes + commande matière + fiche), tableau coût par article/atelier.
 
+- **2026-05-30 — 3 écrans du suivi par étapes/départements (côté pratique).** Sur le moteur
+  départements+coût : (1) `cout-revient.html` — tableau coût de revient PAR ARTICLE (chaîne
+  d'étapes, barre MO/matière/charges, marge vs prix vendu) et PAR ATELIER, + KPIs. (2) `atelier.html`
+  — espace chef d'atelier (sélecteur A→I) : ses articles, **validation d'étape** (heures + ouvrier →
+  fige le coût), bouton commander matière, coût cumulé ; chaque atelier = sa petite usine. (3) Hanane
+  (`creajit-hanane.js`) : bouton **🏭 Parcours** par article → panneau pour définir la chaîne de
+  départements (parcours conseillé en 1 clic + ajout/retrait par atelier). Liens ajoutés au cockpit.
+  hanane.html charge creajit-departements.js. Testé node bout-en-bout : Hanane définit parcours
+  (DA02→DA01→DA05→DA06) → atelier valide DA02 6h + DA01 10h → coût MO 1054 + charges = total, coût/
+  atelier OK. 5/5 pages JS OK. Reste possible : matière valorisée auto (prix réf), heures auto depuis
+  le chrono ouvrier.
+
 ## 13. Ordre de construction officiel (structure décidée, à suivre)
 
 > Driss délègue la structuration. On construit dans CET ordre, en s'appuyant sur les

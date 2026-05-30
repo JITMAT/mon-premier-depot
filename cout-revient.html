@@ -1,0 +1,161 @@
+<!-- Coût de revient par article et par atelier (étapes/départements) -->
+<script src="creajit-matieres.js"></script>
+<script src="creajit-ateliers.js"></script>
+<script src="creajit-couthoraire.js"></script>
+<script src="creajit-departements.js"></script>
+<script src="creajit-data.js"></script>
+<script src="creajit-commandes-reelles.js"></script>
+<script src="creajit-orders.js"></script>
+<script src="creajit-photos.js"></script>
+<script src="creajit-workers.js"></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<title>CREAJIT — Coût de revient</title>
+<style>
+:root{--bg:#0d111b;--card:#161d2b;--card2:#111825;--line:#283449;--ink:#eef2f8;--mut:#94a3b8;--green:#34d399;--red:#f87171;--yellow:#fbbf24;--blue:#60a5fa;--orange:#C4714F;--orange-b:#e69a76}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:'Hanken Grotesk',system-ui,sans-serif;padding:18px;max-width:1080px;margin:0 auto;padding-bottom:80px}
+h1{font-family:'Fraunces',serif;font-size:24px;margin-bottom:3px}
+.sub{color:var(--mut);font-size:13px}
+.head{display:flex;align-items:center;gap:13px;margin-bottom:16px;flex-wrap:wrap}
+.av0{width:50px;height:50px;border-radius:13px;background:linear-gradient(135deg,#C4714F,#8a4d34);display:grid;place-items:center;font-size:22px;flex:none}
+.menu{margin-left:auto;display:flex;gap:7px;flex-wrap:wrap}
+.menu a{font-size:12px;color:var(--mut);text-decoration:none;background:var(--card);border:1px solid var(--line);padding:7px 11px;border-radius:9px}
+.seg{display:flex;background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-bottom:16px;width:fit-content}
+.seg button{background:none;border:none;color:var(--mut);font-family:inherit;font-size:13px;font-weight:600;padding:10px 16px;cursor:pointer}
+.seg button.on{background:rgba(196,113,79,.18);color:var(--orange-b)}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-bottom:18px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:13px 15px}
+.kpi .v{font-family:Fraunces;font-weight:700;font-size:22px}
+.kpi .l{color:var(--mut);font-size:12px;margin-top:3px}
+.sec{font-family:'Fraunces',serif;font-weight:600;font-size:17px;margin:20px 0 11px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:13px 15px;margin-bottom:10px}
+.crow{display:flex;align-items:center;gap:12px}
+.vig{width:46px;height:46px;border-radius:9px;object-fit:cover;background:#0c1018;flex:none;display:grid;place-items:center;font-size:20px}
+.nm{font-weight:600;font-size:14.5px}
+.mt{color:var(--mut);font-size:12px;margin-top:2px}
+.tot{margin-left:auto;text-align:right;flex:none}
+.tot .v{font-family:Fraunces;font-weight:700;font-size:18px}
+.tot .v.bad{color:var(--red)}.tot .v.ok{color:var(--green)}
+.tot .l{font-size:11px;color:var(--mut)}
+.steps{margin-top:11px;border-top:1px dashed var(--line);padding-top:10px}
+.step{display:flex;align-items:center;gap:9px;font-size:12.5px;padding:4px 0}
+.dot{width:8px;height:8px;border-radius:50%;flex:none}
+.dot.ok{background:var(--green)}.dot.wait{background:var(--mut)}
+.scost{margin-left:auto;font-weight:600}
+.bd{display:flex;gap:8px;flex-wrap:wrap;margin-top:9px}
+.bd span{font-size:11.5px;background:#0f1622;border:1px solid var(--line);border-radius:8px;padding:5px 9px}
+.bar{height:7px;background:#0c1018;border-radius:7px;overflow:hidden;display:flex;margin-top:9px}
+.bar i{height:100%}
+.empty{color:var(--mut);font-size:13px;padding:18px;text-align:center;background:var(--card);border:1px dashed var(--line);border-radius:13px}
+.atb{display:flex;align-items:center;gap:11px}
+.atpill{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;font-weight:700;color:#fff;flex:none}
+@media(max-width:640px){.kpis{grid-template-columns:repeat(2,1fr)}}
+</style>
+
+<div class="head">
+  <div class="av0">📊</div>
+  <div><h1>Coût de revient</h1><div class="sub">Par article (chaîne d'étapes) et par atelier — main d'œuvre réelle + matière + charges</div></div>
+  <div class="menu"><a href="index.html">🏠 Cockpit</a><a href="hanane.html">📋 Commandes</a><a href="rentabilite.html">📈 Rentabilité</a></div>
+</div>
+
+<div class="kpis" id="kpis"></div>
+
+<div class="seg" id="seg">
+  <button data-v="articles" class="on">Par article</button>
+  <button data-v="ateliers">Par atelier</button>
+</div>
+
+<div id="content"></div>
+
+<script>
+(function(){
+  var ORD = (window.CJ_ORDERS ? window.CJ_ORDERS.all() : []);
+  var vue='articles';
+  function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+  function dh(n){return Math.round(n||0).toLocaleString('fr-FR')+' DH';}
+  function vig(o){var a=(o.articles||[])[0]||{};return a.photo?'<img class="vig" src="'+esc(a.photo)+'" onerror="this.outerHTML=\'<div class=&quot;vig&quot;>🛋️</div>\'">':'<div class="vig">🛋️</div>';}
+
+  // articles "actifs" = ceux qui ont un parcours défini (suivis en interne)
+  function articlesAvecParcours(){
+    var res=[];
+    ORD.forEach(function(o){
+      (o.articles||[]).forEach(function(a){
+        var p=window.CJ?window.CJ.parcoursDe(a.id):[];
+        if(p.length){ res.push({o:o,a:a,c:window.CJ.coutArticle(a.id)}); }
+      });
+    });
+    return res;
+  }
+
+  function render(){
+    var arts=articlesAvecParcours();
+    // KPIs
+    var moTot=0,matTot=0,nbArt=arts.length,nbValides=0;
+    arts.forEach(function(x){moTot+=x.c.mo;matTot+=x.c.matiere;nbValides+=x.c.etapesValidees;});
+    document.getElementById('kpis').innerHTML=
+      kpi(nbArt,'Articles suivis')+
+      kpi(dh(moTot),'Main d\'œuvre cumulée')+
+      kpi(dh(matTot),'Matière')+
+      kpi(nbValides,'Étapes validées');
+
+    document.querySelectorAll('#seg button').forEach(function(b){b.classList.toggle('on',b.getAttribute('data-v')===vue);b.onclick=function(){vue=b.getAttribute('data-v');render();};});
+
+    if(!arts.length){document.getElementById('content').innerHTML='<div class="empty">Aucun article suivi par étapes pour l\'instant.<br>Dès que Hanane définit le PARCOURS d\'un article (sa chaîne de départements), son coût de revient apparaît ici.</div>';return;}
+
+    if(vue==='articles') renderArticles(arts);
+    else renderAteliers();
+  }
+
+  function renderArticles(arts){
+    arts.sort(function(a,b){return b.c.total-a.c.total;});
+    document.getElementById('content').innerHTML='<div class="sec">🪑 Coût de revient par article</div>'+arts.map(function(x){
+      var o=x.o,a=x.a,c=x.c;
+      var pv=(a.qte||a.qty||1)*(a.prix||a.pu||0);
+      var marge=pv-c.total;
+      var pct=pv>0?Math.round(marge/pv*100):0;
+      // barre MO / matière / charges
+      var tt=c.total||1;
+      var bar='<div class="bar"><i style="width:'+(c.mo/tt*100)+'%;background:#C4714F"></i><i style="width:'+(c.matiere/tt*100)+'%;background:#60a5fa"></i><i style="width:'+(c.chargesFixes/tt*100)+'%;background:#475569"></i></div>';
+      var steps=c.etapes.map(function(e){
+        return '<div class="step"><span class="dot '+(e.statut==='valide'?'ok':'wait')+'"></span>'+
+          '<span>'+esc(e.dept)+' · '+esc(e.nom)+' <span style="color:#94a3b8">('+e.coutH+' DH/h)</span></span>'+
+          '<span class="scost">'+(e.statut==='valide'?(e.heures+'h = '+dh(e.cout)):'<span style="color:#94a3b8">à valider</span>')+'</span></div>';
+      }).join('');
+      return '<div class="card"><div class="crow">'+vig(o)+
+        '<div style="flex:1;min-width:0"><div class="nm">'+esc(a.nm)+'</div>'+
+        '<div class="mt">'+esc(o.client)+' · '+esc(o.ref||'')+' · '+c.etapesValidees+'/'+c.etapesTotal+' étapes</div></div>'+
+        '<div class="tot"><div class="v '+(marge>=0?'ok':'bad')+'">'+dh(c.total)+'</div><div class="l">coût de revient</div></div></div>'+
+        bar+
+        '<div class="bd"><span>🔧 MO '+dh(c.mo)+'</span><span>🧰 Matière '+dh(c.matiere)+'</span><span>🏢 Charges '+dh(c.chargesFixes)+'</span>'+
+        (pv>0?('<span>🏷️ Vendu '+dh(pv)+'</span><span style="color:'+(marge>=0?'#34d399':'#f87171')+'">📈 Marge '+dh(marge)+' ('+pct+'%)</span>'):'')+'</div>'+
+        '<div class="steps">'+steps+'</div></div>';
+    }).join('');
+  }
+
+  function renderAteliers(){
+    var par=window.CJ?window.CJ.coutParAtelier():[];
+    var ats=(window.CJ_ATELIERS||[]);
+    function info(code){return ats.find(function(x){return x.code===code;})||{};}
+    if(!par.length){document.getElementById('content').innerHTML='<div class="empty">Aucune étape validée pour l\'instant.</div>';return;}
+    var max=par[0].cout||1;
+    document.getElementById('content').innerHTML='<div class="sec">🏭 Coût main d\'œuvre par atelier</div>'+par.map(function(p){
+      var inf=info(p.atelier);
+      var col=inf.couleur||'#C4714F';
+      return '<div class="card"><div class="atb">'+
+        '<div class="atpill" style="background:'+col+'">'+esc(p.atelier)+'</div>'+
+        '<div style="flex:1;min-width:0"><div class="nm">Atelier '+esc(p.atelier)+(inf.nom?(' — '+esc(inf.nom)):'')+'</div>'+
+        '<div class="mt">'+p.heures+' h travaillées · '+p.etapes+' étapes validées</div></div>'+
+        '<div class="tot"><div class="v">'+dh(p.cout)+'</div><div class="l">main d\'œuvre</div></div></div>'+
+        '<div class="bar"><i style="width:'+(p.cout/max*100)+'%;background:'+col+'"></i></div></div>';
+    }).join('');
+  }
+
+  function kpi(v,l){return '<div class="kpi"><div class="v">'+v+'</div><div class="l">'+l+'</div></div>';}
+
+  window.addEventListener('load',render);
+  if(window.CJ) window.CJ.abonner(render);
+  render();
+})();
+</script>

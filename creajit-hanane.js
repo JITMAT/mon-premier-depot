@@ -359,6 +359,7 @@
           <button class="vbtn" data-sel="${esc(a.id)}" data-nom="${esc(a.nm)}" data-ref="${esc(c.ref)}" data-client="${esc(c.client)}" data-at="${a.at||''}">${on ? '● Sélection active — clique un ouvrier' : '➕ Affecter un ouvrier'}</button>
           <button class="vbtn2 ${openArt===a.id&&openTab==='fiche'?'on':''}" data-fiche="${esc(a.id)}">📝 Fiche${fa.dimensions||fa.tissu||fa.notes?' ✓':''}</button>
           <button class="vbtn2 ${openArt===a.id&&openTab==='mat'?'on':''}" data-mat="${esc(a.id)}">🧰 Matière${bons.length?' ('+bons.length+')':''}</button>
+          <button class="vbtn2 ${openArt===a.id&&openTab==='parc'?'on':''}" data-parc="${esc(a.id)}">🏭 Parcours${(window.CJ&&window.CJ.parcoursDe(a.id).length)?' ('+window.CJ.parcoursDe(a.id).length+')':''}</button>
         </div>`;
 
       // panneau fiche article
@@ -396,6 +397,29 @@
           ${bons.length ? `<div class="cjsec-h" style="margin-top:11px">Bons de cet article</div>${bons.map(b=>`<div class="cjp"><div class="pn">${(b.lignes||[]).map(x=>esc(x.nom)).join(', ')||'Bon'} <span class="pc">· ${(b.lignes||[]).length} ligne(s)</span></div><span class="pb ${b.statut==='recu'?'bas':'rupture'}" style="${b.statut==='recu'?'background:rgba(55,201,138,.16);color:#37c98a':''}">${b.statut==='recu'?'✅ Reçu':(b.statut==='commande'?'🛒 Commande':'📤 Envoyé')}</span></div>`).join('')}` : ''}
         </div>`;
       }
+      // panneau parcours (chaîne de départements)
+      if (openArt === a.id && openTab === 'parc') {
+        const parc = window.CJ ? window.CJ.parcoursDe(a.id) : [];
+        const depts = window.CJ_DEPTS || [];
+        const suggere = (window.cjParcoursPour ? window.cjParcoursPour(a.nm) : []);
+        const codesActifs = parc.map(e => e.dept);
+        // étapes choisies (ordonnées)
+        const choisies = parc.length ? parc.map((e, i) => {
+          const d = depts.find(x => x.code === e.dept) || {};
+          return `<div class="cjp"><div class="pn">${i+1}. ${esc(e.dept)} · ${esc(d.nom||'')} <span class="pc">(${d.coutH||'?'} DH/h · atelier ${d.atelier||'?'})</span>${e.statut==='valide'?' <span style="color:#37c98a">✅ '+e.heures+'h</span>':''}</div><button class="vbtn" data-pdel="${esc(a.id)}|${esc(e.dept)}">✕</button></div>`;
+        }).join('') : '<div class="pc">Aucune étape. Choisis les départements ci-dessous (dans l\'ordre de fabrication).</div>';
+        // boutons d'ajout par atelier
+        const parAtelier = {};
+        depts.forEach(d => { (parAtelier[d.atelier] = parAtelier[d.atelier] || []).push(d); });
+        let dispo = Object.keys(parAtelier).map(at => `<div style="margin-top:7px"><div class="pc" style="margin-bottom:4px">Atelier ${at}</div>${parAtelier[at].map(d => `<button class="vbtn2 ${codesActifs.includes(d.code)?'on':''}" data-padd="${esc(a.id)}|${esc(d.code)}" style="margin:2px">${esc(d.code)} ${esc(d.nom)} · ${d.coutH}</button>`).join('')}</div>`).join('');
+        h += `<div class="cjpan">
+          <div class="cjsec-h">🏭 Parcours de fabrication (chaîne d'étapes)</div>
+          ${suggere.length ? `<button class="cjbtn2" data-psug="${esc(a.id)}" style="margin-bottom:8px">✨ Parcours conseillé : ${suggere.join(' → ')}</button>` : ''}
+          <div class="cjlignes">${choisies}</div>
+          <div class="cjsec-h" style="margin-top:11px">Ajouter une étape</div>
+          ${dispo}
+        </div>`;
+      }
       h += `</div>`;
     });
 
@@ -408,6 +432,11 @@
     // toggle fiche / matière
     box.querySelectorAll('[data-fiche]').forEach(b => b.onclick = () => { const id=b.getAttribute('data-fiche'); if(openArt===id&&openTab==='fiche'){openArt=null;}else{openArt=id;openTab='fiche';} renderArts(); });
     box.querySelectorAll('[data-mat]').forEach(b => b.onclick = () => { const id=b.getAttribute('data-mat'); if(openArt===id&&openTab==='mat'){openArt=null;}else{openArt=id;openTab='mat';bonLignes=[];matQ='';} renderArts(); });
+    box.querySelectorAll('[data-parc]').forEach(b => b.onclick = () => { const id=b.getAttribute('data-parc'); if(openArt===id&&openTab==='parc'){openArt=null;}else{openArt=id;openTab='parc';} renderArts(); });
+    // parcours : ajouter / retirer / suggérer une étape
+    box.querySelectorAll('[data-padd]').forEach(b => b.onclick = () => { const [aid,code]=b.getAttribute('data-padd').split('|'); const cur=window.CJ.parcoursDe(aid).map(e=>e.dept); if(!cur.includes(code)) cur.push(code); else cur.splice(cur.indexOf(code),1); window.CJ.setParcours(aid,cur); renderArts(); });
+    box.querySelectorAll('[data-pdel]').forEach(b => b.onclick = () => { const [aid,code]=b.getAttribute('data-pdel').split('|'); const cur=window.CJ.parcoursDe(aid).map(e=>e.dept).filter(x=>x!==code); window.CJ.setParcours(aid,cur); renderArts(); });
+    box.querySelectorAll('[data-psug]').forEach(b => b.onclick = () => { const aid=b.getAttribute('data-psug'); const a=articlesDe(c).find(x=>x.id===aid); const sug=window.cjParcoursPour(a?a.nm:''); if(sug.length){window.CJ.setParcours(aid,sug); window.CJ.evenement('info','Hanane',`Parcours défini pour « ${a.nm} » : ${sug.join(' → ')}.`); renderArts();} });
     wireArticlePanels(c);
   }
 
