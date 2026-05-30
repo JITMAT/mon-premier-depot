@@ -56,6 +56,22 @@
     ['MAPLE','Cuivre Signature','bas'],['LEAF','Cuivre Signature','bas'],['MINA','Cuivre Signature','bas'],['SOUFFLE','Cuivre Signature','bas'],
   ].map(p => ({ nm:p[0], cat:p[1], stock:p[2] }));
 
+  // Si Claude in Chrome a injecté les VRAIES commandes (avec photos), on les utilise.
+  if (window.CJ_COMMANDES_REELLES && window.CJ_COMMANDES_REELLES.length) {
+    COMMANDES.length = 0;
+    window.CJ_COMMANDES_REELLES.forEach(function (o) {
+      COMMANDES.push({
+        ref: o.ref, client: o.client || '', com: o.vendeur || o.com || '',
+        statut: o.statut || 'confirmed', livr: o.livr || null, retard: o.retard || 0,
+        total: o.total || 0, paye: o.paye || 0, reste: o.reste || 0,
+        nb: (o.articles || []).length,
+        articles: (o.articles || []).map(function (a, i) {
+          return { id: (o.ref || 'cmd') + '_a' + i, nm: a.nom || a.name || ('Article ' + (i + 1)),
+                   qty: a.qty || a.quantity || '', pu: a.pu || a.price || '', photo: a.photo || '' };
+        })
+      });
+    });
+  }
   const COMS = Array.from(new Set(COMMANDES.map(c => c.com)));
 
   // ---- État ----

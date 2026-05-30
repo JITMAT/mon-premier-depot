@@ -19,7 +19,65 @@ Le back-office stocke un **Bearer token** dans le navigateur :
 `JSON.parse(localStorage.getItem('creajit_auth')).token` → appels API en
 `Authorization: Bearer <token>`.
 
-## 🎯 TA MISSION
+## ✅ MÉTHODE CONFIRMÉE PAR DRISS — Claude in Chrome (session navigateur)
+Le détail des commandes + photos n'est **pas** dans une API publique : il est chargé **dans la
+page React (Fiber) de l'admin**. Il faut donc une **session navigateur** (Claude in Chrome).
+
+**Procédure exacte :**
+1. `navigate` vers `https://creajit.ma/admin/orders` (connecté).
+2. Exécuter ce `javascript_tool` (extrait les commandes avec photos depuis le Fiber React) :
+
+```js
+const findFiberRoot = () => {
+  const root = document.getElementById('root') || document.body;
+  const key = Object.keys(root).find(k => k.startsWith('__reactFiber') || k.startsWith('__reactContainer'));
+  if (key) return root[key];
+  for (const child of root.children) {
+    const k = Object.keys(child).find(k => k.startsWith('__reactFiber'));
+    if (k) return child[k];
+  }
+};
+const searchFiber = (fiber, depth = 0, found = []) => {
+  if (!fiber || depth > 30) return found;
+  let state = fiber.memoizedState;
+  while (state) {
+    const val = state.memoizedState;
+    if (Array.isArray(val) && val.length >= 50) {
+      if (val[0] && val[0].items && val[0].customer !== undefined) found.push(val);
+    }
+    state = state.next;
+  }
+  searchFiber(fiber.child, depth + 1, found);
+  searchFiber(fiber.sibling, depth + 1, found);
+  return found;
+};
+const orders = searchFiber(findFiberRoot()).sort((a,b) => b.length - a.length)[0];
+const withPhotos = orders.filter(o => o.items?.some(i => i.image?.trim() || i.images?.length));
+JSON.stringify(withPhotos.map(o => ({
+  ref: o.documentNumber,
+  date: o.date?.slice(0,10),
+  client: o.customer?.name || '',
+  vendeur: o.user?.name || '',
+  total: o.total,
+  photos: o.items.filter(i => i.image?.trim() || i.images?.length)
+    .map(i => ({ article: i.name, url: 'https://creajit.ma' + i.image }))
+})))
+```
+
+3. **Récupère tout le tableau `orders`** (pas seulement ceux avec photos) en mappant chaque
+   commande vers : `{ ref:o.documentNumber, date, client:o.customer?.name, vendeur:o.user?.name,
+   total:o.total, statut, articles: o.items.map(i => ({ nom:i.name, qty:i.quantity, pu:i.price,
+   photo: i.image ? 'https://creajit.ma'+i.image : '' })) }`.
+4. **Écris ces vraies commandes** dans un fichier `creajit-commandes-reelles.js` :
+   `window.CJ_COMMANDES_REELLES = [ … ];`
+5. Dans **`creajit-hanane.js`**, utilise `window.CJ_COMMANDES_REELLES` si présent (au lieu du
+   tableau `COMMANDES` figé). Le détail client affiche déjà `articles[].photo` via `photoOf(a)`.
+6. `git commit` + `push` sur `claude/modest-archimedes-fM6Gq`, puis déploie sur Netlify.
+
+> Note : c'est une **extraction par session navigateur** (snapshot). Pour du temps réel, refaire
+> l'extraction périodiquement, ou demander à l'équipe CreaJit une vraie API REST `/orders` avec photos.
+
+## 🎯 TA MISSION (rappel / alternative API si elle existe)
 1. **Découvrir les vraies routes de l'API CreaJit.**
    - Ouvre `https://creajit.ma/admin`, F12 → onglet **Network**, navigue sur **Commandes**,
      **détail d'une commande**, **Produits**. Note les **Request URL** exactes (ex.
