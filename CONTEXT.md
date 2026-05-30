@@ -435,6 +435,15 @@ Articles : Chaise Cartel ×75 @730 ; Tableau 120/80 ×25 @730 ; Tableau 40/40 ×
   Prompt agent réécrit en darija. Testé node : les 2 actions créent bien bon+consigne ; 2/2 blocs
   JS OK. À tester EN VRAI sur le site (micro/voix/Claude — impossible dans l'env sans internet).
 
+- **2026-05-30 — TOUS les agents montés au niveau « vrai agent » (voix + actions).** Driss : « Mohamed
+  n'a pas d'agent IA » — en fait il avait la version basique (chat seul). `creajit-assistant.js`
+  (partagé par Mohamed, Hassan, Fatima, Kenza, Sabiri) réécrit : micro 🎤 darija (`ar-MA`), lecture
+  voix haute, et OUTILS Claude par rôle (`window.CJ_AGENT_ROLE`/`CJ_AGENT_NOM`) — magasin :
+  `traiter_bon` (retrait/achat), reception : `receptionner` (passe au vert), tous : `alerter_patron`.
+  Boucle tool_use/tool_result + bulles d'action vertes. Prompts réécrits darija. Testé node : Mohamed
+  traite un bon → commande, Hassan réceptionne → reçu/vert ; 5/5 pages OK. (Reste sans agent dédié :
+  Hanane et consignes — à voir.)
+
 ## 13. Ordre de construction officiel (structure décidée, à suivre)
 
 > Driss délègue la structuration. On construit dans CET ordre, en s'appuyant sur les
