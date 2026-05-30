@@ -562,6 +562,30 @@
     return '';
   }
   function dhW(n) { return Math.round(n || 0).toLocaleString('fr-FR') + ' DH'; }
+  function fmtDuree(ms) {
+    ms = ms || 0; const s = Math.floor(ms / 1000), hh = Math.floor(s / 3600), mm = Math.floor((s % 3600) / 60), ss = s % 60;
+    return (hh ? hh + 'h' : '') + String(mm).padStart(hh ? 2 : 1, '0') + 'm' + String(ss).padStart(2, '0') + 's';
+  }
+  function fmtHeureDate(ts) {
+    const d = new Date(ts), now = new Date();
+    const hm = String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+    const memeJour = d.toDateString() === now.toDateString();
+    return (memeJour ? "auj." : String(d.getDate()).padStart(2, '0') + '/' + String(d.getMonth() + 1).padStart(2, '0')) + ' ' + hm;
+  }
+  // chrono en direct : met à jour les pastilles ⏱️ sans tout redessiner
+  let chronoTimer = null;
+  function lancerChrono() {
+    if (chronoTimer) clearInterval(chronoTimer);
+    chronoTimer = setInterval(function () {
+      const els = document.querySelectorAll('[data-chrono][data-t0]');
+      if (!els.length) { clearInterval(chronoTimer); chronoTimer = null; return; }
+      els.forEach(function (el) {
+        const t0 = parseInt(el.getAttribute('data-t0'), 10); if (!t0) return;
+        const base = parseInt(el.getAttribute('data-base'), 10) || 0;
+        el.textContent = '⏱️ ' + fmtDuree(base + (Date.now() - t0)) + ' 🟢';
+      });
+    }, 1000);
+  }
 
   function renderWorkers() {
     const box = document.getElementById('workers'); if (!box) return;
