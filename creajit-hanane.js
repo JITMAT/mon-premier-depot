@@ -79,6 +79,7 @@
   // ---- État ----
   let tab = 'commandes', q = '', fStat = '', fCom = '', tri = 'retard', view = 'list', curRef = null, selA = null;
   let bonLignes = [], matQ = '', openArt = null, openTab = '';
+  let atelierOuvert = {}; // accordéon : quels ateliers sont dépliés
   function depuis(t0) { if (!t0) return ''; var m = Math.floor((Date.now() - t0) / 60000); return m < 60 ? (m + ' min') : (Math.floor(m / 60) + 'h' + String(m % 60).padStart(2, '0')); }
   var BONSTAT = { envoye: '📤 Envoyé au magasin', commande: '🛒 Commande fournisseur', recu: '✅ Reçu' };
 
@@ -552,28 +553,88 @@
   }
 
   // ---- Colonne droite : ouvriers réels par atelier (cliquables -> mini-site) ----
+  // état de travail -> pastille
+  function badge(st) {
+    if (st === 'encours') return '<span style="color:#37c98a;font-size:10.5px;font-weight:700">🟢 en cours</span>';
+    if (st === 'pause') return '<span style="color:#f0a23b;font-size:10.5px;font-weight:700">⏸️ en pause</span>';
+    if (st === 'fini') return '<span style="color:#60a5fa;font-size:10.5px;font-weight:700">✅ terminé</span>';
+    if (st === 'affecte') return '<span style="color:#e69a76;font-size:10.5px;font-weight:700">📋 à démarrer</span>';
+    return '';
+  }
+  function dhW(n) { return Math.round(n || 0).toLocaleString('fr-FR') + ' DH'; }
+
   function renderWorkers() {
     const box = document.getElementById('workers'); if (!box) return;
     const groups = {}; WORKERS.forEach(w => { (groups[w.at] = groups[w.at] || []).push(w); });
     let h = '';
     Object.keys(groups).sort().forEach(at => {
-      h += `<div style="margin-bottom:14px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:7px">
-        <span style="background:${atColor(at)};color:#fff;width:24px;height:24px;border-radius:7px;display:grid;place-items:center;font-weight:700;font-size:12px">${at}</span>
-        <b style="font-size:13px">${esc(atName(at))}</b></div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px">`;
-      groups[at].forEach(w => {
-        h += `<div data-assign="${w.id}" style="cursor:${selA ? 'copy' : 'pointer'};background:#161d2b;border:1px solid ${selA ? 'rgba(196,113,79,.5)' : 'rgba(196,113,79,.18)'};border-radius:11px;padding:9px">
-          <div style="font-weight:600;font-size:13px">${esc(w.nm)}${w.chef ? ' · chef' : ''}</div>
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px">
-            <span class="pc" style="font-size:10.5px;color:#8d96a5">${esc(atName(w.at))}</span>
-            <button class="vbtn" data-voir="${w.id}">👁️ Voir</button>
-          </div></div>`;
-      });
-      h += `</div></div>`;
+      const ouvert = !!atelierOuvert[at];
+      // compte les ouvriers occupés dans cet atelier
+      let occupes = 0;
+      groups[at].forEach(w => { if (window.CJ && CJ.affectationsOuvrier(w.id).some(x => x.statut !== 'fini')) occupes++; });
+      // En-tête d'atelier cliquable (accordéon)
+      h += `<div style="margin-bottom:9px;border:1px solid rgba(196,113,79,.18);border-radius:12px;overflow:hidden;background:#131a27">
+        <div data-acc="${at}" style="display:flex;align-items:center;gap:9px;padding:11px 12px;cursor:pointer">
+          <span style="background:${atColor(at)};color:#fff;width:26px;height:26px;border-radius:7px;display:grid;place-items:center;font-weight:700;font-size:13px">${at}</span>
+          <div style="flex:1;min-width:0"><b style="font-size:13.5px">${esc(atName(at))}</b>
+            <div class="pc" style="font-size:11px;color:#8d96a5">${groups[at].length} ouvriers${occupes ? ' · <span style="color:#37c98a">'+occupes+' occupé(s)</span>' : ''}</div></div>
+          <span style="font-size:13px;color:#8d96a5;transition:.2s;transform:rotate(${ouvert ? 90 : 0}deg)">▶</span>
+        </div>`;
+      if (ouvert) {
+        h += `<div style="padding:4px 10px 10px;display:flex;flex-direction:column;gap:7px">`;
+        groups[at].forEach(w => {
+          const jobs = window.CJ ? CJ.affectationsOuvrier(w.id).filter(x => x.statut !== 'fini') : [];
+          h += `<div style="background:#161d2b;border:1px solid ${selA ? 'rgba(196,113,79,.5)' : 'rgba(196,113,79,.18)'};border-radius:11px;padding:10px">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+              <div data-assign="${w.id}" style="cursor:${selA ? 'copy' : 'pointer'};flex:1;min-width:0">
+                <span style="font-weight:600;font-size:13px">${esc(w.nm)}${w.chef ? ' · chef' : ''}</span>
+                ${selA ? '<span class="pc" style="color:#e69a76;font-size:11px"> — clique pour affecter ici</span>' : ''}
+              </div>
+              <button class="vbtn" data-voir="${w.id}">👁️ Fiche</button>
+            </div>`;
+          // les commandes que cet ouvrier a sur sa table
+          if (jobs.length) {
+            jobs.forEach(j => {
+              h += `<div style="margin-top:8px;border-top:1px dashed rgba(255,255,255,.08);padding-top:8px">
+                <div style="display:flex;align-items:center;gap:8px">
+                  ${j.photo ? `<img src="${esc(j.photo)}" style="width:36px;height:36px;border-radius:8px;object-fit:cover">` : '<div style="width:36px;height:36px;border-radius:8px;background:#0c1018;display:grid;place-items:center">🛋️</div>'}
+                  <div style="flex:1;min-width:0">
+                    <div style="font-size:12.5px;font-weight:600">${esc(j.nom)} ${badge(j.statut)}</div>
+                    <div class="pc" style="font-size:11px;color:#8d96a5">${esc(j.client || '')}${j.ref ? ' · ' + esc(j.ref) : ''}</div>
+                  </div>
+                </div>
+                <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;font-size:11px">
+                  <span class="cjchip">💰 revient ${dhW(j.coutRevient)}</span>
+                  ${j.heures ? `<span class="cjchip">⏱️ ${j.heures} h</span>` : ''}
+                  ${j.pu ? `<span class="cjchip">🏷️ ${dhW(j.qty * j.pu)}</span>` : ''}
+                </div>
+                <div style="display:flex;gap:6px;margin-top:7px">
+                  ${j.statut === 'affecte' || j.statut === 'pause'
+                    ? `<button class="cjbtn2" data-start="${esc(j.articleId)}|${esc(w.id)}" style="flex:1">▶️ Démarrer</button>`
+                    : (j.statut === 'encours' ? `<button class="vbtn" data-pause="${esc(j.articleId)}|${esc(w.id)}">⏸️ Pause</button><button class="cjbtn2" data-done="${esc(j.articleId)}|${esc(w.id)}" style="flex:1">✅ Terminer</button>` : '')}
+                </div>
+              </div>`;
+            });
+          } else {
+            h += `<div class="pc" style="font-size:11px;color:#6b7280;margin-top:6px">Aucune commande affectée${selA ? '' : ' — sélectionne un article à gauche pour lui en donner une'}.</div>`;
+          }
+          h += `</div>`;
+        });
+        h += `</div>`;
+      }
+      h += `</div>`;
     });
     box.innerHTML = h;
+    // accordéon
+    box.querySelectorAll('[data-acc]').forEach(b => b.onclick = () => { const at = b.getAttribute('data-acc'); atelierOuvert[at] = !atelierOuvert[at]; renderWorkers(); });
+    // fiche mini-site = rapport
     box.querySelectorAll('[data-voir]').forEach(b => b.onclick = e => { e.stopPropagation(); location.href = 'ouvrier.html?w=' + b.getAttribute('data-voir'); });
-    box.querySelectorAll('[data-assign]').forEach(el => el.onclick = () => { var wid=el.getAttribute('data-assign'); if (selA) affecter(selA, wid); else location.href='ouvrier.html?w='+wid; });
+    // affecter (si un article est sélectionné)
+    box.querySelectorAll('[data-assign]').forEach(el => el.onclick = () => { var wid = el.getAttribute('data-assign'); if (selA) affecter(selA, wid); else location.href = 'ouvrier.html?w=' + wid; });
+    // démarrer / pause / terminer
+    box.querySelectorAll('[data-start]').forEach(b => b.onclick = e => { e.stopPropagation(); const [aid, wid] = b.getAttribute('data-start').split('|'); CJ.demarrerTravail(aid, wid); toastMsg('▶️ Travail démarré'); renderWorkers(); });
+    box.querySelectorAll('[data-pause]').forEach(b => b.onclick = e => { e.stopPropagation(); const [aid, wid] = b.getAttribute('data-pause').split('|'); CJ.pauserTravail(aid, wid, ''); toastMsg('⏸️ En pause'); renderWorkers(); });
+    box.querySelectorAll('[data-done]').forEach(b => b.onclick = e => { e.stopPropagation(); const [aid, wid] = b.getAttribute('data-done').split('|'); CJ.finirTravail(aid, wid); toastMsg('✅ Terminé'); renderWorkers(); });
   }
 
   function affecter(itemId, wid) {

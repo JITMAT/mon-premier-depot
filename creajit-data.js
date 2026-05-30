@@ -210,6 +210,24 @@
     },
     artMetaDe: (articleId) => (etat.artMeta && etat.artMeta[articleId]) || {},
 
+    // Tout ce qu'un ouvrier a sur sa table : ses articles affectés, l'état, le temps, le coût.
+    affectationsOuvrier: (ouvrierId) => {
+      const aff = etat.affArt || {}, res = [];
+      Object.keys(aff).forEach(articleId => {
+        (aff[articleId] || []).forEach(o => {
+          if (o.ouvrierId !== ouvrierId) return;
+          const meta = (etat.artMeta && etat.artMeta[articleId]) || {};
+          const ms = (o.elapsedMs || 0) + (o.t0 ? (Date.now() - o.t0) : 0);
+          const cout = CJ.coutArticle ? CJ.coutArticle(articleId) : null;
+          res.push({ articleId, ouvrierId, statut: o.statut || 'affecte', motif: o.motif || '',
+            nom: o.nom || meta.nom || 'article', client: meta.client || '', ref: meta.ref || '',
+            photo: meta.photo || '', qty: meta.qty || 1, pu: meta.pu || 0,
+            heures: Math.round((ms / 3600000) * 10) / 10, coutRevient: cout ? cout.total : 0, cout });
+        });
+      });
+      return res;
+    },
+
     // ===== PARCOURS PAR DÉPARTEMENTS (atelier = chaîne d'étapes) =====
     // Définit / lit la chaîne de départements qu'un article traverse.
     setParcours: (articleId, codesDept) => {
