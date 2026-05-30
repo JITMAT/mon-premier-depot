@@ -56,23 +56,20 @@
     ['MAPLE','Cuivre Signature','bas'],['LEAF','Cuivre Signature','bas'],['MINA','Cuivre Signature','bas'],['SOUFFLE','Cuivre Signature','bas'],
   ].map(p => ({ nm:p[0], cat:p[1], stock:p[2] }));
 
-  // Si Claude in Chrome a injecté les VRAIES commandes (avec photos), on les utilise.
-  if (window.CJ_COMMANDES_REELLES && window.CJ_COMMANDES_REELLES.length) {
+  // VRAIES commandes CreaJit (186, avec photos) via le socle commun CJ_ORDERS.
+  if (window.CJ_ORDERS && window.CJ_ORDERS.count()) {
     COMMANDES.length = 0;
-    window.CJ_COMMANDES_REELLES.forEach(function (o) {
-      var paye = o.paye != null ? o.paye : (o.paid || 0);
-      var statut = o.statut || o.productionStatus || 'confirmed';
+    window.CJ_ORDERS.all().forEach(function (o) {
       COMMANDES.push({
-        ref: o.ref, client: o.client || '', com: o.vendeur || o.com || '',
-        statut: statut, livr: o.livr || o.date || null, retard: o.retard || 0,
-        date: o.date || '', tel: o.telephone || '',
-        paiement: o.paymentStatus || '', livraison: o.deliveryStatus || '',
-        total: o.total || 0, paye: paye, reste: (o.reste != null ? o.reste : (o.total || 0) - paye),
+        ref: o.ref, client: o.client || '', com: o.vendeur || '',
+        statut: o.prod || 'confirmed', statutLib: o.prodLib, livr: o.date || null, retard: 0,
+        date: o.date, tel: o.tel, paiement: o.paie, paiementLib: o.paieLib,
+        livraison: o.livr, livraisonLib: o.livrLib,
+        total: o.total || 0, paye: (o.paie === 'PAID' ? o.total : 0),
+        reste: (o.paie === 'PAID' ? 0 : o.total),
         nb: (o.articles || []).length,
-        articles: (o.articles || []).map(function (a, i) {
-          var ph = a.photo || (Array.isArray(a.photos) && a.photos[0]) || '';
-          return { id: (o.ref || 'cmd') + '_a' + i, nm: a.nom || a.name || ('Article ' + (i + 1)),
-                   qty: a.qte || a.qty || a.quantity || '', pu: a.prix || a.pu || a.price || '', photo: ph };
+        articles: (o.articles || []).map(function (a) {
+          return { id: a.id, nm: a.nom, qty: a.qte, pu: a.prix, photo: a.photo || '' };
         })
       });
     });

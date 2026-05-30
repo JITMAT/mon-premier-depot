@@ -2,6 +2,8 @@
 <script src="creajit-matieres.js"></script>
 <script src="creajit-ateliers.js"></script>
 <script src="creajit-data.js"></script>
+<script src="creajit-commandes-reelles.js"></script>
+<script src="creajit-orders.js"></script>
 <script src="creajit-photos.js"></script>
 <script src="creajit-workers.js"></script>
 <meta charset="utf-8">
@@ -65,21 +67,10 @@
 (function(){
   var TODAY = new Date('2026-05-30');
   // Commandes réelles CreaJit (client, ref, livraison, statut, retard)
-  var CMD = [
-    {ref:'26040026',client:'Mr Soufiane',livr:'2026-05-04',retard:25},
-    {ref:'26040045',client:'Mr Yazid',livr:'2026-05-04',retard:25},
-    {ref:'26040019',client:'2A WEDDING',livr:'2026-05-05',retard:24},
-    {ref:'26040052',client:'Mr Benjamin',livr:'2026-05-08',retard:21},
-    {ref:'26040048',client:'Azzozi Relax Houses',livr:'2026-05-08',retard:21},
-    {ref:'26040053',client:'Expresse Beuty',livr:'2026-05-08',retard:21},
-    {ref:'26040008',client:'Mr Youssef Ajdir',livr:'2026-05-09',retard:20},
-    {ref:'26040022',client:'Mme Ilhame',livr:'2026-05-15',retard:14},
-    {ref:'26040024',client:'Mme Anisa Guerroumi',livr:'2026-05-16',retard:13},
-    {ref:'26050019',client:'Mme Nazha',livr:'2026-05-18',retard:11},
-    {ref:'26040060',client:'Mme Laila',livr:'2026-05-20',retard:0},
-    {ref:'26050007',client:'Mr Maliki',livr:'2026-05-25',retard:0},
-    {ref:'26040016',client:'Mme Perez',livr:'2026-05-30',retard:0},
-  ];
+  var CMD = (window.CJ_ORDERS ? window.CJ_ORDERS.all().map(function(o){
+    return { ref:o.ref, client:o.client, livr:o.date||'', retard:0,
+             statutLivr:o.livr, statutLivrLib:o.livrLib, articles:o.articles };
+  }) : []);
   function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]);});}
   function jour(d){return new Date(d).toLocaleDateString('fr-FR',{day:'2-digit',month:'short'});}
   function av(){ var p=(window.CJ_PHOTOS||{}).fatima; document.getElementById('av').innerHTML = p?('<img src="'+p+'">'):'FE'; }
@@ -93,7 +84,7 @@
 
     // KPIs
     document.getElementById('kpis').innerHTML =
-      kpi('26','Livrées ce mois','var(--green)') +
+      kpi((window.CJ_ORDERS?window.CJ_ORDERS.byDelivery('DELIVERED').length:26),'Livrées (CreaJit)','var(--green)') +
       kpi(nonLivr.length,'À livrer') +
       kpi(retard.length,'En retard','var(--red)') +
       kpi(faites.length,'Marquées livrées (appli)','var(--green)');

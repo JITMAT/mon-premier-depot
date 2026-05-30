@@ -282,6 +282,14 @@ Articles : Chaise Cartel ×75 @730 ; Tableau 120/80 ×25 @730 ; Tableau 40/40 ×
   **Reste (dépend d'un serveur) : génération d'IMAGE du dessin, temps réel multi-appareils,
   WhatsApp (Wassenger), Hikvision, CreaJit live.** Pour ça → déploiement Netlify connecté (pas glisser-déposer).
 
+- **2026-05-30 — 186 VRAIES commandes CreaJit (avec photos) branchées PARTOUT.**
+  Extraites par Claude in Chrome (Fiber React) -> `creajit-commandes-reelles.js` (186 cmd,
+  394 articles avec photo URL creajit.ma/uploads). Socle commun `creajit-orders.js` (CJ_ORDERS)
+  inclus dans toutes les pages. Branché : **Hanane** (clients->articles+photos->affecter),
+  **Kenza** (186 ventes), **Sabiri** (139 à encaisser), **Fatima** (livraisons réelles deliveryStatus).
+  Statuts réels : productionStatus / paymentStatus / deliveryStatus. CA carnet ~3,9 M DH.
+  ⚠️ Snapshot navigateur (re-extraire pour rafraîchir). Token JWT expirant -> régénérer.
+
 ## 13. Ordre de construction officiel (structure décidée, à suivre)
 
 > Driss délègue la structuration. On construit dans CET ordre, en s'appuyant sur les

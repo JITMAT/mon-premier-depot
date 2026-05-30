@@ -2,6 +2,8 @@
 <script src="creajit-matieres.js"></script>
 <script src="creajit-ateliers.js"></script>
 <script src="creajit-data.js"></script>
+<script src="creajit-commandes-reelles.js"></script>
+<script src="creajit-orders.js"></script>
 <script src="creajit-photos.js"></script>
 <script src="creajit-workers.js"></script>
 <script src="creajit-commandes.js"></script>
@@ -40,7 +42,7 @@
 
 <script>
 (function(){
-  var C=window.CJ_CMD||[];
+  var C=(window.CJ_ORDERS?window.CJ_ORDERS.all().map(function(o){return {ref:o.ref,client:o.client,com:o.vendeur,total:o.total,paye:(o.paie==='PAID'?o.total:0),reste:(o.paie==='PAID'?0:o.total)};}):(window.CJ_CMD||[]));
   function dh(n){return Math.round(n||0).toLocaleString('fr-FR')+' DH';}
   function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]);});}
   var coms=Array.from(new Set(C.map(function(x){return x.com;})));
