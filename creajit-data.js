@@ -19,6 +19,7 @@
     chronos: {},        // articleId -> { sessions:[{debut,fin,pauseMs,motif}], statut }
     bons: {},           // bonId -> { id, ref, client, lignes:[], statut:'envoye'|'commande'|'recu', t0, tRecu, par }
     fiches: {},         // ref -> { dimensions, tissu, accoudoirs, coutures, notes, dessinValide }
+    articlesSaisis: {}, // ref -> [ { id, nm, qty, pu, photo(base64) } ] saisis par Hanane
     qc: {},             // articleId -> { ok, par, obs, date }
     livraisons: {},     // ref -> { ref, date, par }
     consignes: [],      // { id, cible:'tous'|ouvrierId, texte, par, date }
@@ -123,6 +124,10 @@
     // Fiche technique d'une commande (stockée par référence)
     fiche: (ref, data) => { etat.fiches[ref] = Object.assign({}, etat.fiches[ref], data); sauver(); },
     ficheDe: (ref) => etat.fiches[ref] || {},
+    // Articles saisis par Hanane (fiche technique) — le connecteur ne donne que le nombre
+    ajouterArticle: (ref, art) => { (etat.articlesSaisis[ref] = etat.articlesSaisis[ref] || []).push(Object.assign({ id: ref + '_m' + Date.now().toString(36) }, art)); sauver(); },
+    articlesSaisis: (ref) => etat.articlesSaisis[ref] || [],
+    supprimerArticle: (ref, id) => { etat.articlesSaisis[ref] = (etat.articlesSaisis[ref] || []).filter(a => a.id !== id); sauver(); },
 
     // Livraisons (agent Fatima — logistique)
     livrer: (ref, info) => { etat.livraisons[ref] = Object.assign({ ref, date: Date.now() }, info || {}); sauver(); },

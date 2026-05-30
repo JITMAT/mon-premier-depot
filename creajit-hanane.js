@@ -71,15 +71,32 @@
   const atColor = c => { const a = ats().find(x => x.code === c); return a ? a.couleur : '#C4714F'; };
   const affs = () => (window.CJ ? window.CJ.etat().affectations : {});
   const photo = img => (window.ART && img && window.ART[img]) ? `<img src="${window.ART[img]}" style="width:54px;height:54px;border-radius:9px;object-fit:cover;background:#fff">` : `<div style="width:54px;height:54px;border-radius:9px;background:#222c3d;display:grid;place-items:center;font-size:22px">🪑</div>`;
+  const photoOf = a => (a && a.photo) ? `<img src="${a.photo}" style="width:54px;height:54px;border-radius:9px;object-fit:cover;background:#fff">` : photo(a && a.img);
   const toastMsg = m => { if (typeof window.toast === 'function') window.toast(m); };
   const cmd = ref => COMMANDES.find(c => c.ref === ref);
 
   // articles d'une commande (réels si dispo, sinon créneaux d'après le nombre d'articles CreaJit)
   function articlesDe(c) {
-    if (c.articles && c.articles.length) return c.articles;
-    const out = [];
-    for (let i = 1; i <= (c.nb || 1); i++) out.push({ id: c.ref + '_a' + i, nm: 'Article ' + i, img: null, qty: '', pu: '', aDetailler: true });
-    return out;
+    const base = (c.articles && c.articles.length) ? c.articles.slice() : [];
+    const saisis = window.CJ ? window.CJ.articlesSaisis(c.ref) : [];
+    return base.concat(saisis);
+  }
+  function formArticleHTML(c) {
+    return '<div class="cjsec"><div class="cjsec-h">\u2795 Ajouter un article (fiche technique)</div>'
+      + '<div class="cjgrid"><input id="aa_nm" placeholder="Nom de l\'article"><input id="aa_qty" type="number" placeholder="Qt\u00e9"></div>'
+      + '<div class="cjgrid" style="margin-top:7px"><input id="aa_pu" type="number" placeholder="Prix unit. (DH)"><input id="aa_photo" type="file" accept="image/*"></div>'
+      + '<button class="cjbtn2" id="aa_add" style="margin-top:8px">\u2795 Ajouter l\'article</button>'
+      + '<div class="pc" style="margin-top:6px">CreaJit indique ' + (c.nb || '?') + ' article(s) pour cette commande \u2014 ajoute-les ici avec leur photo (le connecteur ne fournit pas le d\u00e9tail).</div></div>';
+  }
+  function wireAddArticle(c) {
+    var b = document.getElementById('aa_add'); if (!b) return;
+    b.onclick = function () {
+      var nm = (document.getElementById('aa_nm').value || '').trim(); if (!nm) { toastMsg('Donne un nom d\'article'); return; }
+      var qty = +document.getElementById('aa_qty').value || 0, pu = +document.getElementById('aa_pu').value || 0;
+      var file = document.getElementById('aa_photo').files[0];
+      function save(photo) { window.CJ.ajouterArticle(c.ref, { nm: nm, qty: qty, pu: pu, photo: photo || '' }); toastMsg('Article ajout\u00e9 \u2705'); renderArts(); }
+      if (file) { var r = new FileReader(); r.onload = function () { save(r.result); }; r.readAsDataURL(file); } else save('');
+    };
   }
 
   // ---- Barre de filtres (une fois) ----
@@ -198,11 +215,11 @@
       const af = A[a.id];
       if (af) {
         const w = WORKERS.find(x => x.id === af.ouvrierId);
-        h += `<div class="cjp" style="border-color:rgba(55,201,138,.4)">${photo(a.img)}<div class="pn">${esc(a.nm)} <span class="pc">${a.qty ? a.qty+' × '+a.pu+' DH' : ''}</span></div>
+        h += `<div class="cjp" style="border-color:rgba(55,201,138,.4)">${photoOf(a)}<div class="pn">${esc(a.nm)} <span class="pc">${a.qty ? a.qty+' × '+a.pu+' DH' : ''}</span></div>
           <div style="color:#37c98a;font-weight:700;font-size:12px">✅ ${esc(w ? w.nm : af.ouvrierId)}</div></div>`;
       } else {
         const on = selA === a.id;
-        h += `<div class="cjp" style="${on ? 'border-color:#C4714F' : ''}">${photo(a.img)}
+        h += `<div class="cjp" style="${on ? 'border-color:#C4714F' : ''}">${photoOf(a)}
           <div class="pn">${esc(a.nm)} <span class="pc">${a.qty ? a.qty+' × '+a.pu+' DH' : (a.aDetailler ? 'détail/photo à compléter (fiche technique)' : '')}</span></div>
           <button class="vbtn" data-sel="${esc(a.id)}" data-nom="${esc(a.nm)}" data-ref="${esc(c.ref)}" data-client="${esc(c.client)}" data-qty="${a.qty||''}" data-pu="${a.pu||''}">${on ? '● Sélectionné' : 'Sélectionner'}</button></div>`;
       }
