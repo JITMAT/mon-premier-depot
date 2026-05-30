@@ -229,7 +229,28 @@
       return res;
     },
 
-    // ===== PARCOURS PAR DÉPARTEMENTS (atelier = chaîne d'étapes) =====
+    // Stats RÉELLES par ouvrier (depuis le vrai travail) — pour le classement du cockpit.
+    statsOuvriers: () => {
+      const aff = etat.affArt || {}, par = {};
+      const get = (id) => par[id] || (par[id] = { ouvrierId: id, faits: 0, enCours: 0, affectes: 0, pauses: 0, rapporte: 0, coutMO: 0, heures: 0, statut: 'idle' });
+      Object.keys(aff).forEach(articleId => {
+        const meta = (etat.artMeta && etat.artMeta[articleId]) || {};
+        const cout = CJ.coutArticle ? CJ.coutArticle(articleId) : null;
+        (aff[articleId] || []).forEach(o => {
+          const s = get(o.ouvrierId);
+          const ms = (o.elapsedMs || 0) + (o.t0 ? (Date.now() - o.t0) : 0);
+          s.heures += ms / 3600000;
+          const th = window.coutHoraire ? window.coutHoraire(o.atelierCode) : 60;
+          s.coutMO += (ms / 3600000) * th;
+          if (o.statut === 'fini') { s.faits++; s.rapporte += (meta.qty || 1) * (meta.pu || 0); }
+          else if (o.statut === 'encours') { s.enCours++; s.statut = 'work'; }
+          else if (o.statut === 'pause') { s.pauses++; if (s.statut === 'idle') s.statut = 'pause'; }
+          else s.affectes++;
+        });
+      });
+      Object.values(par).forEach(s => { s.heures = Math.round(s.heures * 10) / 10; s.coutMO = Math.round(s.coutMO); });
+      return par; // { ouvrierId: stats }
+    },
     // Définit / lit la chaîne de départements qu'un article traverse.
     setParcours: (articleId, codesDept) => {
       etat.parcours = etat.parcours || {};

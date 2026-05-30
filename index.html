@@ -2,6 +2,8 @@
 <script src="creajit-matieres.js"></script>
 <script src="creajit-ateliers.js"></script>
 <script src="creajit-couthoraire.js"></script>
+<script src="creajit-departements.js"></script>
+<script src="creajit-workers.js"></script>
 <script src="creajit-data.js"></script>
 <script src="creajit-commandes-reelles.js"></script>
 <script src="creajit-orders.js"></script>
@@ -267,16 +269,32 @@ const STT={work:['au travail','work'],pause:['en pause','pause'],idle:['sans com
 let teamKey='rapporte';
 function sortTeam(k){teamKey=k;document.querySelectorAll('.sortb').forEach(b=>b.classList.toggle('on',b.dataset.k===k));renderTeam();}
 function ini(nm){return nm.split(' ').map(x=>x[0]).slice(0,2).join('');}
-function renderTeam(){const arr=[...TEAM].sort((a,b)=>b[teamKey]-a[teamKey]);
-  document.getElementById('team').innerHTML=arr.map((w,i)=>{const medal=i===0?'🥇':(i===1?'🥈':(i===2?'🥉':'#'+(i+1)));
-    return `<div class="trow ${w.stt} ${i<3?'t'+(i+1):''}" onclick="openWorker('${w.k}')"><div class="rk">${medal}</div>
+function renderTeam(){
+  const OUV=(window.CJ_OUVRIERS||[]);
+  const stats=(window.CJ&&CJ.statsOuvriers)?CJ.statsOuvriers():{};
+  // construit la liste réelle: chaque ouvrier + ses vraies stats de travail
+  let arr=OUV.map(w=>{const s=stats[w.id]||{};return {
+    k:w.id, nm:w.nm, at:atNomCourt(w.at), chef:w.chef,
+    stt:s.statut||'idle', rapporte:s.rapporte||0, faits:s.faits||0,
+    coutMO:s.coutMO||0, heures:s.heures||0, enCours:s.enCours||0, pauses:s.pauses||0
+  };});
+  // tri par la colonne choisie, mais ceux qui ont du vrai travail remontent
+  arr.sort((a,b)=>(b[teamKey]||0)-(a[teamKey]||0));
+  const actifs=arr.filter(w=>w.rapporte||w.faits||w.enCours||w.pauses||w.heures);
+  const liste=actifs.length?actifs:arr.slice(0,12);
+  const note=actifs.length
+    ? `<div class="h2s" style="margin-bottom:8px">${actifs.length} ouvrier(s) avec du travail enregistré. Le classement se construit au fur et à mesure que tu affectes et valides le travail.</div>`
+    : `<div class="h2s" style="margin-bottom:8px">Aucun travail enregistré pour l'instant. Dès que tu affectes des articles aux ouvriers (via Hanane) et qu'ils démarrent/terminent, leurs vraies stats apparaissent ici.</div>`;
+  document.getElementById('team').innerHTML=note+liste.map((w,i)=>{const medal=i===0?'🥇':(i===1?'🥈':(i===2?'🥉':'#'+(i+1)));
+    return `<div class="trow ${w.stt} ${i<3&&actifs.length?'t'+(i+1):''}" onclick="openWorker('${w.k}')"><div class="rk">${medal}</div>
       ${av(w.k,ini(w.nm),'')}
-      <div><div class="nm">${w.nm}</div><div class="at">${w.at}</div><span class="stt ${STT[w.stt][1]}"><span class="dot"></span>${STT[w.stt][0]}</span></div>
+      <div><div class="nm">${w.nm}${w.chef?' · chef':''}</div><div class="at">${w.at}</div><span class="stt ${STT[w.stt][1]}"><span class="dot"></span>${STT[w.stt][0]}</span></div>
       <div class="stat"><div class="s"><div class="v g">${nb(w.rapporte)}</div><div class="l">rapporté DH</div></div>
-        <div class="s"><div class="v">${w.faits}</div><div class="l">faits</div></div>
-        <div class="s"><div class="v">${w.coutMO}</div><div class="l">coût MO</div></div>
-        <div class="s"><div class="v">${w.ponct}%</div><div class="l">ponct.</div></div></div></div>`;}).join('');
+        <div class="s"><div class="v">${w.faits}</div><div class="l">terminés</div></div>
+        <div class="s"><div class="v">${nb(w.coutMO)}</div><div class="l">coût MO</div></div>
+        <div class="s"><div class="v">${w.heures}h</div><div class="l">temps</div></div></div></div>`;}).join('');
 }
+function atNomCourt(c){const a=(window.CJ_ATELIERS||[]).find(x=>x.code===c);return a?(a.nom||('Atelier '+c)):('Atelier '+c);}
 
 /* ===== ouvriers en retard ===== */
 function lateOnes(){return TEAM.filter(w=>{const[h,m]=w.arr.split(':').map(Number);return h>8||(h===8&&m>15);});}
@@ -302,29 +320,31 @@ function renderRenta(){const arr=[...ARTS].map(a=>({...a,marge:a.pv-a.cout,pct:(
      <td class="num">${a.pct.toFixed(0)}%</td><td><span class="tag ${a.pct>=60?'g':'r'}">${a.pct>=60?'top':'ok'}</span></td></tr>`).join('');
 }
 
-/* ===== modal worker ===== */
-function openWorker(k){const w=TEAM.find(x=>x.k===k);const reste=w.sal-w.ac;
+/* ===== modal worker (vraies données du travail) ===== */
+function openWorker(k){
+  const ouv=(window.CJ_OUVRIERS||[]).find(x=>x.id===k); if(!ouv){location.href='ouvrier.html?w='+k;return;}
+  const jobs=(window.CJ&&CJ.affectationsOuvrier)?CJ.affectationsOuvrier(k):[];
+  const stats=(window.CJ&&CJ.statsOuvriers)?(CJ.statsOuvriers()[k]||{}):{};
+  const stt=stats.statut||'idle';
+  const enCours=jobs.filter(j=>j.statut!=='fini');
+  let jobsHtml = enCours.length
+    ? enCours.map(j=>`<div class="mb" style="text-align:left">
+        <div class="v sm">${j.nom}</div>
+        <div class="l">${j.client||''}${j.ref?' · '+j.ref:''} — ${STT[j.statut==='encours'?'work':(j.statut==='pause'?'pause':'idle')][0]}${j.statut==='pause'&&j.motif?' ('+j.motif+')':''}</div>
+        <div class="l">💰 coût revient ${nb(j.coutRevient)} DH · ⏱️ ${j.heures||0}h</div></div>`).join('')
+    : '<div class="behav">Aucune commande en cours. Affecte-lui un article via Hanane.</div>';
   document.getElementById('modBody').innerHTML=`
-    <div class="mh">${av(w.k,ini(w.nm),'')}<div><div class="nm">${w.nm}</div><div class="rl">${w.at} · <span class="stt ${STT[w.stt][1]}"><span class="dot"></span>${STT[w.stt][0]}</span></div></div><button class="closex" onclick="closeMod()">✕</button></div>
-    <div class="ct" style="margin-top:0">Pointage & fabrication</div>
+    <div class="mh">${av(k,ini(ouv.nm),'')}<div><div class="nm">${ouv.nm}${ouv.chef?' · chef':''}</div><div class="rl">${atNomCourt(ouv.at)} · <span class="stt ${STT[stt][1]}"><span class="dot"></span>${STT[stt][0]}</span></div></div><button class="closex" onclick="closeMod()">✕</button></div>
+    <div class="ct" style="margin-top:0">Son travail en temps réel</div>
     <div class="mgrid">
-      <div class="mb"><div class="l">Arrivée (pointeuse)</div><div class="v sm">${w.arr}</div></div>
-      <div class="mb"><div class="l">Démarrage fabrication</div><div class="v sm">${w.dem}</div></div>
-      <div class="mb"><div class="l">Temps de pause</div><div class="v sm">${w.pause} min · ${w.pc}×</div></div>
-      <div class="mb"><div class="l">Ponctualité</div><div class="v sm">${w.ponct}%</div></div>
+      <div class="mb"><div class="l">Terminés</div><div class="v">${stats.faits||0}</div></div>
+      <div class="mb"><div class="l">En cours</div><div class="v">${stats.enCours||0}</div></div>
+      <div class="mb"><div class="l">Coût MO cumulé</div><div class="v sm">${nb(stats.coutMO||0)} DH</div></div>
+      <div class="mb"><div class="l">Temps total</div><div class="v sm">${stats.heures||0} h</div></div>
     </div>
-    <div class="ct">Comportement du salarié</div>
-    <div class="behav">${w.beh}</div>
-    <div class="ct">Production</div>
-    <div class="mgrid"><div class="mb"><div class="l">Articles fabriqués</div><div class="v">${w.faits}</div></div>
-      <div class="mb"><div class="l">A rapporté</div><div class="v" style="color:var(--green)">${nb(w.rapporte)} DH</div></div></div>
-    <div class="ct">Règlement salaire</div>
-    <div class="salbox">
-      <div class="r"><span class="k">Salaire du mois</span><span class="v">${nb(w.sal)} DH</span></div>
-      <div class="r"><span class="k">Acompte déjà versé</span><span class="v minus">− ${nb(w.ac)} DH</span></div>
-      <div class="r net"><span class="k">Reste à payer</span><span class="v">${nb(reste)} DH</span></div>
-    </div>
-    <button onclick="location.href='ouvrier.html'" style="width:100%;margin-top:14px;border:none;font-family:Fraunces;font-weight:700;font-size:14px;padding:13px;border-radius:13px;cursor:pointer;background:var(--orange);color:#1a0f08">👷 Ouvrir son mini-site (agent ouvrier) →</button>`;
+    <div class="ct">Commandes sur sa table</div>
+    ${jobsHtml}
+    <button onclick="location.href='ouvrier.html?w='+'${k}'" style="width:100%;margin-top:14px;border:none;font-family:Fraunces;font-weight:700;font-size:14px;padding:13px;border-radius:13px;cursor:pointer;background:var(--orange);color:#1a0f08">👷 Ouvrir sa fiche complète →</button>`;
   document.getElementById('ov').classList.add('on');
 }
 function closeMod(){document.getElementById('ov').classList.remove('on');}
