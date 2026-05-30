@@ -272,6 +272,16 @@ Articles : Chaise Cartel ×75 @730 ; Tableau 120/80 ×25 @730 ; Tableau 40/40 ×
   Hassan=réception, Fatima=logistique/QC). **Reste : mini-sites Kenza (commercial) & Sabiri (compta),
   dessin IA validé client, consignes patron→agents (UI), Hikvision/WhatsApp, temps réel multi-appareils.**
 
+- **2026-05-30 — Finalisation agents + consignes + dessin validé.**
+  Tous les agents ont un mini-site métier + assistant IA connecté : ouvrier, Hanane,
+  Mohamed (magasin), Hassan (réception), Fatima (logistique/QC), **Kenza (commercial,
+  ventes/encaissements)**, **Sabiri (compta : encaissé/reste/avances/masse salariale)**.
+  **`consignes.html`** : Driss envoie une consigne (tous ou ciblé) reçue par les agents IA
+  (via CJ.contexteIA) + au fil. Fiche technique Hanane : case **« Dessin validé par le client »**.
+  `creajit-assistant.js` (widget IA réutilisable), `creajit-commandes.js` (base commune).
+  **Reste (dépend d'un serveur) : génération d'IMAGE du dessin, temps réel multi-appareils,
+  WhatsApp (Wassenger), Hikvision, CreaJit live.** Pour ça → déploiement Netlify connecté (pas glisser-déposer).
+
 ## 13. Ordre de construction officiel (structure décidée, à suivre)
 
 > Driss délègue la structuration. On construit dans CET ordre, en s'appuyant sur les
