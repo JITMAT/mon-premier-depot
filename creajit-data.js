@@ -19,7 +19,8 @@
     chronos: {},        // articleId -> { sessions:[{debut,fin,pauseMs,motif}], statut }
     bons: {},           // bonId -> { id, ref, client, lignes:[], statut:'envoye'|'commande'|'recu', t0, tRecu, par }
     fiches: {},         // ref -> { dimensions, tissu, accoudoirs, coutures, notes, dessinValide }
-    qc: {},             // articleId:etape -> { ok, par, obs, anomalies:[], date }
+    qc: {},             // articleId -> { ok, par, obs, date }
+    livraisons: {},     // ref -> { ref, date, par }
     consignes: [],      // { id, cible:'tous'|ouvrierId, texte, par, date }
     evenements: [],     // fil d'actualité { id, type, qui, texte, route, date }
     maj: null,
@@ -122,6 +123,18 @@
     // Fiche technique d'une commande (stockée par référence)
     fiche: (ref, data) => { etat.fiches[ref] = Object.assign({}, etat.fiches[ref], data); sauver(); },
     ficheDe: (ref) => etat.fiches[ref] || {},
+
+    // Livraisons (agent Fatima — logistique)
+    livrer: (ref, info) => { etat.livraisons[ref] = Object.assign({ ref, date: Date.now() }, info || {}); sauver(); },
+    estLivree: (ref) => !!etat.livraisons[ref],
+    // Contrôle qualité (Fatima)
+    qcSet: (articleId, ok, obs, par) => { etat.qc[articleId] = { ok: !!ok, obs: obs || '', par: par || 'Fatima', date: Date.now() }; sauver(); },
+    qcDe: (articleId) => etat.qc[articleId] || null,
+    articlesFinis: () => {
+      const res = [];
+      for (const [aid, af] of Object.entries(etat.affectations)) if (af.statut === 'fini') res.push({ id: aid, af });
+      return res;
+    },
 
     // Données de référence (chargées par les autres fichiers)
     matieres: () => window.CJ_MATIERES || [],

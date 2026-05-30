@@ -1,0 +1,186 @@
+<!-- Socle de données partagées CREAJIT IA -->
+<script src="creajit-matieres.js"></script>
+<script src="creajit-ateliers.js"></script>
+<script src="creajit-data.js"></script>
+<script src="creajit-photos.js"></script>
+<script src="creajit-workers.js"></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<title>CREAJIT — Logistique (Fatima)</title>
+<style>
+  :root{--bg:#0d111b;--card:#161d2b;--card2:#10151f;--line:rgba(196,113,79,.18);--orange:#C4714F;--orange-b:#e69a76;--green:#37c98a;--red:#E74C3C;--yellow:#EAB308;--blue:#5b9bf3;--ink:#ece9e3;--mut:#8d96a5}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font-family:'Hanken Grotesk',sans-serif;padding:24px 18px 80px}
+  .wrap{max-width:980px;margin:0 auto}
+  .head{display:flex;align-items:center;gap:14px;margin-bottom:18px}
+  .av0{width:60px;height:60px;border-radius:16px;overflow:hidden;background:#33405a;display:grid;place-items:center;font-family:'Fraunces';font-weight:700;font-size:20px;color:#fff}
+  .av0 img{width:100%;height:100%;object-fit:cover}
+  h1{font-family:'Fraunces';font-weight:700;font-size:21px}
+  .sub{font-size:12px;color:var(--mut)}
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:18px}
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+  .kpi .v{font-family:'Fraunces';font-weight:700;font-size:26px}
+  .kpi .l{font-size:11px;color:var(--mut);margin-top:2px}
+  .sec{font-family:'Fraunces';font-weight:700;font-size:17px;margin:22px 0 11px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:13px;margin-bottom:9px}
+  .row{display:flex;align-items:center;gap:10px}
+  .row .nm{font-weight:700;font-size:14px}
+  .row .mt{font-size:11.5px;color:var(--mut)}
+  .row .sp{margin-left:auto;text-align:right}
+  .badge{font-size:11px;padding:3px 10px;border-radius:20px;font-weight:700;white-space:nowrap}
+  .b-late{background:rgba(231,76,60,.16);color:var(--red)}
+  .b-soon{background:rgba(234,179,8,.16);color:var(--yellow)}
+  .b-ok{background:rgba(55,201,138,.16);color:var(--green)}
+  button{font-family:inherit;cursor:pointer}
+  .act{border:none;border-radius:9px;padding:8px 13px;font-weight:700;font-size:12.5px;margin-left:6px}
+  .act.go{background:var(--green);color:#06210f}
+  .act.ok{background:rgba(55,201,138,.16);color:var(--green);border:1px solid rgba(55,201,138,.4)}
+  .act.no{background:rgba(231,76,60,.16);color:var(--red);border:1px solid rgba(231,76,60,.4)}
+  .cal{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:9px}
+  .cal .day{background:var(--card2);border:1px solid var(--line);border-radius:11px;padding:10px}
+  .cal .day .d{font-weight:700;font-size:13px;color:var(--orange-b)}
+  .cal .day .it{font-size:12px;color:var(--ink);margin-top:5px;padding-top:5px;border-top:1px solid var(--line)}
+  .empty{color:var(--mut);font-size:13px;padding:14px;border:1px dashed var(--line);border-radius:12px}
+</style>
+
+<div class="wrap">
+  <div class="head"><div class="av0" id="av"></div><div><h1>Logistique — Fatima Ezzahra</h1><div class="sub">Contrôle qualité · préparation · planning des livraisons</div></div></div>
+  <div class="kpis" id="kpis"></div>
+
+  <div class="sec">📦 Préparation & contrôle qualité <span class="sub">(articles finis par les ouvriers)</span></div>
+  <div id="prep"></div>
+
+  <div class="sec">🚚 Livraisons à venir</div>
+  <div id="avenir"></div>
+
+  <div class="sec">📅 Calendrier des livraisons</div>
+  <div class="cal" id="cal"></div>
+
+  <div class="sec">✅ Livraisons effectuées</div>
+  <div id="faites"></div>
+</div>
+
+<script>
+(function(){
+  var TODAY = new Date('2026-05-30');
+  // Commandes réelles CreaJit (client, ref, livraison, statut, retard)
+  var CMD = [
+    {ref:'26040026',client:'Mr Soufiane',livr:'2026-05-04',retard:25},
+    {ref:'26040045',client:'Mr Yazid',livr:'2026-05-04',retard:25},
+    {ref:'26040019',client:'2A WEDDING',livr:'2026-05-05',retard:24},
+    {ref:'26040052',client:'Mr Benjamin',livr:'2026-05-08',retard:21},
+    {ref:'26040048',client:'Azzozi Relax Houses',livr:'2026-05-08',retard:21},
+    {ref:'26040053',client:'Expresse Beuty',livr:'2026-05-08',retard:21},
+    {ref:'26040008',client:'Mr Youssef Ajdir',livr:'2026-05-09',retard:20},
+    {ref:'26040022',client:'Mme Ilhame',livr:'2026-05-15',retard:14},
+    {ref:'26040024',client:'Mme Anisa Guerroumi',livr:'2026-05-16',retard:13},
+    {ref:'26050019',client:'Mme Nazha',livr:'2026-05-18',retard:11},
+    {ref:'26040060',client:'Mme Laila',livr:'2026-05-20',retard:0},
+    {ref:'26050007',client:'Mr Maliki',livr:'2026-05-25',retard:0},
+    {ref:'26040016',client:'Mme Perez',livr:'2026-05-30',retard:0},
+  ];
+  function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]);});}
+  function jour(d){return new Date(d).toLocaleDateString('fr-FR',{day:'2-digit',month:'short'});}
+  function av(){ var p=(window.CJ_PHOTOS||{}).fatima; document.getElementById('av').innerHTML = p?('<img src="'+p+'">'):'FE'; }
+
+  function render(){
+    av();
+    var livrees = window.CJ ? window.CJ.etat().livraisons : {};
+    var nonLivr = CMD.filter(function(c){return !livrees[c.ref];});
+    var faites = CMD.filter(function(c){return livrees[c.ref];});
+    var retard = nonLivr.filter(function(c){return c.retard>0;});
+
+    // KPIs
+    document.getElementById('kpis').innerHTML =
+      kpi('26','Livrées ce mois','var(--green)') +
+      kpi(nonLivr.length,'À livrer') +
+      kpi(retard.length,'En retard','var(--red)') +
+      kpi(faites.length,'Marquées livrées (appli)','var(--green)');
+
+    // Préparation & QC : articles finis par les ouvriers
+    var finis = window.CJ ? window.CJ.articlesFinis() : [];
+    var prep = document.getElementById('prep');
+    if(!finis.length){ prep.innerHTML='<div class="empty">Aucun article fini pour l\'instant. Quand un ouvrier termine un article, il arrive ici pour contrôle qualité.</div>'; }
+    else prep.innerHTML = finis.map(function(x){
+      var af=x.af, qc=window.CJ.qcDe(x.id);
+      var st = qc ? (qc.ok?'<span class="badge b-ok">✅ Conforme</span>':'<span class="badge b-late">⚠️ Anomalie</span>') :
+        '<button class="act ok" data-ok="'+x.id+'">✅ Conforme</button><button class="act no" data-no="'+x.id+'">⚠️ Anomalie</button>';
+      return '<div class="card"><div class="row"><div><div class="nm">'+esc(af.nom||x.id)+'</div>'+
+        '<div class="mt">'+esc(af.client||'')+' · '+esc(af.ref||'')+' · fini par '+esc(af.ouvrierId||'')+'</div></div>'+
+        '<div class="sp">'+st+'</div></div>'+(qc&&qc.obs?'<div class="mt" style="margin-top:7px">📝 '+esc(qc.obs)+'</div>':'')+'</div>';
+    }).join('');
+
+    // À venir
+    var av2=document.getElementById('avenir');
+    av2.innerHTML = nonLivr.length ? nonLivr.sort(function(a,b){return a.livr.localeCompare(b.livr);}).map(function(c){
+      var b = c.retard>0?'<span class="badge b-late">+'+c.retard+' j retard</span>':'<span class="badge b-soon">à livrer</span>';
+      return '<div class="card"><div class="row"><div><div class="nm">'+esc(c.client)+'</div><div class="mt">'+esc(c.ref)+' · livraison prévue '+jour(c.livr)+'</div></div>'+
+        '<div class="sp">'+b+'<button class="act go" data-livr="'+c.ref+'">✅ Marquer livrée</button></div></div></div>';
+    }).join('') : '<div class="empty">Tout est livré 🎉</div>';
+
+    // Calendrier
+    var byDay={}; nonLivr.forEach(function(c){(byDay[c.livr]=byDay[c.livr]||[]).push(c);});
+    var days=Object.keys(byDay).sort();
+    document.getElementById('cal').innerHTML = days.length ? days.map(function(d){
+      return '<div class="day"><div class="d">📅 '+jour(d)+'</div>'+byDay[d].map(function(c){return '<div class="it">'+esc(c.client)+(c.retard>0?' ⚠️':'')+'</div>';}).join('')+'</div>';
+    }).join('') : '<div class="empty">Aucune livraison planifiée.</div>';
+
+    // Effectuées
+    document.getElementById('faites').innerHTML = faites.length ? faites.map(function(c){
+      return '<div class="card"><div class="row"><div><div class="nm">'+esc(c.client)+'</div><div class="mt">'+esc(c.ref)+'</div></div><div class="sp"><span class="badge b-ok">✅ Livrée</span></div></div></div>';
+    }).join('') : '<div class="empty">Marque une livraison comme effectuée pour la voir ici. (26 déjà livrées ce mois côté CreaJit.)</div>';
+
+    // actions
+    document.querySelectorAll('[data-livr]').forEach(function(b){b.onclick=function(){
+      var ref=b.getAttribute('data-livr'); var c=CMD.find(function(x){return x.ref===ref;});
+      window.CJ.livrer(ref,{par:'Fatima'});
+      window.CJ.evenement('success','Fatima (logistique)','Livraison effectuée : '+(c?c.client:ref)+' ('+ref+').','✅ livré');
+      render();
+    };});
+    document.querySelectorAll('[data-ok]').forEach(function(b){b.onclick=function(){
+      var id=b.getAttribute('data-ok'); window.CJ.qcSet(id,true,'');
+      var af=window.CJ.etat().affectations[id]||{};
+      window.CJ.evenement('success','Fatima (QC)','Contrôle qualité OK : « '+(af.nom||id)+' » ('+(af.client||'')+').'); render();
+    };});
+    document.querySelectorAll('[data-no]').forEach(function(b){b.onclick=function(){
+      var id=b.getAttribute('data-no'); var obs=prompt('Quelle anomalie ?')||''; window.CJ.qcSet(id,false,obs);
+      var af=window.CJ.etat().affectations[id]||{};
+      window.CJ.evenement('alert','Fatima (QC)','⚠️ Anomalie qualité : « '+(af.nom||id)+' » ('+(af.client||'')+') — '+obs,'→ '+(af.ouvrierId||'atelier')); render();
+    };});
+  }
+  function kpi(v,l,col){return '<div class="kpi"><div class="v"'+(col?(' style="color:'+col+'"'):'')+'>'+v+'</div><div class="l">'+l+'</div></div>';}
+
+  window.addEventListener('load',render);
+  if(window.CJ) window.CJ.abonner(render);
+})();
+</script>
+
+<!-- ===== Menu de navigation CREAJIT IA ===== -->
+<div id="cjmenu">
+  <div id="cjbar">
+    <a id="cjhome" href="index.html">← Accueil</a>
+    <button id="cjtog" type="button" onclick="document.getElementById('cjmenu').classList.toggle('open')">☰ Menu</button>
+  </div>
+  <div id="cjlinks">
+    <a href="index.html">🏠 Accueil (Cockpit)</a>
+    <a href="agents.html">👥 Tous les agents</a>
+    <a href="hanane.html">🗂️ Agent Hanane</a>
+    <a href="ouvrier.html">👷 Agent Ouvrier</a>
+    <a href="magasin.html">🧰 Magasin (Mohamed)</a>
+    <a href="reception.html">📦 Réception (Hassan)</a>
+    <a href="fatima.html">🚚 Logistique (Fatima)</a>
+    <a href="cockpit.html">👁️ Cockpit (v2)</a>
+    <a href="banc-test.html">🔀 Banc de test</a>
+  </div>
+</div>
+<style>
+#cjmenu{position:fixed;left:12px;top:12px;z-index:2147483000;font-family:'Hanken Grotesk',Arial,sans-serif;display:flex;flex-direction:column;align-items:flex-start;gap:8px}
+#cjbar{display:flex;gap:8px}
+#cjhome{display:inline-flex;align-items:center;background:#C4714F;color:#1a0f08;border-radius:24px;padding:10px 15px;font-weight:700;font-size:14px;text-decoration:none;box-shadow:0 6px 20px rgba(0,0,0,.45)}
+#cjtog{background:#1a2230;color:#eef2f8;border:1px solid #2c3850;border-radius:24px;padding:10px 13px;font-weight:700;font-size:14px;cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,.45)}
+#cjlinks{display:none;flex-direction:column;gap:6px;background:#1a2230;border:1px solid #2c3850;border-radius:12px;padding:8px;box-shadow:0 10px 30px rgba(0,0,0,.55)}
+#cjmenu.open #cjlinks{display:flex}
+#cjlinks a{color:#eef2f8;text-decoration:none;font-weight:600;font-size:14px;padding:9px 14px;border-radius:9px;white-space:nowrap}
+#cjlinks a:hover{background:#222c3d;color:#e69a76}
+</style>
