@@ -78,7 +78,7 @@
 
   // ---- État ----
   let tab = 'commandes', q = '', fStat = '', fCom = '', tri = 'retard', view = 'list', curRef = null, selA = null;
-  let bonLignes = [], matQ = '';
+  let bonLignes = [], matQ = '', openArt = null, openTab = '';
   function depuis(t0) { if (!t0) return ''; var m = Math.floor((Date.now() - t0) / 60000); return m < 60 ? (m + ' min') : (Math.floor(m / 60) + 'h' + String(m % 60).padStart(2, '0')); }
   var BONSTAT = { envoye: '📤 Envoyé au magasin', commande: '🛒 Commande fournisseur', recu: '✅ Reçu' };
 
