@@ -235,6 +235,14 @@ Articles : Chaise Cartel ×75 @730 ; Tableau 120/80 ×25 @730 ; Tableau 40/40 ×
 
 ---
 
+- **2026-05-29 — Modules A→D branchés sur les écrans EXISTANTS (pas d'UI inventée).**
+  A: cerveau commun (`creajit-data.js`, 559 matières, ateliers). B/C: l'écran Hanane
+  existant (`assign()`) écrit dans le cerveau → l'ouvrier reçoit dans sa liste « Articles
+  affectés ». D: `logMsg()` de l'ouvrier + affectations Hanane alimentent le **fil du
+  cockpit** (index `renderFeed`) en direct (démarré/pause+motif/fini→Fatima/rupture→Achat/bon→Mohamed).
+  ⚠️ Bouton overlay inventé = SUPPRIMÉ. **Reste : E (QC Fatima), F (matière Mohamed/Hassan),
+  H (dessin IA), fiche technique, autres agents, temps réel multi-appareils.**
+
 ## 13. Ordre de construction officiel (structure décidée, à suivre)
 
 > Driss délègue la structuration. On construit dans CET ordre, en s'appuyant sur les

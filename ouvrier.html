@@ -247,7 +247,7 @@ function togglePause(){const p=document.getElementById('motifPanel');if(!p)retur
   if(p.style.display==='none'){p.innerHTML='<div class="ml">Pourquoi tu mets en pause ?</div>'+MOTIFS.map(m=>`<button onclick="pickMotif('${m}')">${m}</button>`).join('');p.style.display='flex';}
   else p.style.display='none';}
 function pickMotif(m){const t=cur();if(!t)return;let motif=m;if(m.indexOf('Autre')>=0){const v=prompt('Motif de la pause ?');if(v)motif='✏️ '+v;}
-  t.el=curEl(t);t.state='pause';t.motif=motif;renderWork();toast('⏸ Pause — '+motif);
+  t.el=curEl(t);t.state='pause';t.motif=motif;renderWork();toast('⏸ Pause — '+motif);if(window.CJ)CJ.evenement('warn','Youssef','Youssef en pause — '+motif+' (« '+t.nm+' »).');
   if(m.indexOf('Rupture')>=0){
     logMsg('HA','Hanane + Service Achat',`⚠️ Rupture matière signalée par Youssef sur « ${t.nm} ». Merci de commander la matière manquante.`);
     const p=document.getElementById('motifPanel');
@@ -257,7 +257,7 @@ function closeMotif(){const p=document.getElementById('motifPanel');if(p)p.style
 function selfOrder(){show('bon');toast('📝 Passe ton bon de commande au magasin');}
 function startTask(i){const a=cur();if(a&&a!==TASKS[i]){a.el=curEl(a);a.state='pause';a.motif=a.motif||"🔄 Changement d'article";}
   const t=TASKS[i];const was=t.state;t.state='en_cours';t.t0=Date.now();t.el=t.el||0;renderWork();
-  toast(was==='pause'?`▶ Reprise : ${t.nm}`:`▶ Démarré : ${t.nm}`);}
+  toast(was==='pause'?`▶ Reprise : ${t.nm}`:`▶ Démarré : ${t.nm}`);if(window.CJ)CJ.evenement('info','Youssef',(was==='pause'?'Youssef a repris « ':'Youssef a démarré « ')+t.nm+' ».');}
 function finish(){const t=cur();if(!t)return;t.el=curEl(t);t.state='fini';coutFinis+=t.el/3600000*TAUX;gagne+=benef(t);fabriques++;
   logMsg('FE','Fatima Ezzahra (logistique)',`✅ « ${t.nm} » fini par Youssef. Article prêt pour la suite / livraison.`);
   toast(`✅ Fini · Fatima prévenue · bénéfice +${nb(benef(t))} DH`);renderWork();}
@@ -327,7 +327,7 @@ function checkStock(){document.getElementById('toolOut').innerHTML=`<div class="
   <div class="sl"><span>Peinture blanche</span><span class="ok">40 L ✓</span></div>
   <div class="sl"><span>Diluant</span><span class="ok">8 L ✓</span></div></div>`;toast('📦 Stock vérifié — vernis bas');}
 let msgs=[];
-function logMsg(av,to,txt){msgs.unshift({av,to,txt,time:new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})});}
+function logMsg(av,to,txt){msgs.unshift({av,to,txt,time:new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})});if(window.CJ){var ty=/✅|fini/i.test(txt)?'success':(/⚠|rupture/i.test(txt)?'alert':'info');CJ.evenement(ty,'Youssef',txt,to?('→ '+to):'');}}
 
 /* ===== assistant IA ===== */
 const SYS="Tu es l'assistant IA personnel de Youssef Ibnradiya, peintre à l'atelier Peinture de CREAJIT (meubles sur mesure, Marrakech). Taux 22 DH/h. Tu l'aides : estimer temps et coût MO, calculer les quantités de peinture/vernis (chute +22%), vérifier s'il a assez de matière, rédiger des messages courts au magasinier Mohamed (achat) ou à Fatima (logistique), et lui expliquer son salaire/prime (prime = 1% du bénéfice par article). Français, simple et court, comme à un ouvrier.";

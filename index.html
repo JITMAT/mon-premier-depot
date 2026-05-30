@@ -304,7 +304,7 @@ let FEED=[
  {type:'info',who:'FE',fb:'FE',txt:'<b>Fatima (Logistique)</b> a reçu « TABLEAU 120/80 ».',t:new Date(Date.now()-30*60000)},
  {type:'alert',who:'⚠️',fb:'⚠️',txt:'Commande <b>2A WEDDING</b> en retard de <b>24 jours</b>.',t:new Date(Date.now()-60*60000)},
 ];
-function renderFeed(){document.getElementById('feed').innerHTML=FEED.map(e=>`<div class="fitem ${e.type}">${av(e.who,e.fb,'fav')}<div><div class="ft">${e.txt}</div>${e.routed?`<div class="routed">${e.routed}</div>`:''}<div class="ftime">${hm(e.t)}</div></div></div>`).join('');}
+function renderFeed(){var live=(window.CJ?CJ.etat().evenements:[]).map(function(e){return {type:e.type,who:e.qui||'',fb:(e.qui||'?').split(' ').map(function(x){return x[0];}).slice(0,2).join(''),txt:e.texte,routed:e.route,t:new Date(e.date)};});var all=live.concat(FEED);document.getElementById('feed').innerHTML=all.map(e=>`<div class="fitem ${e.type}">${av(e.who,e.fb,'fav')}<div><div class="ft">${e.txt}</div>${e.routed?`<div class="routed">${e.routed}</div>`:''}<div class="ftime">${hm(e.t)}</div></div></div>`).join('');}if(window.CJ)CJ.abonner(function(){var s=document.getElementById('sec-feed');if(s&&s.classList.contains('on'))renderFeed();});
 const RANDOM=[{type:'success',who:'abdessamie',fb:'AE',txt:'<b>Abdessamie</b> a fini une étape de capitonnage.'},
  {type:'info',who:'argibi',fb:'YA',txt:'<b>Argibi</b> a repris un article en pause.'},
  {type:'warn',who:'aourik',fb:'MA',txt:'<b>Aourik</b> en pause — Pause déjeuner.'},
