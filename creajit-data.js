@@ -17,7 +17,8 @@
     commandes: {},      // ref -> { ref, client, commercial, statut, livraison, joursRetard, total, paye, restant, notes, articles:[...] , fiche:{} }
     affectations: {},   // articleId -> { ouvrierId, atelierCode, ordre, verifie, statut }
     chronos: {},        // articleId -> { sessions:[{debut,fin,pauseMs,motif}], statut }
-    bons: {},           // bonId -> { id, ouvrierId, articleRef, lignes:[], statut:'envoye'|'commande'|'recu', t0, tRecu, pour }
+    bons: {},           // bonId -> { id, ref, client, lignes:[], statut:'envoye'|'commande'|'recu', t0, tRecu, par }
+    fiches: {},         // ref -> { dimensions, tissu, accoudoirs, coutures, notes, dessinValide }
     qc: {},             // articleId:etape -> { ok, par, obs, anomalies:[], date }
     consignes: [],      // { id, cible:'tous'|ouvrierId, texte, par, date }
     evenements: [],     // fil d'actualité { id, type, qui, texte, route, date }
@@ -100,6 +101,10 @@
     // Bons de matière
     bon: (b) => { const id = b.id || uid('bon'); etat.bons[id] = Object.assign({ id, statut: 'envoye', t0: Date.now() }, b); sauver(); return id; },
     majBon: (id, ch) => { if (etat.bons[id]) { Object.assign(etat.bons[id], ch); sauver(); } },
+    bons: () => Object.values(etat.bons).sort((a, b) => (b.t0 || 0) - (a.t0 || 0)),
+    // Fiche technique d'une commande (stockée par référence)
+    fiche: (ref, data) => { etat.fiches[ref] = Object.assign({}, etat.fiches[ref], data); sauver(); },
+    ficheDe: (ref) => etat.fiches[ref] || {},
 
     // Données de référence (chargées par les autres fichiers)
     matieres: () => window.CJ_MATIERES || [],

@@ -60,6 +60,9 @@
 
   // ---- État ----
   let tab = 'commandes', q = '', fStat = '', fCom = '', tri = 'retard', view = 'list', curRef = null, selA = null;
+  let bonLignes = [], matQ = '';
+  function depuis(t0) { if (!t0) return ''; var m = Math.floor((Date.now() - t0) / 60000); return m < 60 ? (m + ' min') : (Math.floor(m / 60) + 'h' + String(m % 60).padStart(2, '0')); }
+  var BONSTAT = { envoye: '📤 Envoyé au magasin', commande: '🛒 Commande fournisseur', recu: '✅ Reçu' };
 
   const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
   const dh = n => (Math.round(n||0)).toLocaleString('fr-FR') + ' DH';
@@ -118,7 +121,18 @@
       .cjcat-h{font-family:'Fraunces',serif;font-size:13px;color:#e69a76;margin:14px 0 7px;font-weight:700}
       .vbtn{background:#10151f;border:1px solid rgba(196,113,79,.3);color:#e69a76;border-radius:8px;padding:7px 11px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap}
       .vbtn:hover{background:#C4714F;color:#1a0f08}
-      .cjback{background:none;border:none;color:#e69a76;font-weight:700;font-size:13px;cursor:pointer;padding:0;margin-bottom:10px;font-family:inherit}`;
+      .cjback{background:none;border:none;color:#e69a76;font-weight:700;font-size:13px;cursor:pointer;padding:0;margin-bottom:10px;font-family:inherit}
+      .cjsec{border:1px solid rgba(196,113,79,.18);border-radius:13px;padding:12px;margin-top:12px;background:#10151f}
+      .cjsec-h{font-family:'Fraunces',serif;font-weight:700;font-size:14px;margin-bottom:9px}
+      .cjgrid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+      .cjsec input,.cjsec textarea{background:#0c1018;border:1px solid rgba(196,113,79,.25);color:#ece9e3;border-radius:8px;padding:8px 10px;font-size:13px;font-family:inherit}
+      .cjsec textarea{min-height:46px;resize:vertical}
+      #mat_q{width:100%}
+      .cjmres{margin-top:6px}
+      .cjmr{background:#161d2b;border:1px solid rgba(196,113,79,.18);border-radius:8px;padding:8px 10px;margin-bottom:5px;cursor:pointer;font-size:13px}
+      .cjmr:hover{border-color:#C4714F}
+      .cjlignes{margin-top:8px}
+      .cjbtn2{background:#C4714F;color:#1a0f08;border:none;border-radius:9px;padding:9px 14px;font-weight:700;font-size:13px;cursor:pointer;font-family:inherit}`;
     document.head ? document.head.appendChild(sty) : document.documentElement.appendChild(sty);
 
     bar.querySelectorAll('.cjtabs button').forEach(b => b.onclick = () => {
@@ -163,7 +177,7 @@
     });
     if (!cmds.length) h = `<div class="sub">Aucune commande ne correspond au filtre.</div>`;
     box.innerHTML = h;
-    box.querySelectorAll('[data-open]').forEach(el => el.onclick = () => { curRef = el.getAttribute('data-open'); view = 'detail'; selA = null; renderArts(); });
+    box.querySelectorAll('[data-open]').forEach(el => el.onclick = () => { curRef = el.getAttribute('data-open'); view = 'detail'; selA = null; bonLignes = []; matQ = ''; renderArts(); });
   }
 
   // ---- DÉTAIL D'UN CLIENT : ses articles ----
@@ -193,9 +207,80 @@
           <button class="vbtn" data-sel="${esc(a.id)}" data-nom="${esc(a.nm)}" data-ref="${esc(c.ref)}" data-client="${esc(c.client)}" data-qty="${a.qty||''}" data-pu="${a.pu||''}">${on ? '● Sélectionné' : 'Sélectionner'}</button></div>`;
       }
     });
+    h += ficheMatiereHTML(c);
     box.innerHTML = h;
     const bk = document.getElementById('cjback'); if (bk) bk.onclick = () => { view = 'list'; selA = null; renderArts(); };
     box.querySelectorAll('[data-sel]').forEach(b => b.onclick = () => { const id = b.getAttribute('data-sel'); selA = (selA === id) ? null : id; renderArts(); });
+    wireFicheMatiere(c);
+  }
+
+  // ---- Étape PRÉ-PRODUCTION : fiche technique + matière première ----
+  function ficheMatiereHTML(c) {
+    const f = (window.CJ ? window.CJ.ficheDe(c.ref) : {}) || {};
+    const bons = (window.CJ ? window.CJ.bons() : []).filter(b => b.ref === c.ref);
+    const mats = (window.CJ ? window.CJ.matieres() : []);
+    let res = '';
+    if (matQ) {
+      const r = mats.filter(m => (m.nom + ' ' + m.ref + ' ' + m.fournisseur).toLowerCase().includes(matQ.toLowerCase())).slice(0, 8);
+      res = r.map(m => `<div class="cjmr" data-add="${esc(m.ref)}">${esc(m.nom)} <span class="pc">· ${esc(m.fournisseur)} · ${m.puTTC || ''} DH</span></div>`).join('') || `<div class="pc" style="padding:6px">Aucune matière trouvée.</div>`;
+    }
+    return `
+    <div class="cjsec">
+      <div class="cjsec-h">📝 Fiche technique <span class="pc">(remplie par commercial + Hanane)</span></div>
+      <div class="cjgrid">
+        <input id="ft_dim" placeholder="Dimensions" value="${esc(f.dimensions || '')}">
+        <input id="ft_tissu" placeholder="Tissu / matériau" value="${esc(f.tissu || '')}">
+        <input id="ft_acc" placeholder="Accoudoirs (G/D)" value="${esc(f.accoudoirs || '')}">
+        <input id="ft_cout" placeholder="Coutures / finition" value="${esc(f.coutures || '')}">
+      </div>
+      <textarea id="ft_notes" placeholder="Notes / détails vus avec le client" style="width:100%;margin-top:7px">${esc(f.notes || '')}</textarea>
+      <div style="display:flex;align-items:center;gap:10px;margin-top:8px;flex-wrap:wrap">
+        <button class="cjbtn2" id="ft_save">💾 Enregistrer la fiche</button>
+        <span class="pc">📸 Photos / 🎨 dessin IA validé client — à brancher (module suivant)</span>
+        <span id="ft_ok" style="color:#37c98a;font-weight:700;font-size:12px"></span>
+      </div>
+    </div>
+
+    <div class="cjsec">
+      <div class="cjsec-h">🧰 Matière première <span class="pc">(à vérifier / commander AVANT de lancer)</span></div>
+      <input id="mat_q" placeholder="🔎 Chercher une matière (559 réf.)…" value="${esc(matQ)}" autocomplete="off">
+      <div class="cjmres">${res}</div>
+      ${bonLignes.length ? `<div class="cjlignes">${bonLignes.map((l, i) => `<div class="cjp"><div class="pn">${esc(l.nom)} <span class="pc">· ${esc(l.fournisseur)}</span></div>
+        <input class="qte" type="number" min="1" value="${l.qty}" data-q="${i}" style="width:64px"> <span class="pc">${esc(l.unite || '')}</span>
+        <button class="vbtn" data-del="${i}">✕</button></div>`).join('')}
+        <button class="cjbtn2" id="bon_send" style="margin-top:8px">📦 Envoyer le bon au magasin (Mohamed)</button>` : `<div class="pc" style="margin-top:6px">Ajoute les matières nécessaires, puis envoie le bon au magasin.</div>`}
+      ${bons.length ? `<div class="cjsec-h" style="margin-top:12px">Bons de cette commande</div>${bons.map(b => `<div class="cjp">
+        <div class="pn">${(b.lignes || []).map(x => esc(x.nom)).join(', ') || 'Bon matière'} <span class="pc">· ${(b.lignes || []).length} ligne(s)</span></div>
+        <span class="pb ${b.statut === 'recu' ? 'bas' : 'rupture'}" style="${b.statut === 'recu' ? 'background:rgba(55,201,138,.16);color:#37c98a' : ''}">${BONSTAT[b.statut] || b.statut}</span>
+        <span class="pc">⏱️ ${b.statut === 'recu' ? 'reçu en ' + depuis2(b.t0, b.tRecu) : depuis(b.t0)}</span></div>`).join('')}` : ''}
+    </div>`;
+  }
+  function depuis2(t0, t1) { if (!t0 || !t1) return ''; var m = Math.floor((t1 - t0) / 60000); return m < 60 ? (m + ' min') : (Math.floor(m / 60) + 'h' + String(m % 60).padStart(2, '0')); }
+
+  function wireFicheMatiere(c) {
+    const $ = id => document.getElementById(id);
+    if ($('ft_save')) $('ft_save').onclick = () => {
+      window.CJ && window.CJ.fiche(c.ref, { dimensions: $('ft_dim').value, tissu: $('ft_tissu').value, accoudoirs: $('ft_acc').value, coutures: $('ft_cout').value, notes: $('ft_notes').value });
+      window.CJ && window.CJ.evenement('info', 'Hanane', `Fiche technique enregistrée pour ${c.client} (${c.ref}).`);
+      if ($('ft_ok')) $('ft_ok').textContent = '✓ enregistrée';
+    };
+    if ($('mat_q')) {
+      $('mat_q').oninput = e => { matQ = e.target.value; const box = document.getElementById('arts'); const pos = e.target.selectionStart; renderArts(); const m = document.getElementById('mat_q'); if (m) { m.focus(); try { m.setSelectionRange(pos, pos); } catch (x) {} } };
+    }
+    document.querySelectorAll('[data-add]').forEach(el => el.onclick = () => {
+      const ref = el.getAttribute('data-add'); const m = (window.CJ.matieres() || []).find(x => x.ref === ref);
+      if (m) { bonLignes.push({ ref: m.ref, nom: m.nom, fournisseur: m.fournisseur, unite: m.unite, qty: 1 }); matQ = ''; renderArts(); }
+    });
+    document.querySelectorAll('.qte').forEach(inp => inp.onchange = () => { const i = +inp.getAttribute('data-q'); bonLignes[i].qty = +inp.value || 1; });
+    document.querySelectorAll('[data-del]').forEach(b => b.onclick = () => { bonLignes.splice(+b.getAttribute('data-del'), 1); renderArts(); });
+    if ($('bon_send')) $('bon_send').onclick = () => {
+      if (!bonLignes.length) return;
+      window.CJ.bon({ ref: c.ref, client: c.client, lignes: bonLignes.slice(), par: 'Hanane', statut: 'envoye' });
+      window.CJ.evenement('warn', 'Hanane', `Bon matière envoyé au magasin pour ${c.client} (${c.ref}) — ${bonLignes.length} ligne(s).`, '→ Mohamed (magasin)');
+      bonLignes = []; matQ = '';
+      toastMsg('📦 Bon envoyé au magasin (Mohamed) — chrono lancé');
+      renderArts();
+    };
   }
 
   function renderCatalogue(box) {
