@@ -294,41 +294,106 @@
     box.querySelectorAll('[data-open]').forEach(el => el.onclick = () => { curRef = el.getAttribute('data-open'); view = 'detail'; selA = null; bonLignes = []; matQ = ''; renderArts(); });
   }
 
-  // ---- DÉTAIL D'UN CLIENT : ses articles ----
+  // ---- DÉTAIL D'UN CLIENT : chaque article = sa fabrication (ouvriers + fiche + achats) ----
   function renderDetail(box) {
     const c = cmd(curRef); if (!c) { view = 'list'; return renderArts(); }
-    const A = affs();
     let h = `<button class="cjback" id="cjback">← Toutes les commandes</button>
       <div style="border:1px solid rgba(196,113,79,.25);border-radius:13px;padding:13px;margin-bottom:12px;background:#10151f">
         <div style="display:flex;justify-content:space-between;gap:8px"><b style="font-size:16px">${esc(c.client)}</b>
           ${c.retard ? `<span class="rt" style="color:#E74C3C;font-weight:700">+${c.retard} j retard</span>` : ''}</div>
-        <div class="mt" style="font-size:12px;color:#8d96a5;margin:3px 0">${esc(c.ref)} · ${esc(c.com)} · livraison ${esc(c.livr || '—')}</div>
+        <div class="mt" style="font-size:12px;color:#8d96a5;margin:3px 0">${esc(c.ref || '—')} · ${esc(c.com)} · livraison ${esc(c.livr || '—')}</div>
         <div style="font-size:13px">Total <b>${dh(c.total)}</b> · <span style="color:#37c98a">payé ${dh(c.paye)}</span> · <span style="color:#E74C3C">reste ${dh(c.reste)}</span></div>
-        ${c.notes ? `<div class="mt" style="font-size:12px;margin-top:6px">📝 ${esc(c.notes)}</div>` : ''}
       </div>
-      <div class="sub" style="margin-bottom:8px">${selA ? '👉 Article sélectionné — clique un <b>ouvrier à droite</b> pour l\'affecter.' : 'Les articles de ce client — sélectionne puis affecte à un ouvrier.'}</div>`;
+      <div class="sub" style="margin-bottom:8px">${selA ? '👉 Article sélectionné — clique un <b>ouvrier à droite</b> pour l\'ajouter (plusieurs possibles).' : 'Chaque article : ajoute un ou plusieurs ouvriers, sa fiche de production et ses achats matière.'}</div>`;
 
     articlesDe(c).forEach(a => {
-      const af = A[a.id];
-      if (af) {
-        const w = WORKERS.find(x => x.id === af.ouvrierId);
-        h += `<div class="cjp" style="border-color:rgba(55,201,138,.4)">${photoOf(a)}<div class="pn">${esc(a.nm)} <span class="pc">${a.qty ? a.qty+' × '+a.pu+' DH' : ''}</span></div>
-          <div style="color:#37c98a;font-weight:700;font-size:12px">✅ ${esc(w ? w.nm : af.ouvrierId)}</div></div>`;
-      } else {
-        const on = selA === a.id;
-        h += `<div class="cjp" style="${on ? 'border-color:#C4714F' : ''}">${photoOf(a)}
-          <div class="pn">${esc(a.nm)} <span class="pc">${a.qty ? a.qty+' × '+a.pu+' DH' : (a.aDetailler ? 'détail/photo à compléter (fiche technique)' : '')}</span></div>
-          <button class="vbtn" data-sel="${esc(a.id)}" data-nom="${esc(a.nm)}" data-ref="${esc(c.ref)}" data-client="${esc(c.client)}" data-qty="${a.qty||''}" data-pu="${a.pu||''}">${on ? '● Sélectionné' : 'Sélectionner'}</button></div>`;
+      const ouvs = window.CJ ? window.CJ.affArticle(a.id) : [];
+      const on = selA === a.id;
+      const fa = window.CJ ? window.CJ.ficheArticleDe(a.id) : {};
+      const bons = window.CJ ? window.CJ.bonsArticle(a.id) : [];
+      // chips ouvriers
+      let chips = ouvs.map(o => {
+        const w = WORKERS.find(x => x.id === o.ouvrierId);
+        return `<span class="cjchip">👷 ${esc(w ? w.nm : o.ouvrierId)}${o.atelierCode ? ' ('+esc(o.atelierCode)+')' : ''} <b data-rmw="${esc(a.id)}|${esc(o.ouvrierId)}">✕</b></span>`;
+      }).join('');
+
+      h += `<div class="cjart-card">
+        <div class="cjart-top">${photoOf(a)}
+          <div style="flex:1;min-width:0"><div class="pn">${esc(a.nm)}</div>
+            <div class="pc">${a.qty ? a.qty+' × '+a.pu+' DH' : ''}</div>
+            <div class="cjchips">${chips || '<span class="pc">Aucun ouvrier affecté</span>'}</div>
+          </div></div>
+        <div class="cjart-actions">
+          <button class="vbtn" data-sel="${esc(a.id)}" data-nom="${esc(a.nm)}" data-ref="${esc(c.ref)}" data-client="${esc(c.client)}" data-at="${a.at||''}">${on ? '● Sélection active — clique un ouvrier' : '➕ Affecter un ouvrier'}</button>
+          <button class="vbtn2 ${openArt===a.id&&openTab==='fiche'?'on':''}" data-fiche="${esc(a.id)}">📝 Fiche${fa.dimensions||fa.tissu||fa.notes?' ✓':''}</button>
+          <button class="vbtn2 ${openArt===a.id&&openTab==='mat'?'on':''}" data-mat="${esc(a.id)}">🧰 Matière${bons.length?' ('+bons.length+')':''}</button>
+        </div>`;
+
+      // panneau fiche article
+      if (openArt === a.id && openTab === 'fiche') {
+        h += `<div class="cjpan">
+          <div class="cjgrid">
+            <input id="fa_dim" placeholder="Dimensions" value="${esc(fa.dimensions||'')}">
+            <input id="fa_tissu" placeholder="Tissu / matériau" value="${esc(fa.tissu||'')}">
+            <input id="fa_acc" placeholder="Accoudoirs (G/D)" value="${esc(fa.accoudoirs||'')}">
+            <input id="fa_cout" placeholder="Coutures / finition" value="${esc(fa.coutures||'')}">
+          </div>
+          <textarea id="fa_notes" placeholder="Notes / détails client" style="width:100%;margin-top:7px">${esc(fa.notes||'')}</textarea>
+          <label style="display:flex;align-items:center;gap:8px;margin-top:8px;font-size:13px"><input type="checkbox" id="fa_dessin" ${fa.dessinValide?'checked':''}> 🎨 Dessin validé par le client</label>
+          <button class="cjbtn2" id="fa_save" style="margin-top:9px">💾 Enregistrer la fiche de cet article</button>
+          <span id="fa_ok" style="color:#37c98a;font-weight:700;font-size:12px;margin-left:8px"></span>
+        </div>`;
       }
+      // panneau matière article
+      if (openArt === a.id && openTab === 'mat') {
+        const mats = window.CJ ? window.CJ.matieres() : [];
+        let res = '';
+        if (matQ) {
+          const r = mats.filter(m => (m.nom+' '+m.ref+' '+m.fournisseur).toLowerCase().includes(matQ.toLowerCase())).slice(0,8);
+          res = r.map(m => `<div class="cjmr" data-add="${esc(m.ref)}">${esc(m.nom)} <span class="pc">· ${esc(m.fournisseur)} · ${m.puTTC||''} DH</span></div>`).join('') || '<div class="pc" style="padding:6px">Aucune matière trouvée.</div>';
+        }
+        h += `<div class="cjpan">
+          <input id="mat_q" placeholder="🔎 Chercher une matière (559 réf.)…" value="${esc(matQ)}" autocomplete="off">
+          <div class="cjmres">${res}</div>
+          ${bonLignes.length ? `<div class="cjlignes">${bonLignes.map((l,i)=>`<div class="cjp"><div class="pn">${esc(l.nom)} <span class="pc">· ${esc(l.fournisseur)}</span></div><input class="qte" type="number" min="1" value="${l.qty}" data-q="${i}" style="width:64px"> <button class="vbtn" data-del="${i}">✕</button></div>`).join('')}
+            <button class="cjbtn2" id="bon_send" style="margin-top:8px">📦 Envoyer le bon au magasin (pour cet article)</button>` : '<div class="pc" style="margin-top:6px">Ajoute les matières de cet article, puis envoie le bon.</div>'}
+          ${bons.length ? `<div class="cjsec-h" style="margin-top:11px">Bons de cet article</div>${bons.map(b=>`<div class="cjp"><div class="pn">${(b.lignes||[]).map(x=>esc(x.nom)).join(', ')||'Bon'} <span class="pc">· ${(b.lignes||[]).length} ligne(s)</span></div><span class="pb ${b.statut==='recu'?'bas':'rupture'}" style="${b.statut==='recu'?'background:rgba(55,201,138,.16);color:#37c98a':''}">${b.statut==='recu'?'✅ Reçu':(b.statut==='commande'?'🛒 Commande':'📤 Envoyé')}</span></div>`).join('')}` : ''}
+        </div>`;
+      }
+      h += `</div>`;
     });
-    h += ficheMatiereHTML(c);
+
     box.innerHTML = h;
-    const bk = document.getElementById('cjback'); if (bk) bk.onclick = () => { view = 'list'; selA = null; renderArts(); };
-    box.querySelectorAll('[data-sel]').forEach(b => b.onclick = () => { const id = b.getAttribute('data-sel'); selA = (selA === id) ? null : id; renderArts(); });
-    wireFicheMatiere(c);
+    const bk = document.getElementById('cjback'); if (bk) bk.onclick = () => { view = 'list'; selA = null; openArt = null; renderArts(); };
+    // sélection ouvrier
+    box.querySelectorAll('[data-sel]').forEach(b => b.onclick = () => { selA = (selA === b.getAttribute('data-sel')) ? null : b.getAttribute('data-sel'); renderArts(); });
+    // retirer un ouvrier
+    box.querySelectorAll('[data-rmw]').forEach(b => b.onclick = () => { const [aid,oid]=b.getAttribute('data-rmw').split('|'); window.CJ.retirerAffArticle(aid,oid); renderArts(); });
+    // toggle fiche / matière
+    box.querySelectorAll('[data-fiche]').forEach(b => b.onclick = () => { const id=b.getAttribute('data-fiche'); if(openArt===id&&openTab==='fiche'){openArt=null;}else{openArt=id;openTab='fiche';} renderArts(); });
+    box.querySelectorAll('[data-mat]').forEach(b => b.onclick = () => { const id=b.getAttribute('data-mat'); if(openArt===id&&openTab==='mat'){openArt=null;}else{openArt=id;openTab='mat';bonLignes=[];matQ='';} renderArts(); });
+    wireArticlePanels(c);
   }
 
-  // ---- Étape PRÉ-PRODUCTION : fiche technique + matière première ----
+  function wireArticlePanels(c) {
+    const $ = id => document.getElementById(id);
+    if ($('fa_save')) $('fa_save').onclick = () => {
+      window.CJ.ficheArticle(openArt, { dimensions:$('fa_dim').value, tissu:$('fa_tissu').value, accoudoirs:$('fa_acc').value, coutures:$('fa_cout').value, notes:$('fa_notes').value, dessinValide:$('fa_dessin').checked });
+      window.CJ.evenement('info','Hanane',`Fiche article enregistrée (${c.client}).`);
+      if ($('fa_ok')) $('fa_ok').textContent='✓ enregistrée';
+    };
+    if ($('mat_q')) $('mat_q').oninput = e => { matQ=e.target.value; const pos=e.target.selectionStart; renderArts(); const m=$('mat_q'); if(m){m.focus(); try{m.setSelectionRange(pos,pos);}catch(x){}} };
+    document.querySelectorAll('[data-add]').forEach(el => el.onclick = () => { const ref=el.getAttribute('data-add'); const m=(window.CJ.matieres()||[]).find(x=>x.ref===ref); if(m){bonLignes.push({ref:m.ref,nom:m.nom,fournisseur:m.fournisseur,unite:m.unite,qty:1}); matQ=''; renderArts();} });
+    document.querySelectorAll('.qte').forEach(inp => inp.onchange = () => { bonLignes[+inp.getAttribute('data-q')].qty=+inp.value||1; });
+    document.querySelectorAll('[data-del]').forEach(b => b.onclick = () => { bonLignes.splice(+b.getAttribute('data-del'),1); renderArts(); });
+    if ($('bon_send')) $('bon_send').onclick = () => {
+      if(!bonLignes.length) return;
+      window.CJ.bon({ ref:c.ref, client:c.client, articleId:openArt, lignes:bonLignes.slice(), par:'Hanane', statut:'envoye' });
+      window.CJ.evenement('warn','Hanane',`Bon matière envoyé pour un article de ${c.client}.`,'→ Mohamed (magasin)');
+      bonLignes=[]; matQ=''; toastMsg('📦 Bon envoyé au magasin'); renderArts();
+    };
+  }
+
   function ficheMatiereHTML(c) {
     const f = (window.CJ ? window.CJ.ficheDe(c.ref) : {}) || {};
     const bons = (window.CJ ? window.CJ.bons() : []).filter(b => b.ref === c.ref);

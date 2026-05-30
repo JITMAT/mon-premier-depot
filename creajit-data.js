@@ -124,6 +124,24 @@
     // Fiche technique d'une commande (stockée par référence)
     fiche: (ref, data) => { etat.fiches[ref] = Object.assign({}, etat.fiches[ref], data); sauver(); },
     ficheDe: (ref) => etat.fiches[ref] || {},
+
+    // ===== PAR ARTICLE (multi-ouvriers, fiche, achats) =====
+    // Plusieurs ouvriers/étapes par article
+    affArticle: (articleId) => (etat.affArt && etat.affArt[articleId]) ? etat.affArt[articleId] : [],
+    ajouterAffArticle: (articleId, ouvrierId, atelierCode, nom) => {
+      etat.affArt = etat.affArt || {};
+      const liste = etat.affArt[articleId] = etat.affArt[articleId] || [];
+      if (!liste.some(x => x.ouvrierId === ouvrierId)) liste.push({ ouvrierId, atelierCode: atelierCode || '', nom: nom || '', statut: 'affecte' });
+      sauver();
+    },
+    retirerAffArticle: (articleId, ouvrierId) => {
+      if (etat.affArt && etat.affArt[articleId]) { etat.affArt[articleId] = etat.affArt[articleId].filter(x => x.ouvrierId !== ouvrierId); sauver(); }
+    },
+    // Fiche technique par article
+    ficheArticle: (articleId, data) => { etat.fichesArt = etat.fichesArt || {}; etat.fichesArt[articleId] = Object.assign({}, etat.fichesArt[articleId], data); sauver(); },
+    ficheArticleDe: (articleId) => (etat.fichesArt && etat.fichesArt[articleId]) || {},
+    // Bons matière par article
+    bonsArticle: (articleId) => Object.values(etat.bons).filter(b => b.articleId === articleId).sort((a, b) => (b.t0 || 0) - (a.t0 || 0)),
     // Articles saisis par Hanane (fiche technique) — le connecteur ne donne que le nombre
     ajouterArticle: (ref, art) => { (etat.articlesSaisis[ref] = etat.articlesSaisis[ref] || []).push(Object.assign({ id: ref + '_m' + Date.now().toString(36) }, art)); sauver(); },
     articlesSaisis: (ref) => etat.articlesSaisis[ref] || [],
