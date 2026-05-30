@@ -5,12 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Centre de surveillance · CreaJit IA</title>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,800&family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<!-- Données : commandes réelles (figées) + helpers + branchement live -->
+<!-- Données de référence + commandes (figées au départ, remplacées par le live) -->
 <script src="creajit-commandes-reelles.js"></script>
+<script src="creajit-salaires.js"></script>
+<script src="creajit-ateliers.js"></script>
+<script src="creajit-couthoraire.js"></script>
+<script src="creajit-matieres.js"></script>
 <script src="creajit-orders.js"></script>
+<script src="creajit-agents.js"></script>
 <style>
-:root{--bg:#0c1018;--bg2:#0a0e15;--card:#161d2b;--card2:#10151f;--line:rgba(196,113,79,.18);
- --orange:#C4714F;--orange-b:#e69a76;--green:#22C55E;--red:#E74C3C;--yellow:#EAB308;--blue:#3b82f6;
+:root{--bg:#0c1018;--card:#161d2b;--card2:#10151f;--line:rgba(196,113,79,.18);
+ --orange:#C4714F;--orange-b:#e69a76;--green:#22C55E;--red:#E74C3C;--yellow:#EAB308;
  --ink:#ece9e3;--mut:#8d96a5;--mut2:#586273}
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--bg);color:var(--ink);font-family:'Hanken Grotesk',sans-serif;-webkit-font-smoothing:antialiased;
@@ -20,11 +25,10 @@ body{background:var(--bg);color:var(--ink);font-family:'Hanken Grotesk',sans-ser
 a{color:inherit;text-decoration:none}
 ::-webkit-scrollbar{width:9px}::-webkit-scrollbar-thumb{background:#222c3d;border-radius:9px}
 
-/* top bar */
 .top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:18px}
 .live{display:inline-flex;align-items:center;gap:8px;background:#10241a;border:1px solid rgba(34,197,94,.3);
  color:#7ee2a8;padding:7px 13px;border-radius:30px;font-weight:700;font-size:13px}
-.dot{width:9px;height:9px;border-radius:50%;background:var(--green);box-shadow:0 0 0 0 rgba(34,197,94,.6);animation:pulse 1.8s infinite}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--green);animation:pulse 1.8s infinite}
 @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(34,197,94,.5)}70%{box-shadow:0 0 0 9px rgba(34,197,94,0)}100%{box-shadow:0 0 0 0 rgba(34,197,94,0)}}
 .ttags{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:13px;color:var(--mut)}
 .src{padding:5px 11px;border-radius:20px;border:1px solid var(--line);font-weight:600}
@@ -32,28 +36,23 @@ a{color:inherit;text-decoration:none}
 .src.liv{color:#7ee2a8;border-color:rgba(34,197,94,.3)}
 .home{padding:7px 14px;border-radius:24px;background:var(--orange);color:#1a0f08;font-weight:800;font-size:13px}
 
-/* hero */
 .hero{margin:6px 0 22px}
 .hero h1{font-size:30px;line-height:1.1;font-weight:800;letter-spacing:-.5px}
-.hero p{color:var(--mut);margin-top:7px;font-size:15px;max-width:640px}
+.hero p{color:var(--mut);margin-top:7px;font-size:15px;max-width:680px}
 
-/* veilleur banner */
-.veil{background:linear-gradient(180deg,#191017,#12131c);border:1px solid var(--line);border-radius:20px;
- padding:18px;margin-bottom:20px}
+.veil{background:linear-gradient(180deg,#191017,#12131c);border:1px solid var(--line);border-radius:20px;padding:18px;margin-bottom:20px}
 .veil .vh{display:flex;align-items:center;gap:12px;margin-bottom:12px}
-.av{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;font-weight:800;font-size:19px;color:#1a0f08;flex:none}
+.av{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;font-size:22px;flex:none;background:#0e1420}
 .veil .vt b{font-size:17px}.veil .vt span{display:block;color:var(--mut);font-size:13px}
-.crit{margin-left:auto;text-align:right}
-.crit .n{font-size:30px;font-weight:800;line-height:1}.crit .l{font-size:12px;color:var(--mut)}
+.crit{margin-left:auto;text-align:right}.crit .n{font-size:30px;font-weight:800;line-height:1}.crit .l{font-size:12px;color:var(--mut)}
 .alerts{display:flex;flex-direction:column;gap:8px}
 .al{display:flex;align-items:center;gap:10px;padding:11px 13px;border-radius:12px;background:#0e1420;border:1px solid #1c2433;font-size:14px}
 .al.red{border-color:rgba(231,76,60,.4);background:rgba(231,76,60,.08)}
 .al.org{border-color:rgba(234,179,8,.35);background:rgba(234,179,8,.07)}
 .al.ok{border-color:rgba(34,197,94,.3);background:rgba(34,197,94,.06)}
-.al .ic{font-size:17px}.al b{font-weight:700}
+.al.info{opacity:.92}
 
-/* grid agents */
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;position:relative;overflow:hidden}
 .card:before{content:"";position:absolute;inset:0 0 auto 0;height:3px;background:var(--ac,#C4714F)}
 .ch{display:flex;align-items:center;gap:11px;margin-bottom:13px}
@@ -61,17 +60,19 @@ a{color:inherit;text-decoration:none}
 .watch{margin-left:auto;font-size:11px;color:#7ee2a8;display:inline-flex;align-items:center;gap:5px;font-weight:600}
 .kpis{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:12px}
 .kpi{background:var(--card2);border:1px solid #1b2230;border-radius:12px;padding:10px 11px}
-.kpi .n{font-size:21px;font-weight:800;line-height:1}.kpi .l{font-size:11.5px;color:var(--mut);margin-top:3px}
-.kpi.big{grid-column:1/3}
-.msg{font-size:13.5px;padding:9px 11px;border-radius:11px;background:#0e1420;border:1px solid #1c2433;color:var(--mut)}
-.msg.red{color:#f3a79c;border-color:rgba(231,76,60,.35);background:rgba(231,76,60,.08)}
-.msg.org{color:#ecd089;border-color:rgba(234,179,8,.3);background:rgba(234,179,8,.06)}
-.msg.ok{color:#9fe6bb;border-color:rgba(34,197,94,.28);background:rgba(34,197,94,.05)}
-.rows{display:flex;flex-direction:column;gap:6px;margin-top:4px}
-.row{display:flex;align-items:center;gap:9px;font-size:13px}
-.row .b{flex:1;height:7px;border-radius:6px;background:#1b2230;overflow:hidden}
-.row .b i{display:block;height:100%;background:var(--ac,#C4714F);border-radius:6px}
-.row .v{color:var(--mut);font-variant-numeric:tabular-nums;min-width:64px;text-align:right}
+.kpi .n{font-size:18px;font-weight:800;line-height:1.1}.kpi .l{font-size:11.5px;color:var(--mut);margin-top:3px}
+.allist{display:flex;flex-direction:column;gap:6px}
+.alm{font-size:13px;padding:8px 11px;border-radius:10px;background:#0e1420;border:1px solid #1c2433;color:var(--mut)}
+.alm.red{color:#f3a79c;border-color:rgba(231,76,60,.35);background:rgba(231,76,60,.08)}
+.alm.org{color:#ecd089;border-color:rgba(234,179,8,.3);background:rgba(234,179,8,.06)}
+.alm.ok{color:#9fe6bb;border-color:rgba(34,197,94,.28);background:rgba(34,197,94,.05)}
+.miss{margin-top:11px}
+.miss summary{cursor:pointer;font-size:12.5px;color:var(--orange-b);font-weight:700;list-style:none;user-select:none}
+.miss summary::-webkit-details-marker{display:none}
+.miss summary:before{content:"📋 ";}
+.miss .body{margin-top:9px;font-size:12.7px;line-height:1.55;color:var(--mut)}
+.miss .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.tag{font-size:11px;padding:3px 9px;border-radius:20px;background:#0e1420;border:1px solid #232c3d;color:var(--mut)}
 .foot{margin-top:24px;text-align:center;color:var(--mut2);font-size:12.5px}
 </style>
 </head>
@@ -89,7 +90,7 @@ a{color:inherit;text-decoration:none}
 
   <div class="hero">
     <h1 class="serif">Tu bosses. <span style="color:var(--orange-b)">Eux surveillent.</span></h1>
-    <p>Chaque agent veille en continu une partie de ton atelier et lève l'alerte quand quelque chose cloche. Voici tout ce qui compte, maintenant.</p>
+    <p>Chaque agent a une mission précise et veille en continu une partie de ton application CreaJit. Ils calculent, alertent et te résument tout. Ouvre « Ses instructions » sur chaque agent pour voir sa feuille de route.</p>
   </div>
 
   <div id="veil" class="veil"></div>
@@ -98,124 +99,76 @@ a{color:inherit;text-decoration:none}
   <div class="foot" id="foot"></div>
 </div>
 
-<!-- branchement live (après les helpers) : remplit les vraies données puis re-render -->
+<!-- branchement live : remplit les vraies commandes de TON app puis re-render -->
 <script src="creajit-api.js"></script>
 <script>
 (function(){
-  var CJ = window.CJ_ORDERS;
-  var fmt = function(n){ return (Math.round(n)||0).toLocaleString('fr-FR') + ' DH'; };
-  var nf  = function(n){ return (n||0).toLocaleString('fr-FR'); };
+  function esc(s){ return String(s).replace(/[&<>]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c];}); }
 
-  function el(html){ var d=document.createElement('div'); d.innerHTML=html.trim(); return d.firstChild; }
+  function srcBadge(live){
+    var el=document.getElementById('src');
+    el.textContent = live ? 'données en direct · creajit-mes-v1' : 'données figées (30/05)';
+    el.className = 'src ' + (live ? 'liv' : 'snap');
+  }
+
+  function kpiHTML(k){ return '<div class="kpi"><div class="n">'+esc(k.n)+'</div><div class="l">'+esc(k.l)+'</div></div>'; }
+  function alHTML(a,cls){ return '<div class="'+cls+' '+(a.niveau||'info')+'">'+esc(a.txt)+'</div>'; }
+
+  function missionHTML(ag){
+    var tags = (ag.surveille||[]).map(function(s){return '<span class="tag">'+esc(s)+'</span>';}).join('');
+    return '<details class="miss"><summary>Ses instructions</summary>'+
+      '<div class="body">'+esc(ag.mission)+
+      '<div class="tags"><b style="color:var(--mut2);font-size:11px;width:100%;display:block;margin-bottom:2px">SURVEILLE :</b>'+tags+'</div>'+
+      '</div></details>';
+  }
 
   function render(){
-    if(!window.CJ_ORDERS){ return; }
-    CJ = window.CJ_ORDERS;
-    var s = CJ.stats();
-    var total = CJ.count();
-    var retards = CJ.enRetard();
+    if(!window.CJ_AGENTS){ return; }
     var live = (window.CJ_DATA_SOURCE === 'live');
+    srcBadge(live);
 
-    // bandeau source
-    var src = document.getElementById('src');
-    src.textContent = live ? 'données en direct' : 'données figées (30/05)';
-    src.className = 'src ' + (live ? 'liv' : 'snap');
+    var all = window.CJ_AGENTS.analyserTout();
+    var veil = all[0];            // Le Veilleur en bandeau
+    var rest = all.slice(1);
 
-    // ───── Veilleur (alertes consolidées) ─────
-    var alerts = [];
-    if (s.enRetard > 0) alerts.push({t:'red', ic:'🚚', h:'<b>'+s.enRetard+' livraison(s) en retard</b> — à relancer en priorité'});
-    if (s.enAttente > 0) alerts.push({t:'org', ic:'🏭', h:'<b>'+s.enAttente+' commande(s)</b> en attente de lancement en fabrication'});
-    if (s.reste > 0) alerts.push({t:'org', ic:'💰', h:'<b>'+fmt(s.reste)+'</b> encore à encaisser sur <b>'+s.impaye+'</b> commande(s)'});
-    if (s.enFab > 0) alerts.push({t:'ok', ic:'🔧', h:'<b>'+s.enFab+'</b> commande(s) en cours de fabrication — ça avance'});
-    if (!alerts.length) alerts.push({t:'ok', ic:'✅', h:'Rien d\'urgent. Tout est sous contrôle.'});
-
-    var crit = s.enRetard*3 + Math.min(s.enAttente,99) + (s.impaye>0?1:0);
-    var critColor = crit > 60 ? 'var(--red)' : (crit > 25 ? 'var(--yellow)' : 'var(--green)');
-
+    // ----- bandeau Veilleur -----
+    var vr = veil.resultat;
+    var crit = (vr.kpis[0] && vr.kpis[0].n) || 0;
+    var critColor = crit>60?'var(--red)':(crit>25?'var(--yellow)':'var(--green)');
     document.getElementById('veil').innerHTML =
       '<div class="vh">'+
-        '<div class="av" style="background:linear-gradient(135deg,#E74C3C,#C4714F)">⚠️</div>'+
-        '<div class="vt"><b class="serif">Le Veilleur</b><span>surveille TOUT · '+nf(total)+' commandes scannées</span></div>'+
-        '<div class="crit"><div class="n" style="color:'+critColor+'">'+crit+'</div><div class="l">criticité</div></div>'+
+        '<div class="av">'+veil.agent.emoji+'</div>'+
+        '<div class="vt"><b class="serif">'+esc(veil.agent.nom)+'</b><span>'+esc(vr.resume)+'</span></div>'+
+        '<div class="crit"><div class="n" style="color:'+critColor+'">'+esc(crit)+'</div><div class="l">criticité</div></div>'+
       '</div>'+
-      '<div class="alerts">'+ alerts.map(function(a){
-        return '<div class="al '+a.t+'"><span class="ic">'+a.ic+'</span><span>'+a.h+'</span></div>';
-      }).join('') +'</div>';
+      '<div class="alerts">'+ vr.alertes.map(function(a){return alHTML(a,'al');}).join('') +'</div>'+
+      missionHTML(veil.agent);
 
-    // ───── Agents (cartes) ─────
-    var cards = [];
-
-    // Hanane — Production
-    cards.push(agent('Hanane','Production','H','#3b82f6', [
-      kpi(s.enFab,'en fabrication'), kpi(s.enAttente,'en attente'),
-      kpi(s.termine,'terminées'), kpi(nf(s.nbArticles),'articles suivis')
-    ], s.enAttente>40
-        ? msg('org','⏳ <b>'+s.enAttente+'</b> commandes attendent d\'être lancées — gros volume à planifier.')
-        : msg('ok','🏭 Production fluide, '+s.enFab+' en cours.')));
-
-    // Fatima — Livraison
-    cards.push(agent('Fatima','Livraison','F','#22C55E', [
-      kpi(s.aLivrer,'à livrer'), kpi(s.livre,'livrées'),
-      kpi(s.enRetard,'en retard'), kpi(total,'commandes')
-    ], s.enRetard>0
-        ? msg('red','🚚 <b>'+s.enRetard+'</b> livraison(s) en retard — clients à prévenir.')
-        : msg('ok','✅ Aucune livraison en retard.')));
-
-    // Compta — Finance
-    cards.push(agent('Compta','Finances','€','#EAB308', [
-      kpiBig(fmt(s.total),'chiffre d\'affaires total'),
-      kpi(fmt(s.paye),'encaissé'), kpi(fmt(s.reste),'reste dû')
-    ], s.reste>0
-        ? msg('org','💰 <b>'+s.impaye+'</b> commandes non soldées — <b>'+fmt(s.reste)+'</b> à récupérer.')
-        : msg('ok','✅ Tout est encaissé.')));
-
-    // Commercial — top vendeuses
-    var pv = CJ.parVendeur().filter(function(v){return v.nb>=2;}).slice(0,4);
-    var maxCa = pv.length ? pv[0].ca : 1;
-    var rows = pv.map(function(v){
-      return '<div class="row"><span style="flex:none;min-width:96px">'+ (v.vendeur||'—').split(' ')[0] +'</span>'+
-        '<span class="b"><i style="width:'+Math.max(6,Math.round(v.ca/maxCa*100))+'%"></i></span>'+
-        '<span class="v">'+v.nb+' cmd</span></div>';
+    // ----- cartes agents -----
+    document.getElementById('grid').innerHTML = rest.map(function(x){
+      var ag=x.agent, r=x.resultat;
+      return '<div class="card" style="--ac:'+ag.couleur+'">'+
+        '<div class="ch"><div class="av" style="background:'+ag.couleur+'22">'+ag.emoji+'</div>'+
+          '<div class="nm"><b>'+esc(ag.nom)+'</b><span>'+esc(ag.role)+'</span></div>'+
+          '<span class="watch"><span class="dot"></span>en surveillance</span></div>'+
+        '<div class="kpis">'+ r.kpis.map(kpiHTML).join('') +'</div>'+
+        '<div class="allist">'+ r.alertes.slice(0,4).map(function(a){return alHTML(a,'alm');}).join('') +'</div>'+
+        missionHTML(ag)+
+      '</div>';
     }).join('');
-    cards.push(agentRaw('Kenza · Ikram · Laila','Commerciales','K','#C4714F',
-      '<div class="rows">'+rows+'</div>'+
-      msg('', '🏆 Meilleure perf : <b>'+ (pv[0]?pv[0].vendeur.split(' ')[0]:'—') +'</b> avec '+ fmt(pv[0]?pv[0].ca:0) +'.')));
-
-    // Moumen — Magasin
-    cards.push(agent('Moumen','Magasin','M','#a78bfa', [
-      kpi(nf(s.nbArticles),'articles commandés'), kpi(nf(s.nbPhotos),'avec photo'),
-      kpi(s.enFab+s.enAttente,'à préparer'), kpi(total,'commandes')
-    ], msg('ok','📦 '+s.nbArticles+' articles à suivre pour la production.')));
-
-    document.getElementById('grid').innerHTML='';
-    cards.forEach(function(c){ document.getElementById('grid').appendChild(el(c)); });
 
     document.getElementById('foot').textContent =
       'Dernière analyse : '+ new Date().toLocaleTimeString('fr-FR') +
-      ' · '+ (live ? 'connecté en direct à ton app creajit-mes-v1' : 'snapshot du 30/05/2026 — passera en direct au déploiement');
+      ' · '+ (live ? 'connecté en direct à ton app creajit-mes-v1' : 'snapshot du 30/05/2026 — passera en direct au déploiement') +
+      ' · '+ all.length +' agents en surveillance';
   }
 
-  // helpers de rendu
-  function kpi(n,l){ return '<div class="kpi"><div class="n">'+n+'</div><div class="l">'+l+'</div></div>'; }
-  function kpiBig(n,l){ return '<div class="kpi big"><div class="n">'+n+'</div><div class="l">'+l+'</div></div>'; }
-  function msg(t,h){ return '<div class="msg '+t+'">'+h+'</div>'; }
-  function agent(nom,role,ini,ac,kpis,message){ return agentRaw(nom,role,ini,ac,'<div class="kpis">'+kpis.join('')+'</div>'+message); }
-  function agentRaw(nom,role,ini,ac,inner){
-    return '<div class="card" style="--ac:'+ac+'">'+
-      '<div class="ch"><div class="av" style="background:'+ac+'">'+ini+'</div>'+
-      '<div class="nm"><b>'+nom+'</b><span>'+role+'</span></div>'+
-      '<span class="watch"><span class="dot"></span>en surveillance</span></div>'+ inner +'</div>';
-  }
-
-  // horloge
-  function clock(){ document.getElementById('clock').textContent = new Date().toLocaleTimeString('fr-FR'); }
+  function clock(){ var c=document.getElementById('clock'); if(c) c.textContent=new Date().toLocaleTimeString('fr-FR'); }
   clock(); setInterval(clock,1000);
 
-  // expose render pour creajit-api.js (re-render quand les vraies données arrivent)
-  window.render = render;
+  window.render = render;   // creajit-api.js re-render après l'arrivée du live
   render();
-  // ré-analyse périodique (les agents "veillent")
-  setInterval(render, 60000);
+  setInterval(render, 60000); // les agents ré-analysent en continu
 })();
 </script>
 </body>
