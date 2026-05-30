@@ -1,12 +1,59 @@
-// ─── Fonction serveur : récupère commandes + produits depuis creajit.ma ───
-// Le serveur Netlify A INTERNET (contrairement à l'environnement de dev),
-// donc c'est LUI qui appelle creajit.ma et renvoie les données au site.
+// ─── Fonction serveur Netlify : pont vers creajit.ma (le serveur a internet) ──
+// La page settings ne montre que la clé (pas d'URL d'API) → cette fonction
+// ESSAIE PLUSIEURS adresses/styles d'auth courants et garde celle qui répond.
 //
-// Config sur Netlify → Site settings → Environment variables :
-//   CREAJIT_BASE   = https://creajit.ma           (ou l'URL de l'API)
-//   CREAJIT_TOKEN  = <clé/API token de creajit.ma>  (si nécessaire)
+// Variables Netlify (Site settings → Environment variables) :
+//   CREAJIT_TOKEN = la clé cj_live_...    (déjà configurée)
+//   CREAJIT_BASE  = https://creajit.ma     (optionnel, défaut)
 //
-// Appels depuis le site : /api/creajit?resource=orders | products | order&ref=XXXX
+// Appels du site :
+//   /api/creajit?resource=orders
+//   /api/creajit?resource=products
+//   /api/creajit?resource=order&ref=26040019
+//   /api/creajit?resource=discover         (diagnostic : quelles routes répondent)
+
+const TOKEN = process.env.CREAJIT_TOKEN || '';
+const BASE = (process.env.CREAJIT_BASE || 'https://creajit.ma').replace(/\/+$/, '');
+
+// Combinaisons d'en-têtes d'auth à tester
+function authHeaderSets() {
+  return [
+    { 'Authorization': 'Bearer ' + TOKEN },
+    { 'x-api-key': TOKEN },
+    { 'X-API-KEY': TOKEN },
+    { 'api-key': TOKEN },
+    { 'Authorization': TOKEN },
+    { 'X-Auth-Token': TOKEN },
+  ];
+}
+
+// Chemins candidats par ressource
+function candidatePaths(resource, ref) {
+  const r = encodeURIComponent(ref || '');
+  if (resource === 'order') {
+    return [`/api/orders/${r}`, `/api/v1/orders/${r}`, `/api/order/${r}`,
+            `/admin/api/orders/${r}`, `/api/commandes/${r}`, `/api/orders?ref=${r}`];
+  }
+  if (resource === 'products') {
+    return ['/api/products', '/api/v1/products', '/api/produits', '/admin/api/products',
+            '/api/catalog', '/api/articles', '/api/items', '/products.json'];
+  }
+  // orders (défaut)
+  return ['/api/orders', '/api/v1/orders', '/api/commandes', '/admin/api/orders',
+          '/api/sales', '/api/orders.json', '/orders.json'];
+}
+
+async function tryFetch(url, headers) {
+  try {
+    const r = await fetch(url, { headers: Object.assign({ 'Accept': 'application/json' }, headers) });
+    const txt = await r.text();
+    let data; let isJson = false;
+    try { data = JSON.parse(txt); isJson = true; } catch { data = txt.slice(0, 300); }
+    return { ok: r.ok, status: r.status, isJson, data };
+  } catch (e) {
+    return { ok: false, status: 0, error: String(e) };
+  }
+}
 
 exports.handler = async (event) => {
   const json = (code, obj) => ({
@@ -15,39 +62,42 @@ exports.handler = async (event) => {
     body: JSON.stringify(obj),
   });
 
-  const BASE = process.env.CREAJIT_BASE || 'https://creajit.ma';
-  const TOKEN = process.env.CREAJIT_TOKEN || '';
+  if (!TOKEN) return json(200, { ok: false, error: 'CREAJIT_TOKEN absent (Netlify env)' });
+
   const p = event.queryStringParameters || {};
   const resource = p.resource || 'orders';
 
-  // Chemins d'API à ajuster selon ce qu'expose creajit.ma/admin.
-  // (À confirmer avec Driss : routes exactes + format d'auth.)
-  const ROUTES = {
-    orders:   '/api/orders',
-    products: '/api/products',
-    order:    '/api/orders/' + encodeURIComponent(p.ref || ''),
-  };
-  const path = ROUTES[resource];
-  if (!path) return json(400, { error: 'resource inconnue', resources: Object.keys(ROUTES) });
-
-  const headers = { 'Accept': 'application/json' };
-  if (TOKEN) {
-    headers['Authorization'] = 'Bearer ' + TOKEN;
-    headers['x-api-key'] = TOKEN; // selon le type d'auth de creajit.ma
+  // Mode diagnostic : teste tout et renvoie ce qui marche
+  if (resource === 'discover') {
+    const report = [];
+    for (const res of ['orders', 'products']) {
+      for (const path of candidatePaths(res)) {
+        const h = authHeaderSets()[0]; // Bearer d'abord
+        const out = await tryFetch(BASE + path, h);
+        report.push({ resource: res, url: BASE + path, status: out.status, json: out.isJson });
+        if (out.ok && out.isJson) break;
+      }
+    }
+    return json(200, { base: BASE, tokenPresent: !!TOKEN, report });
   }
 
-  try {
-    const r = await fetch(BASE + path, { headers });
-    const txt = await r.text();
-    let data; try { data = JSON.parse(txt); } catch { data = { raw: txt }; }
-    return json(r.status, {
-      ok: r.ok,
-      source: BASE + path,
-      data,
-      note: r.ok ? undefined : 'Vérifier CREAJIT_BASE / CREAJIT_TOKEN et la route API dans creajit.js',
-    });
-  } catch (e) {
-    return json(200, { ok: false, error: String(e), source: BASE + path,
-      note: "Le serveur n'a pas pu joindre creajit.ma — vérifier l'URL/clé dans les variables Netlify." });
+  // Mode normal : on cherche la 1re combinaison (chemin × auth) qui renvoie du JSON 200
+  const paths = candidatePaths(resource, p.ref);
+  const auths = authHeaderSets();
+  let lastTried = [];
+  for (const path of paths) {
+    for (const h of auths) {
+      const out = await tryFetch(BASE + path, h);
+      lastTried.push({ url: BASE + path, status: out.status });
+      if (out.ok && out.isJson) {
+        return json(200, { ok: true, source: BASE + path, data: out.data });
+      }
+    }
   }
+  return json(200, {
+    ok: false,
+    note: "Aucune route API n'a répondu en JSON. Ouvre /api/creajit?resource=discover pour le diagnostic, ou indique l'URL exacte de l'API CreaJit.",
+    triedCount: lastTried.length,
+    sample: lastTried.slice(0, 6),
+  });
 };
