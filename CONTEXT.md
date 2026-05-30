@@ -304,6 +304,15 @@ Articles : Chaise Cartel ×75 @730 ; Tableau 120/80 ×25 @730 ; Tableau 40/40 ×
   par article → magasin). CJ: affArticle/ajouterAffArticle/retirerAffArticle, ficheArticle(De),
   bonsArticle. Placeholders intelligents (icône par type) + fallback photo catalogue. Testé jsdom.
 
+- **2026-05-30 — Fix chrono ouvrier + AUDIT.** Le chrono/file de l'ouvrier est maintenant
+  **persisté** (localStorage `creajit_tasks_<id>`), t0 = horodatage absolu → au retour le
+  chrono CONTINUE (ne repart plus à 0), coût MO conservé. Sauvegarde sur start/finish/pause + auto 5s.
+  **AUDIT — reste à faire (priorités) :** (1) UNIFIER les 2 systèmes de données (CJ.affecterDetail
+  vs affArticle vs TASKS ouvrier) en une seule source ; (2) REPORT temps réel ouvrier→Hanane→cockpit
+  (avancement, qui bosse, chrono) ; (3) AUTH par salarié (chacun voit SES tâches) ; (4) QC photo
+  bloquante par étape ; (5) trancher le TAUX horaire (22-29 vs 55-73) ; (6) temps réel multi-appareils
+  (nécessite vraie base partagée, pas localStorage).
+
 ## 13. Ordre de construction officiel (structure décidée, à suivre)
 
 > Driss délègue la structuration. On construit dans CET ordre, en s'appuyant sur les

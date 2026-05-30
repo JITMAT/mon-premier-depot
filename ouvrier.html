@@ -395,3 +395,31 @@ renderWork();
 #cjlinks a:hover{background:#222c3d;color:#e69a76}
 </style>
 <script src="creajit-ouvrier.js"></script>
+
+<!-- Persistance du chrono + file de travail (par ouvrier) -->
+<script>
+(function(){
+  if (typeof TASKS === 'undefined') return;
+  var WID = (window.CJ_MOI || 'ibnradiya');
+  var KEY = 'creajit_tasks_' + WID;
+  // 1) Restaurer la file sauvegardée (le chrono continue car t0 est un horodatage absolu)
+  try {
+    var saved = localStorage.getItem(KEY);
+    if (saved) {
+      var arr = JSON.parse(saved);
+      if (Array.isArray(arr)) { TASKS.length = 0; arr.forEach(function(t){ TASKS.push(t); }); }
+    }
+  } catch(e){}
+  // 2) Sauvegarder régulièrement + à chaque action
+  function save(){ try { localStorage.setItem(KEY, JSON.stringify(TASKS)); } catch(e){} }
+  ['startTask','finish','togglePause','pickMotif'].forEach(function(fn){
+    if (typeof window[fn] === 'function') {
+      var orig = window[fn];
+      window[fn] = function(){ var r = orig.apply(this, arguments); save(); return r; };
+    }
+  });
+  setInterval(save, 5000);       // sécurité : sauve l'avancement
+  window.addEventListener('beforeunload', save);
+  if (typeof renderWork === 'function') renderWork();
+})();
+</script>
