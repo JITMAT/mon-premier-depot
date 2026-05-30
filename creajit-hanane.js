@@ -89,7 +89,40 @@
   const atColor = c => { const a = ats().find(x => x.code === c); return a ? a.couleur : '#C4714F'; };
   const affs = () => (window.CJ ? window.CJ.etat().affectations : {});
   const photo = img => (window.ART && img && window.ART[img]) ? `<img src="${window.ART[img]}" style="width:54px;height:54px;border-radius:9px;object-fit:cover;background:#fff">` : `<div style="width:54px;height:54px;border-radius:9px;background:#222c3d;display:grid;place-items:center;font-size:22px">🪑</div>`;
-  const photoOf = a => (a && a.photo) ? `<img src="${a.photo}" style="width:54px;height:54px;border-radius:9px;object-fit:cover;background:#fff">` : photo(a && a.img);
+  function iconePour(nom){
+    var n=(nom||'').toLowerCase();
+    if(/livr|install|transport/.test(n)) return '🚚';
+    if(/matela|sommier|lit/.test(n)) return '🛏️';
+    if(/chaise/.test(n)) return '🪑';
+    if(/canap|salon|méri|meri|fauteuil/.test(n)) return '🛋️';
+    if(/table|console|chevet|bureau/.test(n)) return '🪵';
+    if(/tableau|cadre|déco|deco|miroir/.test(n)) return '🖼️';
+    if(/lustre|lampe|luminaire/.test(n)) return '💡';
+    if(/travertin|pierre|marbre/.test(n)) return '🪨';
+    if(/cuivre|laiton/.test(n)) return '🟡';
+    if(/coussin|rideau|tissu/.test(n)) return '🧵';
+    return '📦';
+  }
+  function photoCatalogue(nom){
+    var cat=window.CJ_CATALOGUE||[]; if(!cat.length||!nom) return '';
+    var n=String(nom).toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
+    var mot=n.split(' ').filter(function(x){return x.length>3;})[0];
+    for(var i=0;i<cat.length;i++){
+      var cn=String(cat[i].nom||'').toLowerCase();
+      if(cn.indexOf(n)>=0 || (mot && cn.indexOf(mot)>=0)) return cat[i].photo||'';
+    }
+    return '';
+  }
+  var imgStyle='width:54px;height:54px;border-radius:9px;object-fit:cover;background:#fff';
+  function ph(nom){ return '<div style="width:54px;height:54px;border-radius:9px;background:#222c3d;display:grid;place-items:center;font-size:24px">'+iconePour(nom)+'</div>'; }
+  function imgTag(src,nom){ return '<span class="cjimg" data-ic="'+iconePour(nom)+'"><img src="'+esc(src)+'" style="'+imgStyle+';display:block" onerror="var s=this.parentNode;s.innerHTML=\'<div style=&quot;width:54px;height:54px;border-radius:9px;background:#222c3d;display:grid;place-items:center;font-size:24px&quot;>\'+s.getAttribute(\'data-ic\')+\'</div>\'"></span>'; }
+  const photoOf = a => {
+    if (a && a.photo) return imgTag(a.photo, a.nm);
+    if (a && a.img && window.ART && window.ART[a.img]) return imgTag(window.ART[a.img], a.nm);
+    var pc = photoCatalogue(a && a.nm);
+    if (pc) return imgTag(pc, a.nm);
+    return ph(a && a.nm);
+  };
   const toastMsg = m => { if (typeof window.toast === 'function') window.toast(m); };
   const cmd = key => COMMANDES.find(c => (c.cle || c.ref) === key);
 
