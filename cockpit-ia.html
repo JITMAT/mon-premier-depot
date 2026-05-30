@@ -264,10 +264,11 @@ function send(){
  var finished=false;
  var to=setTimeout(function(){if(!finished){finished=true;done(localAnswer(q));}},15000);
  try{
-  fetch('/api/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:q,system:SYS})})
+  fetch('/api/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({system:SYS,model:'claude-sonnet-4-6',messages:[{role:'user',content:q}]})})
    .then(function(r){return r.json();})
    .then(function(d){if(finished)return;finished=true;clearTimeout(to);
-     var t=(d&&d.text)?d.text:null; done(t?esc(t).replace(/\n/g,'<br>'):localAnswer(q));})
+     var t=(d&&d.content&&d.content[0]&&d.content[0].text)?d.content[0].text:((d&&d.text)?d.text:null);
+     done(t?esc(t).replace(/\n/g,'<br>'):localAnswer(q));})
    .catch(function(){if(finished)return;finished=true;clearTimeout(to);done(localAnswer(q));});
  }catch(e){if(!finished){finished=true;clearTimeout(to);done(localAnswer(q));}}
 }
