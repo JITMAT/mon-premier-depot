@@ -103,20 +103,23 @@ h1{font-family:'Fraunces',serif;font-size:24px;margin-bottom:3px}
   function low(s){ return String(s||'').toLowerCase(); }
   function age(d){ if(!d) return null; var x=new Date(d); if(isNaN(x)) return null; x.setHours(0,0,0,0); return Math.round((today()-x)/DAY); }
 
-  // Statuts réels CreaJit : deliveryStatus PENDING/DELIVERED/PARTIAL · productionStatus IN_PROGRESS/PENDING/COMPLETED
+  // Statuts réels CreaJit. CJ_ORDERS normalise en livr/prod/paie ; on lit aussi les bruts par sécurité.
+  function dStat(o){ return low(o.livr || o.deliveryStatus); }   // pending / delivered / partial
+  function pStat(o){ return low(o.prod || o.productionStatus); } // in_progress / pending / completed
+  function payStat(o){ return low(o.paie || o.paymentStatus); }  // paid / unpaid / partial
   function livreeLoc(ref){ return window.CJ ? window.CJ.estLivree(ref) : false; }
-  function estLivree(o){ return low(o.deliveryStatus)==='delivered' || livreeLoc(o.ref||o.id); }
-  function estPartielle(o){ return low(o.deliveryStatus)==='partial' && !estLivree(o); }
-  function estPrete(o){ return !estLivree(o) && !estPartielle(o) && low(o.productionStatus)==='completed'; }
-  function enFab(o){ return !estLivree(o) && !estPartielle(o) && low(o.productionStatus)==='in_progress'; }
-  function aProduire(o){ return !estLivree(o) && !estPartielle(o) && (low(o.productionStatus)==='pending' || !o.productionStatus); }
+  function estLivree(o){ return dStat(o)==='delivered' || livreeLoc(o.ref||o.id); }
+  function estPartielle(o){ return dStat(o)==='partial' && !estLivree(o); }
+  function estPrete(o){ return !estLivree(o) && !estPartielle(o) && pStat(o)==='completed'; }
+  function enFab(o){ return !estLivree(o) && !estPartielle(o) && pStat(o)==='in_progress'; }
+  function aProduire(o){ return !estLivree(o) && !estPartielle(o) && (pStat(o)==='pending' || !pStat(o)); }
 
   function vignette(o){
     var a=(o.articles||[])[0]||{};
     if(a.photo) return '<img class="vig" src="'+esc(a.photo)+'" onerror="this.outerHTML=\'<div class=&quot;vig&quot;>🛋️</div>\'">';
     return '<div class="vig">🛋️</div>';
   }
-  function payTag(o){ var p=low(o.paymentStatus); if(p==='paid')return '<span class="tag t-ok">payé</span>'; if(p==='partial')return '<span class="tag t-soon">acompte</span>'; if(!p)return ''; return '<span class="tag t-red">impayé</span>'; }
+  function payTag(o){ var p=payStat(o); if(p==='paid')return '<span class="tag t-ok">payé</span>'; if(p==='partial')return '<span class="tag t-soon">acompte</span>'; if(!p)return ''; return '<span class="tag t-red">impayé</span>'; }
   function prodTag(o){ if(estLivree(o))return '<span class="tag t-ok">🚚 livrée</span>'; if(estPartielle(o))return '<span class="tag t-blue">livrée en partie</span>'; if(estPrete(o))return '<span class="tag t-ok">✅ prête</span>'; if(enFab(o))return '<span class="tag t-soon">🔧 en fabrication</span>'; return '<span class="tag t-mut">🪚 à produire</span>'; }
 
   function kpi(v,l,cls){ return '<div class="kpi'+(cls?(' '+cls):'')+'"><div class="v">'+v+'</div><div class="l">'+l+'</div></div>'; }
