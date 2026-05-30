@@ -174,7 +174,7 @@ body{background:var(--bg);color:var(--ink);font-family:'Hanken Grotesk',sans-ser
       <div class="h2s">Chaque agent IA remonte ce qui se passe en direct.</div><div id="feed"></div></div>
 
     <!-- TEAM -->
-    <div class="sec" id="sec-suivi"><div class="h2">🏭 Suivi des commandes</div><div class="h2s">Cherche un client ou filtre par état. Chaque commande : où elle en est, payée ou non, livrée ou non.</div>
+    <div class="sec" id="sec-suivi"><div class="h2">🏭 Suivi des commandes <button onclick="exportSuiviCSV()" style="float:right;background:#1f2937;border:1px solid var(--line);color:var(--ink);font-family:inherit;font-weight:600;font-size:12px;padding:7px 11px;border-radius:9px;cursor:pointer">⬇ CSV</button></div><div class="h2s">Cherche un client ou filtre par état. Chaque commande : où elle en est, payée ou non, livrée ou non.</div>
       <input id="suiviQ" placeholder="🔎 Chercher un client, une référence…" oninput="suiviRecherche=this.value;renderSuivi()" style="width:100%;background:#0f1622;border:1px solid var(--line);color:var(--ink);border-radius:10px;padding:11px 13px;font-family:inherit;font-size:14px;margin-bottom:11px">
       <div id="suiviFiltres" style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px"></div>
       <div id="suiviList"></div></div>
@@ -188,7 +188,7 @@ body{background:var(--bg);color:var(--ink);font-family:'Hanken Grotesk',sans-ser
     <div class="sec" id="sec-late"><div class="h2">⏰ Ouvriers en retard</div><div class="h2s">Retard à la pointeuse aujourd'hui (tolérance 08:15). Clique pour les stats complètes.</div><div id="lateList"></div></div>
 
     <!-- RENTA ARTICLES -->
-    <div class="sec" id="sec-renta"><div class="h2">💰 Rentabilité des articles</div><div class="h2s">Quel article rapporte le plus. Prix réels CreaJit.</div>
+    <div class="sec" id="sec-renta"><div class="h2">💰 Rentabilité des articles <button onclick="exportRentaCSV()" style="float:right;background:#1f2937;border:1px solid var(--line);color:var(--ink);font-family:inherit;font-weight:600;font-size:12px;padding:7px 11px;border-radius:9px;cursor:pointer">⬇ CSV</button></div><div class="h2s">Quel article rapporte le plus. Prix réels CreaJit.</div>
       <div class="card" style="background:var(--card);border:1px solid var(--line);border-radius:16px;padding:6px 14px"><table class="tbl" id="rentaTbl"></table></div></div>
 
     <!-- ALERTS -->
@@ -290,10 +290,10 @@ function renderTeam(){
     return `<div class="trow ${w.stt} ${estActif&&i<3?'t'+(i+1):''}" onclick="openWorker('${w.k}')"><div class="rk">${medal}</div>
       ${av(w.k,ini(w.nm),'')}
       <div><div class="nm">${w.nm}${w.chef?' · chef':''}</div><div class="at">${w.at}</div><span class="stt ${STT[w.stt][1]}"><span class="dot"></span>${STT[w.stt][0]}</span></div>
-      <div class="stat"><div class="s"><div class="v g">${nb(w.rapporte)}</div><div class="l">rapporté DH</div></div>
-        <div class="s"><div class="v">${w.faits}</div><div class="l">terminés</div></div>
-        <div class="s"><div class="v">${nb(w.coutMO)}</div><div class="l">coût MO</div></div>
-        <div class="s"><div class="v">${w.heures}h</div><div class="l">temps</div></div></div></div>`;}).join('');
+      <div class="stat"><div class="s"><div class="v g">${w.rapporte?nb(w.rapporte):'—'}</div><div class="l">rapporté DH</div></div>
+        <div class="s"><div class="v">${w.faits||(w.enCours?'<span style="color:var(--yellow)">en cours</span>':'—')}</div><div class="l">terminés</div></div>
+        <div class="s"><div class="v">${w.coutMO?nb(w.coutMO):'—'}</div><div class="l">coût MO</div></div>
+        <div class="s"><div class="v">${w.heures?w.heures+'h':'—'}</div><div class="l">temps</div></div></div></div>`;}).join('');
 }
 function atNomCourt(c){const a=(window.CJ_ATELIERS||[]).find(x=>x.code===c);return a?(a.nom||('Atelier '+c)):('Atelier '+c);}
 
@@ -370,10 +370,10 @@ function pushRandom(){const e={...RANDOM[Math.floor(Math.random()*RANDOM.length)
 /* ===== alertes ===== */
 const OVERDUE=[['26040026','Mr Soufiane',25],['26040045','Mr Yazid',25],['26040019','2A WEDDING',24],['26040052','Mr Benjamin',21],['26040048','AZZOZI RELAX HOUSES',21],['26040053','Expresse Beuty',21],['26040008','Mr Youssef Ajdir',20],['26040022','Mme Ilhame',14],['26040024','Mme Anisa Guerroumi',13],['26050019','Mme Nazha',11]];
 function probsLive(){if(!window.CJ)return'';var probs=CJ.problemes();window.__probs=probs;if(!probs.length)return'';return probs.map(function(p,i){var cls=p.gravite==='haute'?'high':'mid';var ic=p.cat==='pause'?'⏸️':p.cat==='qc'?'🔎':p.cat==='anomalie'?'⚠️':p.cat==='matiere'?'📦':p.cat==='retard'?'🚚':p.cat==='fiche'?'📝':'•';var btn=p.action?('<button class="act" onclick="cjAct('+i+')">'+p.action.label+'</button>'):'';return '<div class="al '+cls+'"><div class="ai2">'+ic+'</div><div><div class="an">'+p.texte+'</div><div class="am">'+(p.route||'CREAJIT IA — détection auto')+'</div></div>'+btn+'</div>';}).join('');}
-function cjAct(i){var p=(window.__probs||[])[i];if(!p||!p.action)return;CJ.consigne(p.action.cible,p.action.texte,'Driss');CJ.evenement('info','Driss (cockpit)',p.action.texte,p.route||'');toast('✅ Action envoyée');renderAlerts();}
-function renderAlerts(){let h=probsLive();h+=`<div class="al high"><div class="ai2">🧱</div><div><div class="an">Rupture vernis — Youssef (Peinture)</div><div class="am">Notif → Hanane + Service Achat</div></div><button class="act" onclick="toast('Bon de commande ouvert (démo)')">Commander</button></div>`;
-  h+=`<div class="al mid"><div class="ai2">📦</div><div><div class="an">Stock vernis bas — 12 L (seuil 15)</div><div class="am">Atelier Peinture</div></div><button class="act" onclick="toast('Réappro (démo)')">Réappro.</button></div>`;
-  OVERDUE.forEach(o=>h+=`<div class="al ${o[2]>=21?'high':'mid'}"><div class="ai2">🚚</div><div><div class="an">${o[1]} — ${o[0]}</div><div class="am">Retard de ${o[2]} jours</div></div><button class="act" onclick="toast('Relance (démo)')">Relancer</button></div>`);
+function cjAct(i){var p=(window.__probs||[])[i];if(!p||!p.action)return;if(!confirm(p.action.label+' ?\n\n'+p.action.texte))return;CJ.consigne(p.action.cible,p.action.texte,'Driss');CJ.evenement('info','Driss (cockpit)',p.action.texte,p.route||'');toast('✅ Action envoyée');renderAlerts();}
+function renderAlerts(){let h=probsLive();h+=`<div class="al high"><div class="ai2">🧱</div><div><div class="an">Rupture vernis — Youssef (Peinture)</div><div class="am">Notif → Hanane + Service Achat</div></div><button class="act" onclick="if(confirm('Ouvrir un bon de commande pour le vernis ?'))toast('Bon de commande ouvert (démo)')">Commander</button></div>`;
+  h+=`<div class="al mid"><div class="ai2">📦</div><div><div class="an">Stock vernis bas — 12 L (seuil 15)</div><div class="am">Atelier Peinture</div></div><button class="act" onclick="if(confirm('Lancer la réappro du vernis ?'))toast('Réappro (démo)')">Réappro.</button></div>`;
+  OVERDUE.forEach(o=>h+=`<div class="al ${o[2]>=21?'high':'mid'}"><div class="ai2">🚚</div><div><div class="an">${o[1]} — ${o[0]}</div><div class="am">Retard de ${o[2]} jours</div></div><button class="act" onclick="if(confirm('Relancer ${o[1]} (commande ${o[0]}, ${o[2]} j de retard) ?'))toast('Relance (démo)')">Relancer</button></div>`);
   document.getElementById('alerts').innerHTML=h;var pc=(window.CJ?CJ.problemes().length:0);document.getElementById('bAl').textContent=OVERDUE.length+2+pc;}
 
 /* ===== assistant IA ===== */
@@ -468,6 +468,11 @@ function renderSuivi(){
   }).join('');
 }
 let tt;function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),3000);}
+/* ===== Export CSV (ouvrable dans Excel) ===== */
+function csvCell(s){s=String(s==null?'':s);return /[",;\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;}
+function csvDL(nom,entetes,lignes){var csv=[entetes].concat(lignes).map(function(r){return r.map(csvCell).join(';');}).join('\r\n');var blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8;'});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=nom;document.body.appendChild(a);a.click();a.remove();if(typeof toast==='function')toast('Export CSV téléchargé ✅');}
+function exportSuiviCSV(){var ORD=(window.CJ&&CJ.commandes?CJ.commandes():[]);csvDL('creajit-commandes.csv',['Reference','Client','Produit','Total (DH)','Paye (DH)','Reste (DH)','Livree','Retard (j)','Etat'],ORD.map(function(o){var s=CJ.suivi(o);return [s.ref,o.client||'',o.produit||'',s.total,s.paye,s.reste,s.livree?'oui':'non',s.enRetard||0,s.livree?'Livree':(s.enFab?'En fabrication':'En attente')];}));}
+function exportRentaCSV(){csvDL('creajit-rentabilite.csv',['Article','Ateliers','Prix vente (DH)','Cout (DH)','Marge (DH)','Marge %','Quantite'],ARTS.map(function(a){return [a.nm,a.par,a.pv,a.cout,a.pv-a.cout,((a.pv-a.cout)/a.pv*100).toFixed(0)+'%',a.qty];}));}
 renderKpiBar();renderDir();renderLate();renderAlerts();
 if(window.CJ)CJ.abonner(function(){var s=document.getElementById('sec-alerts');renderAlerts();if(s&&!s.classList.contains('on')){}});
 setInterval(pushRandom,14000);

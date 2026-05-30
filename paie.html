@@ -61,7 +61,10 @@ input.q{width:100%;background:#0f1622;border:1px solid var(--line);color:var(--i
   <button data-v="ouvriers">Par ouvrier</button>
   <button data-v="paie">Paie du mois</button>
 </div>
-<input class="q" id="q" placeholder="🔎 Chercher un ouvrier…" style="display:none">
+<div style="display:flex;gap:9px;align-items:center;margin-bottom:6px">
+  <input class="q" id="q" placeholder="🔎 Chercher un ouvrier…" style="display:none;margin-bottom:0;flex:1">
+  <button id="csvBtn" style="flex:none;background:#1f2937;border:1px solid var(--line);color:var(--ink);font-family:inherit;font-weight:600;font-size:13px;padding:11px 14px;border-radius:10px;cursor:pointer">⬇ Exporter CSV</button>
+</div>
 <div id="content"></div>
 
 <script>
@@ -171,6 +174,32 @@ input.q{width:100%;background:#0f1622;border:1px solid var(--line);color:var(--i
   }
 
   function kpi(v,l){return '<div class="kpi"><div class="v">'+v+'</div><div class="l">'+l+'</div></div>';}
+
+  // === Export CSV (ouvrable dans Excel) ===
+  function csvCell(s){s=String(s==null?'':s);return /[",;\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;}
+  function telecharger(nom,entetes,lignes){
+    var csv=[entetes].concat(lignes).map(function(r){return r.map(csvCell).join(';');}).join('\r\n');
+    var blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8;'});
+    var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=nom;document.body.appendChild(a);a.click();a.remove();
+  }
+  function exportCSV(){
+    var SAL=window.CJ_SALAIRES||[],byName=statsParNom();
+    var L=SAL.map(function(e){return ligneOuvrier(e,byName);});
+    if(vue==='ateliers'){
+      var ATS=window.CJ_ATELIERS_DOC||[];
+      telecharger('creajit-salaires-par-atelier.csv',['Atelier','Tenue','Chef','Ouvriers','Heures/mois','Salaires/mois (DH)'],
+        ATS.map(function(a){return [a.code,a.tenue,a.chef,a.nbOuvriers,a.heures,a.salaires];}));
+    } else if(vue==='ouvriers'){
+      L.sort(function(a,b){return b.rapporte-a.rapporte||b.faits-a.faits;});
+      telecharger('creajit-ouvriers-production.csv',['Ouvrier','Atelier','Poste','Articles faits','Heures','Production (DH)','Salaire (DH)','Prime (DH)'],
+        L.map(function(x){return [x.n,x.atelier,x.poste,x.faits,x.heures,x.rapporte,x.sal,x.prime];}));
+    } else {
+      L.sort(function(a,b){return (b.sal+b.prime)-(a.sal+a.prime);});
+      telecharger('creajit-paie-du-mois.csv',['Ouvrier','Atelier','Poste','Salaire (DH)','Prime (DH)','A payer (DH)','Note'],
+        L.map(function(x){return [x.n,x.atelier,x.poste,x.sal,x.prime,x.sal+x.prime,x.note];}));
+    }
+  }
+  document.getElementById('csvBtn').onclick=exportCSV;
 
   document.getElementById('q').oninput=function(){recherche=this.value;render();};
   window.addEventListener('load',render);
