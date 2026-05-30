@@ -175,7 +175,10 @@
       #cjhf .cjfilt{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px}
       #cjhf input,#cjhf select{background:#10151f;border:1px solid rgba(196,113,79,.25);color:#ece9e3;border-radius:9px;padding:9px 11px;font-size:13px;font-family:inherit}
       #cjhf #cjq{flex:1;min-width:160px}
-      .cjcli{display:flex;align-items:center;gap:11px;background:#161d2b;border:1px solid rgba(196,113,79,.18);border-radius:12px;padding:12px;margin-bottom:8px;cursor:pointer}
+      .cjcli{display:flex;align-items:center;gap:12px;background:#161d2b;border:1px solid rgba(196,113,79,.18);border-radius:12px;padding:12px;margin-bottom:8px;cursor:pointer}
+      .cjvig{width:54px;height:54px;flex-shrink:0}
+      .cjvig img{width:54px;height:54px;border-radius:10px;object-fit:cover}
+      .cjtag{font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:20px;white-space:nowrap}
       .cjcli:hover{border-color:#C4714F}
       .cjcli .nm{font-weight:700;font-size:15px}
       .cjcli .mt{font-size:11.5px;color:#8d96a5;margin-top:2px}
@@ -233,14 +236,57 @@
       : tri === 'livraison' ? String(a.livr || '9999').localeCompare(String(b.livr || '9999'))
       : (b.retard - a.retard));
 
+    const A = affs();
     let h = '';
     cmds.forEach(c => {
-      const stat = c.statut === 'ready' ? 'Prête' : 'Confirmée';
+      // photo du 1er article (vraie photo, sinon catalogue, sinon icône type)
+      const a0 = (c.articles && c.articles[0]) || {};
+      const vignette = photoOf({ nom: a0.nm, photo: a0.photo, img: a0.img });
+
+      // statut production coloré
+      const ps = c.statut, pl = c.statutLib || '';
+      const prodColor = ps === 'COMPLETED' ? '#37c98a' : ps === 'IN_PROGRESS' ? '#EAB308' : '#8d96a5';
+      const prodBg = ps === 'COMPLETED' ? 'rgba(55,201,138,.16)' : ps === 'IN_PROGRESS' ? 'rgba(234,179,8,.16)' : 'rgba(141,166,189,.14)';
+
+      // paiement
+      const pay = c.paiement, payColor = pay === 'PAID' ? '#37c98a' : pay === 'PARTIAL' ? '#EAB308' : '#E74C3C';
+      const payLib = pay === 'PAID' ? 'Payé' : pay === 'PARTIAL' ? 'Partiel' : 'Impayé';
+
+      // livraison
+      const liv = c.livraison, livColor = liv === 'DELIVERED' ? '#37c98a' : liv === 'PARTIAL' ? '#EAB308' : '#8d96a5';
+      const livLib = liv === 'DELIVERED' ? 'Livré' : liv === 'PARTIAL' ? 'Livré partiel' : 'À livrer';
+
+      // avancement : combien d'articles affectés / total
+      const arts = c.articles || [];
+      const affectes = arts.filter(a => A[a.id]).length;
+      const pctAff = arts.length ? Math.round(affectes / arts.length * 100) : 0;
+      // qui travaille dessus (noms des ouvriers affectés)
+      const noms = Array.from(new Set(arts.filter(a => A[a.id]).map(a => {
+        const w = WORKERS.find(x => x.id === A[a.id].ouvrierId); return w ? w.nm.split(' ')[0] : '';
+      }).filter(Boolean)));
+
       h += `<div class="cjcli" data-open="${esc(c.cle || c.ref)}">
-        <div style="width:42px;height:42px;border-radius:11px;background:linear-gradient(145deg,#C4714F,#7c3f27);display:grid;place-items:center;font-weight:800;color:#1a0f08">${esc(c.client.replace(/^(Mme|Mr|MMe)\s*/i,'').trim().slice(0,1) || 'C')}</div>
-        <div><div class="nm">${esc(c.client)}</div>
-          <div class="mt">${esc(c.ref)} · ${c.nb} article${c.nb>1?'s':''} · ${dh(c.total)} · ${esc(c.com)}</div>
-          <div class="mt">${stat} · livraison ${esc(c.livr || '—')}${c.retard ? ` · <span class="rt">+${c.retard} j</span>` : ''}</div></div>
+        <div class="cjvig">${vignette}</div>
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap">
+            <span class="nm">${esc(c.client)}</span>
+            <span class="cjtag" style="background:${prodBg};color:${prodColor}">${esc(pl || 'Confirmée')}</span>
+            ${c.retard ? `<span class="cjtag" style="background:rgba(231,76,60,.16);color:#E74C3C">+${c.retard} j</span>` : ''}
+          </div>
+          <div class="mt">${esc(c.ref || '—')} · ${arts.length} article${arts.length>1?'s':''} · <b style="color:#e8e0d0">${dh(c.total)}</b> · ${esc(c.com)}</div>
+          <div class="mt" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <span style="color:${payColor};font-weight:600">● ${payLib}</span>
+            <span style="color:${livColor}">🚚 ${livLib}</span>
+            <span style="color:#8d96a5">📅 ${esc(c.livr || '—')}</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
+            <div style="flex:1;height:6px;background:#0c1018;border-radius:6px;overflow:hidden;max-width:160px">
+              <div style="height:100%;width:${pctAff}%;background:${pctAff===100?'#37c98a':'#C4714F'}"></div>
+            </div>
+            <span style="font-size:11px;color:#8d96a5">${affectes}/${arts.length} affecté${affectes>1?'s':''}</span>
+            ${noms.length ? `<span style="font-size:11px;color:#e69a76">👷 ${esc(noms.join(', '))}</span>` : ''}
+          </div>
+        </div>
         <div class="chev">›</div></div>`;
     });
     if (!cmds.length) h = `<div class="sub">Aucune commande ne correspond au filtre.</div>`;
