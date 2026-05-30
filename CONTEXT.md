@@ -264,6 +264,14 @@ Articles : Chaise Cartel ×75 @730 ; Tableau 120/80 ×25 @730 ; Tableau 40/40 ×
   injecté dans chaque assistant ; **IA personnalisée par personne** (`window.CJ_SYS`).
   **Reste : QC par étape+anomalies, dessin IA validé client, consignes patron→agents (UI), Hikvision/WhatsApp, temps réel multi-appareils.**
 
+- **2026-05-30 — Mini-site Logistique de Fatima + QC.**
+  `fatima.html` : KPIs, préparation & **contrôle qualité** des articles finis (conforme/anomalie),
+  **livraisons à venir** (marquer livrée), **calendrier des livraisons**, **livraisons effectuées**.
+  CJ: livraisons (livrer/estLivree), QC (qcSet/qcDe), articlesFinis(). Fatima -> fatima.html partout.
+  Principe : chaque agent a un mini-site ADAPTÉ à son métier (ouvrier=fabrication, Mohamed=magasin,
+  Hassan=réception, Fatima=logistique/QC). **Reste : mini-sites Kenza (commercial) & Sabiri (compta),
+  dessin IA validé client, consignes patron→agents (UI), Hikvision/WhatsApp, temps réel multi-appareils.**
+
 ## 13. Ordre de construction officiel (structure décidée, à suivre)
 
 > Driss délègue la structuration. On construit dans CET ordre, en s'appuyant sur les
