@@ -276,7 +276,9 @@ function renderWork(){const active=cur();let h='';
     <div class="motifs" id="motifPanel" style="display:none"></div>${ficheBloc(active)}</div>`;}
   const others=TASKS.filter(t=>t!==active && t.state!=='fini');
   others.forEach(t=>{const i=TASKS.indexOf(t);const paused=t.state==='pause';
-    h+=`<div style="margin-bottom:10px"><div class="qrow${paused?' pause':''}" style="margin-bottom:0">${pic(t)}<div><div class="qn">${t.nm}</div><div class="qm">${t.etape} · ${t.qty} pc${paused?` · <span class="mt">⏸ ${t.motif||'en pause'} (${fmt(t.el||0)})</span>`:''}</div></div>
+    const m=matierePrete(t);
+    const matB = m.total===0 ? '' : (m.ok ? ' · <span style="color:var(--green)">🟢 matière prête</span>' : ' · <span style="color:var(--red)">🔴 matière en attente ('+m.attente+'/'+m.total+')</span>');
+    h+=`<div style="margin-bottom:10px"><div class="qrow${paused?' pause':''}" style="margin-bottom:0">${pic(t)}<div><div class="qn">${t.nm}</div><div class="qm">${t.etape} · ${t.qty} pc${matB}${paused?` · <span class="mt">⏸ ${t.motif||'en pause'} (${fmt(t.el||0)})</span>`:''}</div></div>
       <button class="minirun" onclick="startTask(${i})">${paused?'▶ Reprendre':'▶ Commencer'}</button></div>${ficheBloc(t)}</div>`;});
   TASKS.filter(t=>t.state==='fini').forEach(t=>h+=`<div class="qrow done">${pic(t)}<div><div class="qn">${t.nm}</div><div class="qm">${t.etape} · ${fmt(t.el)}</div></div><span class="pos">✓ fini</span></div>`);
   if(!active && !others.length)h+=`<div class="card" style="text-align:center;color:var(--mut)">🎉 Tout est fini ! En attente d'une affectation de Hanane.</div>`;
@@ -300,8 +302,18 @@ function pickMotif(m){const t=cur();if(!t)return;let motif=m;if(m.indexOf('Autre
   }}
 function closeMotif(){const p=document.getElementById('motifPanel');if(p)p.style.display='none';}
 function selfOrder(){show('bon');toast('📝 Passe ton bon de commande au magasin');}
-function startTask(i){const a=cur();if(a&&a!==TASKS[i]){a.el=curEl(a);a.state='pause';a.motif=a.motif||"🔄 Changement d'article";}
-  const t=TASKS[i];const was=t.state;t.state='en_cours';t.t0=Date.now();t.el=t.el||0;renderWork();
+// Matière prête ? (bons reçus). Renvoie {ok, attente, total}
+function matierePrete(t){var b=(t&&t.bons)||[];if(!b.length)return{ok:null,attente:0,total:0};var att=b.filter(function(x){return x.statut!=='recu';}).length;return{ok:att===0,attente:att,total:b.length};}
+function startTask(i){const t=TASKS[i];
+  // Point 3 : ne pas lancer la fabrication sans la matière (on prévient, on ne bloque pas de force)
+  const m=matierePrete(t);
+  if(m.total>0 && !m.ok){
+    if(!confirm('⚠️ La matière n\'est pas encore reçue ('+m.attente+'/'+m.total+' en attente).\n\nLancer quand même la fabrication de « '+t.nm+' » ?\n\n(Conseillé : attends le feu vert de la réception.)')) {
+      toast('⏸ Attends la matière (réception Hassan)'); return;
+    }
+  }
+  const a=cur();if(a&&a!==TASKS[i]){a.el=curEl(a);a.state='pause';a.motif=a.motif||"🔄 Changement d'article";}
+  const was=t.state;t.state='en_cours';t.t0=Date.now();t.el=t.el||0;renderWork();
   toast(was==='pause'?`▶ Reprise : ${t.nm}`:`▶ Démarré : ${t.nm}`);if(window.CJ&&!t._cj)CJ.evenement('info',MOI.nm,(was==='pause'?(MOI.nm+' a repris « '):(MOI.nm+' a démarré « '))+t.nm+' ».');}
 function finish(){const t=cur();if(!t)return;t.el=curEl(t);t.state='fini';coutFinis+=t.el/3600000*TAUX;gagne+=benef(t);fabriques++;
   logMsg('FE','Fatima Ezzahra (logistique)',`✅ « ${t.nm} » fini par ${MOI.nm}. Article prêt pour la suite / livraison.`);

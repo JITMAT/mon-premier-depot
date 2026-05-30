@@ -415,6 +415,14 @@ Articles : Chaise Cartel ×75 @730 ; Tableau 120/80 ×25 @730 ; Tableau 40/40 ×
   puis avancement. Badge menu = nb de commandes suivies en interne. Testé node sur les 186 vraies
   commandes (filtres actifs/problème/prêt cohérents). Reste : même bloc dans la page Hanane.
 
+- **2026-05-30 — Point 3 « plus de fabrication sans matière » bouclé côté ouvrier.** Le circuit
+  matière existait déjà (Hanane envoie bon → Mohamed retrait/achat + chrono → Hassan réceptionne →
+  VERT chez tous) — testé node bout-en-bout : envoye → commande → recu, l'ouvrier voit le statut.
+  Ajout pratique : sur `ouvrier.html`, `matierePrete(t)` lit les bons de l'article ; chaque article
+  en file affiche 🟢 matière prête ou 🔴 matière en attente (N/total) ; et `startTask` PRÉVIENT
+  (confirm) si l'ouvrier lance la fabrication alors que la matière n'est pas reçue (« attends le feu
+  vert de la réception »), sans bloquer de force. Conforme au Point 3. Testé : 2/2 blocs JS OK.
+
 ## 13. Ordre de construction officiel (structure décidée, à suivre)
 
 > Driss délègue la structuration. On construit dans CET ordre, en s'appuyant sur les
