@@ -154,13 +154,7 @@ body{background:var(--bg);color:var(--ink);font-family:'Hanken Grotesk',sans-ser
   </aside>
 
   <div class="main">
-    <div class="kpibar">
-      <div class="kpi"><div class="v">60</div><div class="l">Employés</div></div>
-      <div class="kpi"><div class="v o">20</div><div class="l">En fabrication</div></div>
-      <div class="kpi"><div class="v g">26</div><div class="l">Livrés ce mois</div></div>
-      <div class="kpi"><div class="v r">10</div><div class="l">En retard</div></div>
-      <div class="kpi"><div class="v">333 289</div><div class="l">Avances (DH)</div></div>
-    </div>
+    <div class="kpibar" id="kpibar"></div>
 
     <!-- TABLEAU DE BORD -->
     <div class="sec on" id="sec-board">
@@ -225,10 +219,32 @@ function renderDir(){document.getElementById('direction').innerHTML=DIR.map(d=>`
   <div class="nm">${d.nm}</div><div class="rl">${d.role}</div>
   <div class="mtr"><span class="mv">${d.mv}</span><span class="ml">${d.ml}</span></div>
   ${d.link?`<div class="rl" style="color:var(--orange-b);margin-top:6px;font-weight:600">Ouvrir son agent →</div>`:''}</div>`).join('');
+  const s=realStats();
   document.getElementById('boardKpis').innerHTML=[
-    ['🏭','20','commandes en fabrication'],['✅','26','livrées ce mois'],['⏰','10','en retard'],
-    ['🧱','1','rupture matière'],['👷','3','ouvriers en retard'],['💸','333 289','avances (DH)']
+    ['🏭',s.fab,'commandes en fabrication'],['📋',s.attente,'en attente de lancement'],['✅',s.fini,'terminées (à livrer)'],
+    ['🚚',s.aLivrer,'à livrer'],['💰',nb(s.encaisse)+' DH','encaissé'],['⏳',nb(s.reste)+' DH','reste à encaisser']
   ].map(k=>`<div class="dcard" style="cursor:default"><div class="av" style="background:#222c3d">${k[0]}</div><div class="mtr" style="border:none;margin:0;padding:0"><span class="mv">${k[1]}</span></div><div class="rl" style="min-height:0;margin-top:4px">${k[2]}</div></div>`).join('');
+}
+
+/* ===== VRAIS chiffres calculés depuis les 186 commandes réelles ===== */
+function realStats(){
+  const all=(window.CJ_ORDERS?window.CJ_ORDERS.all():[]);
+  let fab=0,attente=0,fini=0,livrees=0,aLivrer=0,ca=0,encaisse=0,reste=0;
+  all.forEach(o=>{
+    if(o.prod==='IN_PROGRESS')fab++; else if(o.prod==='PENDING')attente++; else if(o.prod==='COMPLETED')fini++;
+    if(o.livr==='DELIVERED')livrees++; else aLivrer++;
+    ca+=(o.total||0);
+    if(o.paie==='PAID')encaisse+=(o.total||0); else reste+=(o.total||0);
+  });
+  return {total:all.length,fab,attente,fini,livrees,aLivrer,ca,encaisse,reste};
+}
+function nb(n){return Math.round(n||0).toLocaleString('fr-FR');}
+function renderKpiBar(){
+  const s=realStats();
+  document.getElementById('kpibar').innerHTML=[
+    ['',s.total,'Commandes'],['o',s.fab,'En fabrication'],['g',s.livrees,'Livrées'],
+    ['r',nb(s.reste),'Reste à encaisser (DH)'],['',nb(s.encaisse),'Encaissé (DH)']
+  ].map(k=>`<div class="kpi"><div class="v ${k[0]}">${k[1]}</div><div class="l">${k[2]}</div></div>`).join('');
 }
 
 /* ===== ouvriers (démo réaliste) ===== */
@@ -415,7 +431,7 @@ function renderSuivi(){
   }).join('');
 }
 let tt;function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),3000);}
-renderDir();renderLate();renderAlerts();
+renderKpiBar();renderDir();renderLate();renderAlerts();
 if(window.CJ)CJ.abonner(function(){var s=document.getElementById('sec-alerts');renderAlerts();if(s&&!s.classList.contains('on')){}});
 setInterval(pushRandom,14000);
 </script>
