@@ -11,10 +11,12 @@
   from = "/api/claude"
   to = "/.netlify/functions/claude"
   status = 200
+  force = true
 
 # /api/creajit  →  fonction qui appelle creajit.ma (commandes, produits)
 [[redirects]]
   from = "/api/creajit"
   to = "/.netlify/functions/creajit"
   status = 200
+  force = true
 
