@@ -1,58 +1,100 @@
-// ─── Fonction serveur Netlify : pont vers creajit.ma (le serveur a internet) ──
-// La page settings ne montre que la clé (pas d'URL d'API) → cette fonction
-// ESSAIE PLUSIEURS adresses/styles d'auth courants et garde celle qui répond.
+// ─── Fonction serveur Netlify : pont vers l'API creajit.ma ───────
+// Le serveur Netlify A INTERNET (contrairement à l'env de dev), donc c'est lui
+// qui appelle creajit.ma et renvoie commandes / produits / livraisons au site.
+//
+// Routes confirmées (Driss) :
+//   /api/sales         → liste des commandes (auth Bearer)
+//   /api/products-all  → catalogue complet
+//   /api/deliveries    → livraisons
 //
 // Variables Netlify (Site settings → Environment variables) :
-//   CREAJIT_TOKEN = la clé cj_live_...    (déjà configurée)
-//   CREAJIT_BASE  = https://creajit.ma     (optionnel, défaut)
+//   CREAJIT_TOKEN = clé Bearer (cj_live_… ou JWT du localStorage)   [secret]
+//   CREAJIT_BASE  = https://creajit.ma                              [optionnel]
 //
 // Appels du site :
-//   /api/creajit?resource=orders
-//   /api/creajit?resource=products
-//   /api/creajit?resource=order&ref=26040019
-//   /api/creajit?resource=discover         (diagnostic : quelles routes répondent)
+//   /api/creajit?resource=orders      → commandes normalisées (avec articles + photos)
+//   /api/creajit?resource=products    → catalogue normalisé
+//   /api/creajit?resource=deliveries  → livraisons
+//   /api/creajit?resource=raw&path=/api/sales  → debug : réponse brute
 
 const TOKEN = process.env.CREAJIT_TOKEN || '';
 const BASE = (process.env.CREAJIT_BASE || 'https://creajit.ma').replace(/\/+$/, '');
 
-// Combinaisons d'en-têtes d'auth à tester
-function authHeaderSets() {
+const ROUTES = {
+  orders:     '/api/sales',
+  products:   '/api/products-all',
+  deliveries: '/api/deliveries',
+};
+
+function authHeaders() {
+  // Bearer en priorité, avec fallbacks au cas où.
   return [
     { 'Authorization': 'Bearer ' + TOKEN },
-    { 'x-api-key': TOKEN },
-    { 'X-API-KEY': TOKEN },
-    { 'api-key': TOKEN },
     { 'Authorization': TOKEN },
-    { 'X-Auth-Token': TOKEN },
+    { 'x-api-key': TOKEN },
   ];
 }
 
-// Chemins candidats par ressource
-function candidatePaths(resource, ref) {
-  const r = encodeURIComponent(ref || '');
-  if (resource === 'order') {
-    return [`/api/orders/${r}`, `/api/v1/orders/${r}`, `/api/order/${r}`,
-            `/admin/api/orders/${r}`, `/api/commandes/${r}`, `/api/orders?ref=${r}`];
+async function fetchJson(url) {
+  for (const h of authHeaders()) {
+    try {
+      const r = await fetch(url, { headers: Object.assign({ 'Accept': 'application/json' }, h) });
+      const txt = await r.text();
+      let data; try { data = JSON.parse(txt); } catch { data = null; }
+      if (r.ok && data != null) return { ok: true, status: r.status, data };
+      // si 401/403 on tente l'auth suivante, sinon on renvoie l'erreur
+      if (r.status !== 401 && r.status !== 403) return { ok: false, status: r.status, data: data || txt.slice(0, 300) };
+    } catch (e) {
+      return { ok: false, status: 0, error: String(e) };
+    }
   }
-  if (resource === 'products') {
-    return ['/api/products', '/api/v1/products', '/api/produits', '/admin/api/products',
-            '/api/catalog', '/api/articles', '/api/items', '/products.json'];
-  }
-  // orders (défaut)
-  return ['/api/orders', '/api/v1/orders', '/api/commandes', '/admin/api/orders',
-          '/api/sales', '/api/orders.json', '/orders.json'];
+  return { ok: false, status: 401, error: 'auth refusée (vérifier CREAJIT_TOKEN)' };
 }
 
-async function tryFetch(url, headers) {
-  try {
-    const r = await fetch(url, { headers: Object.assign({ 'Accept': 'application/json' }, headers) });
-    const txt = await r.text();
-    let data; let isJson = false;
-    try { data = JSON.parse(txt); isJson = true; } catch { data = txt.slice(0, 300); }
-    return { ok: r.ok, status: r.status, isJson, data };
-  } catch (e) {
-    return { ok: false, status: 0, error: String(e) };
-  }
+const photoUrl = (img) => {
+  if (!img || !String(img).trim()) return '';
+  const s = String(img).trim();
+  return s.startsWith('http') ? s : BASE + (s.startsWith('/') ? s : '/' + s);
+};
+
+// Normalise une commande de /api/sales vers le format attendu par l'app
+function normOrder(o) {
+  const items = o.items || o.articles || o.lines || [];
+  return {
+    ref: o.documentNumber || o.ref || o.reference || o.number || String(o.id || ''),
+    date: (o.date || o.createdAt || '').slice(0, 10),
+    client: (o.customer && (o.customer.name || o.customer.fullName)) || o.client || o.customerName || '',
+    vendeur: (o.user && o.user.name) || o.commercial || o.seller || '',
+    statut: o.status || o.statut || 'confirmed',
+    total: o.total || o.amount || 0,
+    paye: o.paid || o.paye || 0,
+    reste: o.remaining || o.reste || (o.total != null && o.paid != null ? o.total - o.paid : 0),
+    articles: (items || []).map((i, idx) => ({
+      nom: i.name || i.nom || i.label || ('Article ' + (idx + 1)),
+      qty: i.quantity || i.qty || i.qte || '',
+      pu: i.price || i.pu || i.unitPrice || '',
+      photo: photoUrl(i.image || (Array.isArray(i.images) ? i.images[0] : '')),
+    })),
+  };
+}
+
+function normProduct(p) {
+  return {
+    nom: p.name || p.nom || p.label || '',
+    prix: p.price || p.prix || (p.actualPriceRange && p.actualPriceRange.minValue && p.actualPriceRange.minValue.amount) || 0,
+    stock: (p.stock != null ? (p.stock > 0 ? 'ok' : 'rupture') : (p.availabilityStatus === 'OUT_OF_STOCK' ? 'rupture' : 'ok')),
+    photo: photoUrl(p.image || (p.media && p.media.main && p.media.main.image && p.media.main.image.url) || (Array.isArray(p.images) ? p.images[0] : '')),
+  };
+}
+
+function asArray(d) {
+  if (Array.isArray(d)) return d;
+  if (d && Array.isArray(d.data)) return d.data;
+  if (d && Array.isArray(d.items)) return d.items;
+  if (d && Array.isArray(d.results)) return d.results;
+  if (d && Array.isArray(d.sales)) return d.sales;
+  if (d && Array.isArray(d.products)) return d.products;
+  return [];
 }
 
 exports.handler = async (event) => {
@@ -62,42 +104,28 @@ exports.handler = async (event) => {
     body: JSON.stringify(obj),
   });
 
-  if (!TOKEN) return json(200, { ok: false, error: 'CREAJIT_TOKEN absent (Netlify env)' });
+  if (!TOKEN) return json(200, { ok: false, error: 'CREAJIT_TOKEN absent dans les variables Netlify' });
 
   const p = event.queryStringParameters || {};
   const resource = p.resource || 'orders';
 
-  // Mode diagnostic : teste tout et renvoie ce qui marche
-  if (resource === 'discover') {
-    const report = [];
-    for (const res of ['orders', 'products']) {
-      for (const path of candidatePaths(res)) {
-        const h = authHeaderSets()[0]; // Bearer d'abord
-        const out = await tryFetch(BASE + path, h);
-        report.push({ resource: res, url: BASE + path, status: out.status, json: out.isJson });
-        if (out.ok && out.isJson) break;
-      }
-    }
-    return json(200, { base: BASE, tokenPresent: !!TOKEN, report });
+  // Debug : réponse brute d'un chemin
+  if (resource === 'raw') {
+    const out = await fetchJson(BASE + (p.path || '/api/sales'));
+    return json(200, out);
   }
 
-  // Mode normal : on cherche la 1re combinaison (chemin × auth) qui renvoie du JSON 200
-  const paths = candidatePaths(resource, p.ref);
-  const auths = authHeaderSets();
-  let lastTried = [];
-  for (const path of paths) {
-    for (const h of auths) {
-      const out = await tryFetch(BASE + path, h);
-      lastTried.push({ url: BASE + path, status: out.status });
-      if (out.ok && out.isJson) {
-        return json(200, { ok: true, source: BASE + path, data: out.data });
-      }
-    }
-  }
-  return json(200, {
-    ok: false,
-    note: "Aucune route API n'a répondu en JSON. Ouvre /api/creajit?resource=discover pour le diagnostic, ou indique l'URL exacte de l'API CreaJit.",
-    triedCount: lastTried.length,
-    sample: lastTried.slice(0, 6),
-  });
+  const path = ROUTES[resource];
+  if (!path) return json(400, { error: 'resource inconnue', resources: Object.keys(ROUTES) });
+
+  const out = await fetchJson(BASE + path);
+  if (!out.ok) return json(200, { ok: false, source: BASE + path, status: out.status, error: out.error || out.data });
+
+  const arr = asArray(out.data);
+  let data;
+  if (resource === 'orders') data = arr.map(normOrder);
+  else if (resource === 'products') data = arr.map(normProduct);
+  else data = arr;
+
+  return json(200, { ok: true, source: BASE + path, count: data.length, data });
 };
