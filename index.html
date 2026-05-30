@@ -170,7 +170,8 @@ body{background:var(--bg);color:var(--ink);font-family:'Hanken Grotesk',sans-ser
       <div class="h2s">Chaque agent IA remonte ce qui se passe en direct.</div><div id="feed"></div></div>
 
     <!-- TEAM -->
-    <div class="sec" id="sec-suivi"><div class="h2">🏭 Suivi des commandes</div><div class="h2s">L'état réel de chaque commande, de l'atelier à la livraison — la coordination de toute l'usine.</div>
+    <div class="sec" id="sec-suivi"><div class="h2">🏭 Suivi des commandes</div><div class="h2s">Cherche un client ou filtre par état. Chaque commande : où elle en est, payée ou non, livrée ou non.</div>
+      <input id="suiviQ" placeholder="🔎 Chercher un client, une référence…" oninput="suiviRecherche=this.value;renderSuivi()" style="width:100%;background:#0f1622;border:1px solid var(--line);color:var(--ink);border-radius:10px;padding:11px 13px;font-family:inherit;font-size:14px;margin-bottom:11px">
       <div id="suiviFiltres" style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px"></div>
       <div id="suiviList"></div></div>
     <div class="sec" id="sec-team"><div class="h2">👥 Tous les ouvriers</div><div class="h2s">🟢 au travail · 🟡 en pause · 🔴 sans commande · clique un ouvrier pour tout voir.</div>
@@ -242,10 +243,11 @@ function nb(n){return Math.round(n||0).toLocaleString('fr-FR');}
 function renderKpiBar(){
   const s=realStats();
   document.getElementById('kpibar').innerHTML=[
-    ['',s.total,'Commandes'],['o',s.fab,'En fabrication'],['g',s.livrees,'Livrées'],
-    ['r',nb(s.reste),'Reste à encaisser (DH)'],['',nb(s.encaisse),'Encaissé (DH)']
-  ].map(k=>`<div class="kpi"><div class="v ${k[0]}">${k[1]}</div><div class="l">${k[2]}</div></div>`).join('');
+    ['',s.total,'Commandes','tous'],['o',s.fab,'En fabrication','fab'],['g',s.livrees,'Livrées','livrees'],
+    ['r',nb(s.reste),'Reste à encaisser (DH)','impayees'],['',nb(s.encaisse),'Encaissé (DH)','']
+  ].map(k=>`<div class="kpi" ${k[3]?`onclick="ouvrirSuivi('${k[3]}')" style="cursor:pointer"`:''}><div class="v ${k[0]}">${k[1]}</div><div class="l">${k[2]}</div></div>`).join('');
 }
+function ouvrirSuivi(f){suiviFiltre=f;suiviRecherche='';var q=document.getElementById('suiviQ');if(q)q.value='';show('suivi');renderSuivi();window.scrollTo({top:0,behavior:'smooth'});}
 
 /* ===== ouvriers (démo réaliste) ===== */
 let TEAM=[
@@ -389,22 +391,30 @@ function show(s){document.querySelectorAll('.mi').forEach(m=>m.classList.toggle(
   if(s==='board')renderDir();if(s==='feed')renderFeed();if(s==='team')renderTeam();if(s==='late')renderLate();if(s==='renta')renderRenta();if(s==='alerts')renderAlerts();if(s==='ai')renderChat();if(s==='suivi')renderSuivi();}
 
 /* ===== Suivi des commandes (vue unifiée atelier -> livraison) ===== */
-var suiviFiltre='actifs';
+var suiviFiltre='tous';var suiviRecherche='';
 function _atNom(c){var a=(window.CJ_ATELIERS||[]).find(function(x){return x.code===c;});return a?a.nom:('Atelier '+c);}
 function _escS(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
 function renderSuivi(){
   if(!window.CJ_ORDERS||!window.CJ||!window.CJ.suivi){document.getElementById('suiviList').innerHTML='<div class="h2s">Données indisponibles.</div>';return;}
   var ORD=window.CJ_ORDERS.all();
   var rows=ORD.map(function(o){return {o:o,s:window.CJ.suivi(o)};});
-  // filtres
-  var defs=[['actifs','🔧 Suivis en interne'],['probleme','🔴 À problème'],['pret','✅ Prêts à livrer'],['tous','Tous']];
+  // filtres alignés sur les chiffres du tableau de bord
+  var cnt=function(f){return rows.filter(f).length;};
+  var fFab=function(r){return r.o.prod==='IN_PROGRESS';};
+  var fLiv=function(r){return r.o.livr==='DELIVERED';};
+  var fImp=function(r){return r.o.paie!=='PAID';};
+  var fALiv=function(r){return r.o.livr!=='DELIVERED';};
+  var defs=[['tous','Toutes ('+rows.length+')'],['fab','🏭 En fabrication ('+cnt(fFab)+')'],['alivrer','🚚 À livrer ('+cnt(fALiv)+')'],['livrees','✅ Livrées ('+cnt(fLiv)+')'],['impayees','⏳ À encaisser ('+cnt(fImp)+')']];
   document.getElementById('suiviFiltres').innerHTML=defs.map(function(d){return '<button class="seg-b'+(suiviFiltre===d[0]?' on':'')+'" data-sf="'+d[0]+'">'+d[1]+'</button>';}).join('');
   document.querySelectorAll('[data-sf]').forEach(function(b){b.onclick=function(){suiviFiltre=b.getAttribute('data-sf');renderSuivi();};});
   var list=rows;
-  if(suiviFiltre==='actifs')list=rows.filter(function(r){return r.s.source!=='creajit'&&!r.s.livree;});
-  else if(suiviFiltre==='probleme')list=rows.filter(function(r){return r.s.qcAnomalie||r.s.pause||r.s.bonsEnAttente;});
-  else if(suiviFiltre==='pret')list=rows.filter(function(r){return r.s.pretALivrer&&!r.s.livree;});
-  document.getElementById('bSuivi').textContent=rows.filter(function(r){return r.s.source!=='creajit'&&!r.s.livree;}).length||'';
+  if(suiviFiltre==='fab')list=rows.filter(fFab);
+  else if(suiviFiltre==='livrees')list=rows.filter(fLiv);
+  else if(suiviFiltre==='impayees')list=rows.filter(fImp);
+  else if(suiviFiltre==='alivrer')list=rows.filter(fALiv);
+  // recherche client / référence
+  if(suiviRecherche&&suiviRecherche.trim()){var q=suiviRecherche.trim().toLowerCase();list=list.filter(function(r){return ((r.o.client||'')+' '+(r.o.ref||'')+' '+(r.o.vendeur||'')).toLowerCase().indexOf(q)>=0;});}
+  document.getElementById('bSuivi').textContent=cnt(fFab)||'';
   if(!list.length){document.getElementById('suiviList').innerHTML='<div class="h2s" style="padding:14px">Rien dans ce filtre. Dès qu\'un atelier travaille sur une commande, elle apparaît ici en temps réel.</div>';return;}
   // tri : problèmes puis avancement décroissant
   list.sort(function(a,b){var pa=(a.s.qcAnomalie||a.s.pause||a.s.bonsEnAttente)?1:0,pb=(b.s.qcAnomalie||b.s.pause||b.s.bonsEnAttente)?1:0;if(pa!==pb)return pb-pa;return b.s.progression-a.s.progression;});
@@ -414,6 +424,12 @@ function renderSuivi(){
     var a0=(o.articles||[])[0]||{};
     var vig=a0.photo?'<img src="'+_escS(a0.photo)+'" style="width:46px;height:46px;border-radius:9px;object-fit:cover;background:#0c1018">':'<div style="width:46px;height:46px;border-radius:9px;background:#0c1018;display:grid;place-items:center">🛋️</div>';
     var bits=['<span class="stag" style="color:'+col+';border-color:'+col+'66">🏭 '+_escS(s.etape)+'</span>'];
+    // état paiement (important pour le patron)
+    if(o.paie==='PAID')bits.push('<span class="stag" style="color:#34d399;border-color:#34d39966">💰 payée</span>');
+    else if(o.paie==='PARTIAL')bits.push('<span class="stag" style="color:#fbbf24;border-color:#fbbf2466">💰 acompte</span>');
+    else bits.push('<span class="stag" style="color:#f87171;border-color:#f8717166">💰 impayée</span>');
+    // état livraison
+    if(o.livr==='DELIVERED')bits.push('<span class="stag" style="color:#34d399;border-color:#34d39966">🚚 livrée</span>');
     if(s.ateliers.length)bits.push('<span class="scell">🔧 '+s.ateliers.map(_atNom).map(_escS).join(', ')+'</span>');
     if(s.ouvriers.length)bits.push('<span class="scell">👷 '+s.ouvriers.map(_escS).join(', ')+'</span>');
     if(s.totalArticles)bits.push('<span class="scell">'+s.finis+'/'+s.totalArticles+' fini</span>');
