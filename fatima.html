@@ -25,6 +25,7 @@ h1{font-family:'Fraunces',serif;font-size:24px;margin-bottom:3px}
 .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-bottom:18px}
 .kpi{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:13px 15px}
 .kpi.go{border-color:rgba(52,211,153,.4);background:rgba(52,211,153,.06)}
+.kpi.alarm{border-color:rgba(248,113,113,.45);background:rgba(248,113,113,.07)}
 .kpi .v{font-family:Fraunces;font-weight:700;font-size:24px}
 .kpi .l{color:var(--mut);font-size:12px;margin-top:3px}
 .bar{display:flex;gap:9px;align-items:center;margin-bottom:6px;flex-wrap:wrap}
@@ -79,9 +80,9 @@ h1{font-family:'Fraunces',serif;font-size:24px;margin-bottom:3px}
 <div class="bar">
   <input id="q" placeholder="🔎 Chercher un client ou une référence…" autocomplete="off">
   <div class="seg" id="seg">
-    <button data-f="prete" class="on">✅ Prêtes</button>
-    <button data-f="fab">🔧 En fabrication</button>
-    <button data-f="wait">⏳ À produire</button>
+    <button data-f="retard" class="on">⏰ En retard</button>
+    <button data-f="semaine">📅 Cette semaine</button>
+    <button data-f="tard">🔵 Plus tard</button>
     <button data-f="done">🚚 Livrées</button>
     <button data-f="all">Toutes</button>
   </div>
@@ -94,14 +95,15 @@ h1{font-family:'Fraunces',serif;font-size:24px;margin-bottom:3px}
 <script>
 (function(){
   var ORD = (window.CJ_ORDERS ? window.CJ_ORDERS.all() : []);
-  var filtre='prete', q='';
+  var filtre='retard', q='';
   var DAY=86400000;
   function today(){ var d=new Date(); d.setHours(0,0,0,0); return d; }
   function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
   function dh(n){ return Math.round(n||0).toLocaleString('fr-FR')+' DH'; }
-  function jour(d){ if(!d) return '—'; try{ return new Date(d).toLocaleDateString('fr-FR',{day:'2-digit',month:'short'}); }catch(e){ return d; } }
+  function jour(d){ if(!d) return '—'; try{ return new Date(d).toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'}); }catch(e){ return d; } }
   function low(s){ return String(s||'').toLowerCase(); }
-  function age(d){ if(!d) return null; var x=new Date(d); if(isNaN(x)) return null; x.setHours(0,0,0,0); return Math.round((today()-x)/DAY); }
+  // o.date = DATE DE LIVRAISON prévue. retard>0 = jours de retard ; retard<0 = jours restants.
+  function jretard(d){ if(!d) return null; var x=new Date(d); if(isNaN(x)) return null; x.setHours(0,0,0,0); return Math.round((today()-x)/DAY); }
 
   // Statuts réels CreaJit. CJ_ORDERS normalise en livr/prod/paie ; on lit aussi les bruts par sécurité.
   function dStat(o){ return low(o.livr || o.deliveryStatus); }   // pending / delivered / partial
@@ -121,56 +123,65 @@ h1{font-family:'Fraunces',serif;font-size:24px;margin-bottom:3px}
   }
   function payTag(o){ var p=payStat(o); if(p==='paid')return '<span class="tag t-ok">payé</span>'; if(p==='partial')return '<span class="tag t-soon">acompte</span>'; if(!p)return ''; return '<span class="tag t-red">impayé</span>'; }
   function prodTag(o){ if(estLivree(o))return '<span class="tag t-ok">🚚 livrée</span>'; if(estPartielle(o))return '<span class="tag t-blue">livrée en partie</span>'; if(estPrete(o))return '<span class="tag t-ok">✅ prête</span>'; if(enFab(o))return '<span class="tag t-soon">🔧 en fabrication</span>'; return '<span class="tag t-mut">🪚 à produire</span>'; }
+  // pastille délai (basée sur la date de livraison)
+  function delaiTag(o){ var r=jretard(o.date); if(r===null)return '<span class="tag t-mut">sans date</span>'; if(r>0)return '<span class="tag t-red">⏰ +'+r+' j de retard</span>'; if(r===0)return '<span class="tag t-soon">📅 à livrer aujourd\'hui</span>'; if(r>=-7)return '<span class="tag t-soon">📅 dans '+(-r)+' j</span>'; return '<span class="tag t-blue">📅 dans '+(-r)+' j</span>'; }
+  // une commande "à livrer" = pas encore livrée totalement
+  function aLivrerO(o){ return !estLivree(o); }
+  function enRetard(o){ var r=jretard(o.date); return aLivrerO(o) && r!==null && r>0; }
+  function cetteSemaine(o){ var r=jretard(o.date); return aLivrerO(o) && r!==null && r<=0 && r>=-7; }
+  function plusTard(o){ var r=jretard(o.date); return aLivrerO(o) && (r===null || r< -7); }
 
   function kpi(v,l,cls){ return '<div class="kpi'+(cls?(' '+cls):'')+'"><div class="v">'+v+'</div><div class="l">'+l+'</div></div>'; }
 
   function render(){
     document.getElementById('av').textContent='FE';
-    var livrees=ORD.filter(estLivree), pretes=ORD.filter(estPrete), fab=ORD.filter(enFab), wait=ORD.filter(aProduire), part=ORD.filter(estPartielle);
-    var aLivrer=pretes.length+fab.length+wait.length+part.length;
+    var livrees=ORD.filter(estLivree);
+    var retard=ORD.filter(enRetard);
+    var semaine=ORD.filter(cetteSemaine);
+    var tard=ORD.filter(plusTard);
+    // prêtes à expédier = finies en production, pas encore livrées (Fatima peut livrer tout de suite)
+    var pretes=ORD.filter(function(o){ return aLivrerO(o) && estPrete(o); });
+    // alerte forte : en retard ET pas encore prête (production pas finie) -> ne tiendra pas
+    var critiques=retard.filter(function(o){ return !estPrete(o); });
     document.getElementById('kpis').innerHTML =
-      kpi(pretes.length,'✅ Prêtes à livrer', pretes.length?'go':'') +
-      kpi(aLivrer,'À livrer (total)','') +
-      kpi(fab.length,'🔧 En fabrication','') +
-      kpi(livrees.length,'🚚 Livrées','');
+      kpi(retard.length,'⏰ En retard', retard.length?'alarm':'') +
+      kpi(pretes.length,'✅ Prêtes à expédier', pretes.length?'go':'') +
+      kpi(critiques.length,'🔴 Retard + pas finie', critiques.length?'alarm':'') +
+      kpi(livrees.length,'🚚 Livrées','go');
 
     renderQC();
 
-    // recherche
     function flt(arr){ if(!q) return arr; var Q=q.toLowerCase(); return arr.filter(function(o){ return ((o.client||'')+' '+(o.ref||o.id||'')).toLowerCase().indexOf(Q)>=0; }); }
-    // les prêtes : la priorité = celles qui attendent l'expédition depuis le plus longtemps
-    function parAge(a,b){ return (age(b.date)||0)-(age(a.date)||0); }
-    function parDate(a,b){ return String(b.date).localeCompare(String(a.date)); }
+    // tri par date de livraison : le plus en retard / le plus proche en premier
+    function parLivr(a,b){ var x=jretard(a.date), y=jretard(b.date); if(x===null)return 1; if(y===null)return -1; return y-x; }
 
     var box=document.getElementById('lists'), h='';
-    if(filtre==='prete'){ h=block('✅ Prêtes à livrer','go',flt(pretes).sort(parAge),true,true); }
-    else if(filtre==='fab'){ h=block('🔧 En fabrication','fab',flt(fab).sort(parDate),false,false); }
-    else if(filtre==='wait'){ h=block('⏳ À produire','wait',flt(wait).sort(parDate),false,false); }
-    else if(filtre==='done'){ h=block('🚚 Livrées','',flt(livrees).sort(parDate),false,false); }
-    else { // all : tout, par priorité
-      h =block('✅ Prêtes à livrer','go',flt(pretes).sort(parAge),true,true);
-      h+=block('🚚 Partiellement livrées','part',flt(part).sort(parDate),true,false);
-      h+=block('🔧 En fabrication','fab',flt(fab).sort(parDate),false,false);
-      h+=block('⏳ À produire','wait',flt(wait).sort(parDate),false,false);
+    if(filtre==='retard'){ h=block('⏰ En retard de livraison','late',flt(retard).sort(parLivr),true); }
+    else if(filtre==='semaine'){ h=block('📅 À livrer cette semaine','soon',flt(semaine).sort(parLivr),true); }
+    else if(filtre==='tard'){ h=block('🔵 À venir / plus tard','later',flt(tard).sort(parLivr),true); }
+    else if(filtre==='done'){ h=block('🚚 Livrées','',flt(livrees).sort(parLivr),false); }
+    else { // toutes, par priorité de délai
+      h =block('⏰ En retard','late',flt(retard).sort(parLivr),true);
+      h+=block('📅 Cette semaine','soon',flt(semaine).sort(parLivr),true);
+      h+=block('🔵 Plus tard','later',flt(tard).sort(parLivr),true);
     }
     box.innerHTML = h || '<div class="empty">Rien ici 🎉</div>';
     wire();
   }
 
-  function block(titre,cls,arr,canDeliver,showAge){
+  function block(titre,cls,arr,canDeliver){
     if(!arr.length) return '';
-    var LIM=60, shown=arr.slice(0,LIM), rest=arr.length-shown.length;
+    var LIM=80, shown=arr.slice(0,LIM), rest=arr.length-shown.length;
     return '<div class="sec">'+titre+' <span class="cnt">'+arr.length+'</span></div>'+
-      shown.map(function(o){ return card(o,cls,canDeliver,showAge); }).join('')+
+      shown.map(function(o){ return card(o,cls,canDeliver); }).join('')+
       (rest>0?'<div class="more">… et '+rest+' autres (affine la recherche)</div>':'');
   }
 
-  function card(o,cls,canDeliver,showAge){
-    var ref=esc(o.ref||o.id), a=age(o.date);
-    var ageT = (showAge && a!==null && a>0) ? '<span class="tag '+(a>14?'t-red':'t-soon')+'">en attente '+a+' j</span>' : '';
+  function card(o,cls,canDeliver){
+    var ref=esc(o.ref||o.id);
     return '<div class="card '+cls+'">'+vignette(o)+
       '<div class="info"><div class="nm">'+esc(o.client)+'</div>'+
-      '<div class="mt">'+(o.ref?('<span>'+ref+'</span>'):'')+'<span>commandé '+jour(o.date)+'</span>'+ageT+prodTag(o)+payTag(o)+'</div></div>'+
+      '<div class="mt">'+(o.ref?('<span>'+ref+'</span>'):'')+'<span>livraison '+jour(o.date)+'</span>'+delaiTag(o)+prodTag(o)+payTag(o)+'</div></div>'+
       '<div class="sp"><span class="amt">'+dh(o.total)+'</span>'+
       (canDeliver?('<button class="act" data-livr="'+ref+'">✅ Marquer livrée</button>'):'')+'</div></div>';
   }

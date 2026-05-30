@@ -380,6 +380,20 @@ Articles : Chaise Cartel ×75 @730 ; Tableau 120/80 ×25 @730 ; Tableau 40/40 ×
   photo réelle du 1er article, montant, badges production/paiement, bouton « Marquer livrée » (seulement
   si pertinent). QC photo-obligatoire conservé. Testé node : 2/2 blocs OK, KPIs vérifiés sur les 186.
 
+- **2026-05-30 — Logistique : `date` = DATE DE LIVRAISON (confirmé par Driss).** Correction
+  majeure : je traitais `date` comme date de commande → FAUX. Driss : « toutes les commandes
+  CreaJit ont une date de livraison ». Vérifié dans les données : un seul champ date, 186 valeurs
+  du 01/04 au 25/05/2026, toutes < aujourd'hui (30/05). C'est la date de livraison prévue. La page
+  calcule désormais le VRAI retard (`jretard` = jours entre date livraison et aujourd'hui). KPIs
+  vérifiés node (sortie propre, check=OK) : 🚚 Livrées **41** · ⏰ En retard **145** (toutes les
+  non-livrées, car l'instantané a des dates de livraison toutes passées) · ✅ Prêtes à expédier
+  **16** (finies, pas encore livrées) · 🔴 Retard + pas finie **129** (le vrai feu : en retard ET
+  production pas terminée). Filtres : En retard / Cette semaine / Plus tard / Livrées / Toutes,
+  tri par date de livraison (plus en retard d'abord), pastille délai (+N j de retard / dans N j),
+  recherche, photo, badges production+paiement, bouton Marquer livrée. Note méthodo : plusieurs
+  sorties node se sont révélées corrompues (clés JSON dupliquées) → recompté en sortie entière
+  simple écrite en fichier pour fiabiliser (41/145/16/129, somme cohérente).
+
 ## 13. Ordre de construction officiel (structure décidée, à suivre)
 
 > Driss délègue la structuration. On construit dans CET ordre, en s'appuyant sur les
