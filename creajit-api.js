@@ -65,9 +65,11 @@
   }
 
   async function init() {
-    // Commandes réelles (locale, sinon repli MES)
-    var orders = await chargerLocal('orders');
-    if (!orders) orders = await chargerMES();
+    // SOURCE PRINCIPALE : TON application creajit-mes-v1 (la page /commandes).
+    // Les agents surveillent TON app, pas creajit.ma directement.
+    var orders = await chargerMES();
+    // Secours : la fonction Netlify locale de ce site, si jamais le MES ne répond pas.
+    if (!orders) orders = await chargerLocal('orders');
     if (orders && orders.length) {
       window.CJ_COMMANDES_REELLES = orders;
       window.CJ_DATA_SOURCE = 'live';
@@ -75,7 +77,7 @@
       // Re-construit les helpers CJ_ORDERS si le script est déjà chargé
       if (window.CJ_ORDERS && typeof window.CJ_REBUILD_ORDERS === 'function') window.CJ_REBUILD_ORDERS();
     }
-    // Catalogue réel (locale uniquement)
+    // Catalogue réel (via la fonction locale)
     var products = await chargerLocal('products');
     if (products && products.length) {
       window.CJ_CATALOGUE = products;
