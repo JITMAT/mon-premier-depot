@@ -61,7 +61,7 @@
     COMMANDES.length = 0;
     window.CJ_ORDERS.all().forEach(function (o) {
       COMMANDES.push({
-        ref: o.ref, client: o.client || '', com: o.vendeur || '',
+        cle: o.id || o.ref, ref: o.ref, client: o.client || '', com: o.vendeur || '',
         statut: o.prod || 'confirmed', statutLib: o.prodLib, livr: o.date || null, retard: 0,
         date: o.date, tel: o.tel, paiement: o.paie, paiementLib: o.paieLib,
         livraison: o.livr, livraisonLib: o.livrLib,
@@ -91,7 +91,7 @@
   const photo = img => (window.ART && img && window.ART[img]) ? `<img src="${window.ART[img]}" style="width:54px;height:54px;border-radius:9px;object-fit:cover;background:#fff">` : `<div style="width:54px;height:54px;border-radius:9px;background:#222c3d;display:grid;place-items:center;font-size:22px">🪑</div>`;
   const photoOf = a => (a && a.photo) ? `<img src="${a.photo}" style="width:54px;height:54px;border-radius:9px;object-fit:cover;background:#fff">` : photo(a && a.img);
   const toastMsg = m => { if (typeof window.toast === 'function') window.toast(m); };
-  const cmd = ref => COMMANDES.find(c => c.ref === ref);
+  const cmd = key => COMMANDES.find(c => (c.cle || c.ref) === key);
 
   // articles d'une commande (réels si dispo, sinon créneaux d'après le nombre d'articles CreaJit)
   function articlesDe(c) {
@@ -203,7 +203,7 @@
     let h = '';
     cmds.forEach(c => {
       const stat = c.statut === 'ready' ? 'Prête' : 'Confirmée';
-      h += `<div class="cjcli" data-open="${esc(c.ref)}">
+      h += `<div class="cjcli" data-open="${esc(c.cle || c.ref)}">
         <div style="width:42px;height:42px;border-radius:11px;background:linear-gradient(145deg,#C4714F,#7c3f27);display:grid;place-items:center;font-weight:800;color:#1a0f08">${esc(c.client.replace(/^(Mme|Mr|MMe)\s*/i,'').trim().slice(0,1) || 'C')}</div>
         <div><div class="nm">${esc(c.client)}</div>
           <div class="mt">${esc(c.ref)} · ${c.nb} article${c.nb>1?'s':''} · ${dh(c.total)} · ${esc(c.com)}</div>

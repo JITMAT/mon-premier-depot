@@ -26,7 +26,7 @@
       paieLib: LIB_PAY[o.paymentStatus] || o.paymentStatus || '',
       livrLib: LIB_DEL[o.deliveryStatus] || o.deliveryStatus || '',
       articles: (o.articles || []).map(function (a, i) {
-        return { id: (o.ref || o.id || 'cmd') + '_a' + i, nom: a.nom || a.name || ('Article ' + (i + 1)),
+        return { id: (o.id || o.ref || 'cmd') + '_a' + i, nom: a.nom || a.name || ('Article ' + (i + 1)),
                  qte: a.qte || a.qty || a.quantity || 1, prix: a.prix || a.pu || a.price || 0, photo: photo(a) };
       }),
     };
