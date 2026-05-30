@@ -4,8 +4,6 @@
    et fournit des helpers normalisés à toutes les pages.
    ============================================================ */
 (function () {
-  var RAW = window.CJ_COMMANDES_REELLES || [];
-
   function photo(a) {
     if (!a) return '';
     if (a.photo && /^https?:/.test(a.photo)) return a.photo;
@@ -17,20 +15,31 @@
   var LIB_PAY  = { PAID: 'Payé', UNPAID: 'Impayé', PARTIAL: 'Partiel' };
   var LIB_DEL  = { PENDING: 'À livrer', DELIVERED: 'Livré', PARTIAL: 'Partiel' };
 
-  var ORDERS = RAW.map(function (o) {
-    return {
-      id: o.id, ref: o.ref || '', date: o.date || '', client: o.client || '', tel: o.telephone || '',
-      vendeur: o.vendeur || '', total: o.total || 0,
-      prod: o.productionStatus || '', paie: o.paymentStatus || '', livr: o.deliveryStatus || '',
-      prodLib: LIB_PROD[o.productionStatus] || o.productionStatus || '',
-      paieLib: LIB_PAY[o.paymentStatus] || o.paymentStatus || '',
-      livrLib: LIB_DEL[o.deliveryStatus] || o.deliveryStatus || '',
-      articles: (o.articles || []).map(function (a, i) {
-        return { id: (o.id || o.ref || 'cmd') + '_a' + i, nom: a.nom || a.name || ('Article ' + (i + 1)),
-                 qte: a.qte || a.qty || a.quantity || 1, prix: a.prix || a.pu || a.price || 0, photo: photo(a) };
-      }),
-    };
-  });
+  // ORDERS est reconstruit depuis window.CJ_COMMANDES_REELLES (statique au départ,
+  // remplacé par les vraies données live via creajit-api.js → CJ_REBUILD_ORDERS).
+  var ORDERS = [];
+  function build() {
+    var RAW = window.CJ_COMMANDES_REELLES || [];
+    ORDERS = RAW.map(function (o) {
+      return {
+        id: o.id, ref: o.ref || '', date: o.date || '', client: o.client || '', tel: o.telephone || '',
+        vendeur: o.vendeur || '', total: o.total || 0,
+        prod: o.productionStatus || '', paie: o.paymentStatus || '', livr: o.deliveryStatus || '',
+        prodLib: LIB_PROD[o.productionStatus] || o.productionStatus || '',
+        paieLib: LIB_PAY[o.paymentStatus] || o.paymentStatus || '',
+        livrLib: LIB_DEL[o.deliveryStatus] || o.deliveryStatus || '',
+        articles: (o.articles || []).map(function (a, i) {
+          return { id: (o.id || o.ref || 'cmd') + '_a' + i, nom: a.nom || a.name || ('Article ' + (i + 1)),
+                   qte: a.qte || a.qty || a.quantity || 1, prix: a.prix || a.pu || a.price || 0, photo: photo(a) };
+        }),
+      };
+    });
+    return ORDERS;
+  }
+  build();
+
+  // Permet à creajit-api.js de recharger les helpers après l'arrivée des vraies données
+  window.CJ_REBUILD_ORDERS = function () { build(); if (typeof window.render === 'function') window.render(); };
 
   window.CJ_ORDERS = {
     all: function () { return ORDERS; },
