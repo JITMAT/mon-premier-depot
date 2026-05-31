@@ -464,6 +464,56 @@ function send(){
 
 show('overview');
 step();
-</script>
+
+/* ===== CONNEXION LIVE creajit.ma — recalcule l'argent en direct ===== */
+// Quand le site tourne sur Netlify, la fonction /api/creajit appelle
+// creajit.ma (login email+password côté serveur) et renvoie les commandes.
+// On recalcule alors les chiffres clés (CA, encaissé, reste, impayés,
+// vendeurs, échéances) et on rafraîchit l'écran. Hors ligne / en local,
+// on garde les données figées (snapshot) sans rien casser.
+function cjStatus(txt,col){
+ var b=document.getElementById('cjLive');
+ if(!b){var br=document.querySelector('.brand');if(br){b=document.createElement('div');b.id='cjLive';b.style.cssText='font-size:9.5px;font-weight:700;margin-top:3px;padding:2px 7px;border-radius:20px;display:inline-block';br.querySelector('div:last-child').appendChild(b);}}
+ if(b){b.textContent=txt;b.style.background=col+'22';b.style.color=col;b.style.border='1px solid '+col+'55';}
+}
+function recalcDepuisCommandes(cmds){
+ if(!cmds||!cmds.length)return;
+ var ca=0,paye=0,reste=0,impayes=0,enAttente=0,enFab=0,termine=0,aLivrer=0,livre=0,articles=0;
+ var V={},finance=[];
+ cmds.forEach(function(o){
+  var t=Number(o.total)||0, pa=Number(o.paidAmount)||0; var rs=t-pa;
+  ca+=t; paye+=pa; reste+=rs;
+  if(o.paymentStatus!=='PAID' && rs>0)impayes++;
+  var ps=o.productionStatus||''; if(/ATTENTE|PENDING|WAIT/i.test(ps))enAttente++; else if(/PROG|FAB|PROGRESS/i.test(ps))enFab++; else if(/TERMIN|DONE|COMPLET/i.test(ps))termine++;
+  var ds=o.deliveryStatus||''; if(/LIVR|DELIVERED/i.test(ds))livre++; else aLivrer++;
+  (o.articles||[]).forEach(function(a){articles+=Number(a.qte)||1;});
+  var v=(o.vendeur||'—').trim()||'—'; if(!V[v])V[v]={v:v,nb:0,ca:0,enc:0,reste:0}; V[v].nb++; V[v].ca+=t; V[v].enc+=pa; V[v].reste+=rs;
+  if(rs>0)finance.push({client:o.client||'?',total:t,paye:pa,reste:rs,vendeur:(o.vendeur||'').split(' ')[0],etat:o.paymentStatus==='PARTIAL'?'Partiel':'Impayé'});
+ });
+ finance.sort(function(a,b){return b.reste-a.reste;});
+ var vendeurs=Object.keys(V).map(function(k){return V[k];}).sort(function(a,b){return b.ca-a.ca;});
+ // met à jour APP (les vues lisent APP)
+ APP.raw.ca=ca; APP.raw.paye=paye; APP.raw.reste=reste; APP.raw.tauxEnc=ca>0?Math.round(paye/ca*100):0;
+ APP.stats.total=cmds.length; APP.stats.impayes=impayes; APP.stats.enAttente=enAttente; APP.stats.enFab=enFab; APP.stats.termine=termine; APP.stats.aLivrer=aLivrer; APP.stats.livre=livre; APP.stats.articles=articles;
+ APP.fmt.ca=fmt(ca); APP.fmt.paye=fmt(paye); APP.fmt.reste=fmt(reste); APP.fmt.panier=fmt(cmds.length?ca/cmds.length:0);
+ APP.finance=finance.slice(0,40); APP.vendeurs=vendeurs;
+ // rafraîchit l'écran courant
+ var cur=document.querySelector('.item.on'); var id=cur?cur.getAttribute('data-id'):'overview'; show(id);
+}
+function connecterCreajit(){
+ cjStatus('● connexion creajit.ma…','#f5c542');
+ try{
+  fetch('/api/creajit?resource=orders').then(function(r){return r.json();}).then(function(j){
+   if(j&&j.ok&&j.data&&j.data.length){
+    recalcDepuisCommandes(j.data);
+    cjStatus('● creajit.ma en direct ('+j.data.length+')','#22c55e');
+   }else{
+    cjStatus('● snapshot (creajit.ma à configurer)','#8d96a5');
+   }
+  }).catch(function(){cjStatus('● snapshot (hors ligne)','#8d96a5');});
+ }catch(e){cjStatus('● snapshot','#8d96a5');}
+}
+connecterCreajit();
+setInterval(connecterCreajit, 5*60*1000); // rafraîchit toutes les 5 min</script>
 </body>
 </html>
