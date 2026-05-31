@@ -1,0 +1,43 @@
+# Déploiement Netlify — site statique (pages HTML) + serveur Claude (functions).
+[build]
+  publish = "."
+
+# Le serveur sécurisé qui parle à Claude (clé cachée côté serveur).
+[functions]
+  directory = "netlify/functions"
+
+# URL plus simple : /api/claude  →  la fonction
+[[redirects]]
+  from = "/api/claude"
+  to = "/.netlify/functions/claude"
+  status = 200
+  force = true
+
+# /api/creajit  →  fonction qui appelle creajit.ma (commandes, produits)
+[[redirects]]
+  from = "/api/creajit"
+  to = "/.netlify/functions/creajit"
+  status = 200
+  force = true
+
+# /api/rentabilite  →  fonction qui lit la page rentabilité/dispatch du MES
+[[redirects]]
+  from = "/api/rentabilite"
+  to = "/.netlify/functions/rentabilite"
+  status = 200
+  force = true
+
+# /api/alerte  →  notifie Driss d'une sortie d'argent (Telegram)
+[[redirects]]
+  from = "/api/alerte"
+  to = "/.netlify/functions/alerte"
+  status = 200
+  force = true
+
+# /api/telegram  →  utilitaire Telegram (récupérer chat_id, test)
+[[redirects]]
+  from = "/api/telegram"
+  to = "/.netlify/functions/telegram"
+  status = 200
+  force = true
+

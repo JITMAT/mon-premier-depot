@@ -1,0 +1,101 @@
+<!-- Socle de données partagées CREAJIT IA -->
+<script src="creajit-matieres.js"></script>
+<script src="creajit-ateliers.js"></script>
+<script src="creajit-data.js"></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<title>CREAJIT — Réception (Hassan)</title>
+<style>
+  :root{--bg:#0d111b;--card:#161d2b;--card2:#10151f;--line:rgba(196,113,79,.18);--orange:#C4714F;--orange-b:#e69a76;--green:#37c98a;--red:#E74C3C;--yellow:#EAB308;--ink:#ece9e3;--mut:#8d96a5}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font-family:'Hanken Grotesk',sans-serif;padding:24px 18px 80px}
+  .wrap{max-width:880px;margin:0 auto}
+  .head{display:flex;align-items:center;gap:13px;margin-bottom:18px}
+  .av0{width:46px;height:46px;border-radius:13px;background:linear-gradient(145deg,#3b82f6,#1e3a8a);display:grid;place-items:center;font-family:'Fraunces';font-weight:700;font-size:18px;color:#fff}
+  h1{font-family:'Fraunces';font-weight:700;font-size:20px}
+  .sub{font-size:12px;color:var(--mut)}
+  .bon{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:11px}
+  .bon.recu{opacity:.6}
+  .bon .t{display:flex;justify-content:space-between;gap:8px;align-items:center}
+  .bon .cli{font-weight:700;font-size:15px}
+  .bon .meta{font-size:12px;color:var(--mut);margin:3px 0 9px}
+  .lignes{font-size:13px;margin-bottom:10px}.lignes div{padding:3px 0;border-top:1px solid var(--line)}
+  .badge{font-size:11px;padding:3px 10px;border-radius:20px;font-weight:700}
+  .b-com{background:rgba(196,113,79,.18);color:var(--orange-b)}.b-recu{background:rgba(55,201,138,.16);color:var(--green)}
+  .chrono{font-family:'Fraunces';font-weight:700;color:var(--orange-b)}
+  button{font-family:inherit;cursor:pointer}
+  .act{background:var(--green);color:#06210f;border:none;border-radius:9px;padding:10px 16px;font-weight:700;font-size:14px}
+  .empty{color:var(--mut);text-align:center;padding:30px;border:1px dashed var(--line);border-radius:13px}
+</style>
+
+<div class="wrap">
+  <div class="head"><div class="av0">H</div><div><h1>Réception — Hassan</h1><div class="sub">Marchandise reçue → la commande passe au vert chez Mohamed, Hanane et l'ouvrier</div></div></div>
+  <div id="bons"></div>
+</div>
+
+<script>
+(function(){
+  function depuis(t0,t1){ if(!t0) return ''; var m=Math.floor(((t1||Date.now())-t0)/60000); return m<60?(m+' min'):(Math.floor(m/60)+'h'+String(m%60).padStart(2,'0')); }
+  function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+  function render(){
+    if(!window.CJ) return;
+    var bons=CJ.bons().filter(b=>b.statut==='commande'||b.statut==='recu');
+    var box=document.getElementById('bons');
+    if(!bons.length){ box.innerHTML='<div class="empty">Rien à réceptionner pour l\'instant.<br>Les bons traités par Mohamed apparaissent ici.</div>'; return; }
+    box.innerHTML=bons.map(function(b){
+      var lignes=(b.lignes||[]).map(l=>`<div>${esc(l.nom)} — <b>${l.qty||1}</b> ${esc(l.unite||'')} <span style="color:var(--mut)">· ${esc(l.fournisseur||'')}</span></div>`).join('');
+      var act=b.statut==='recu'?`<span class="sub" style="color:var(--green)">✅ Reçu en ${depuis(b.t0,b.tRecu)}</span>`:`<button class="act" data-id="${b.id}">✅ Marchandise reçue</button>`;
+      return `<div class="bon ${b.statut==='recu'?'recu':''}"><div class="t"><div class="cli">${esc(b.client||'—')} <span class="sub">· ${esc(b.ref||'')}</span></div>
+        <div style="display:flex;gap:8px;align-items:center"><span class="badge ${b.statut==='recu'?'b-recu':'b-com'}">${b.statut==='recu'?'✅ Reçu':('🛒 '+(b.mode||'en cours'))}</span><span class="chrono">⏱️ ${depuis(b.t0,b.tRecu)}</span></div></div>
+        <div class="meta">${esc(b.mode||'')} · ${(b.lignes||[]).length} ligne(s)</div><div class="lignes">${lignes}</div>${act}</div>`;
+    }).join('');
+    box.querySelectorAll('[data-id]').forEach(function(btn){ btn.onclick=function(){
+      var id=btn.getAttribute('data-id'); CJ.majBon(id,{statut:'recu',tRecu:Date.now()});
+      var b=CJ.etat().bons[id];
+      CJ.evenement('success','Hassan (réception)',`Hassan a réceptionné la matière pour ${b.client} (${b.ref}). Bon au VERT.`,'→ Mohamed + Hanane + ouvrier');
+      render();
+    };});
+  }
+  window.addEventListener('load',render);
+  if(window.CJ) CJ.abonner(render);
+  setInterval(render,30000);
+})();
+</script>
+
+<!-- ===== Menu de navigation CREAJIT IA ===== -->
+<div id="cjmenu">
+  <div id="cjbar">
+    <a id="cjhome" href="index.html">← Accueil</a>
+    <button id="cjtog" type="button" onclick="document.getElementById('cjmenu').classList.toggle('open')">☰ Menu</button>
+  </div>
+  <div id="cjlinks">
+    <a href="index.html">🏠 Accueil (Cockpit)</a>
+    <a href="agents.html">👥 Tous les agents</a>
+    <a href="consignes.html">🎙️ Consignes (Driss)</a>
+    <a href="hanane.html">🗂️ Agent Hanane</a>
+    <a href="ouvrier.html">👷 Agent Ouvrier</a>
+    <a href="magasin.html">🧰 Magasin (Mohamed)</a>
+    <a href="reception.html">📦 Réception (Hassan)</a>
+    <a href="fatima.html">🚚 Logistique (Fatima)</a>
+    <a href="kenza.html">💼 Commercial (Kenza)</a>
+    <a href="sabiri.html">💰 Compta (Sabiri)</a>
+    <a href="rentabilite.html">📊 Rentabilité</a>
+    <a href="cockpit.html">👁️ Cockpit (v2)</a>
+    <a href="banc-test.html">🔀 Banc de test</a>
+    <a href="login.html">🔑 Connexion</a>
+  </div>
+</div>
+<style>
+#cjmenu{position:fixed;left:12px;top:12px;z-index:2147483000;font-family:'Hanken Grotesk',Arial,sans-serif;display:flex;flex-direction:column;align-items:flex-start;gap:8px}
+#cjbar{display:flex;gap:8px}
+#cjhome{display:inline-flex;align-items:center;background:#C4714F;color:#1a0f08;border-radius:24px;padding:10px 15px;font-weight:700;font-size:14px;text-decoration:none;box-shadow:0 6px 20px rgba(0,0,0,.45)}
+#cjtog{background:#1a2230;color:#eef2f8;border:1px solid #2c3850;border-radius:24px;padding:10px 13px;font-weight:700;font-size:14px;cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,.45)}
+#cjlinks{display:none;flex-direction:column;gap:6px;background:#1a2230;border:1px solid #2c3850;border-radius:12px;padding:8px;box-shadow:0 10px 30px rgba(0,0,0,.55);max-height:80vh;overflow:auto}
+#cjmenu.open #cjlinks{display:flex}
+#cjlinks a{color:#eef2f8;text-decoration:none;font-weight:600;font-size:14px;padding:9px 14px;border-radius:9px;white-space:nowrap}
+#cjlinks a:hover{background:#222c3d;color:#e69a76}
+</style>
+
+<script>window.CJ_AGENT_ROLE="reception";window.CJ_AGENT_NOM="Hassan (réception)";window.CJ_AGENT_PROMPT="Tu es l'assistant IA de Hassan Laagouri, reception chez CREAJIT (meubles sur mesure, Marrakech). L'utilisateur peut parler DARIJA : reponds simple et court, en darija s'il te parle en darija. Tu l'aides a : receptionner la marchandise, verifier la conformite, faire passer les bons au vert rapidement pour debloquer la production. QUAND on te dit qu'une marchandise est arrivee -> utilise l'outil receptionner. Pour alerter Driss -> alerter_patron. Confirme ce que tu fais. Tu vois l'etat temps reel ci-dessous.";</script>
+<script src="creajit-assistant.js"></script>

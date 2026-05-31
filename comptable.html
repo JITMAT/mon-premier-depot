@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CreaJit · Demande de validation — Comptabilité</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=Fraunces:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0e15;--panel:#121927;--panel2:#0e1420;--line:rgba(196,113,79,.16);--ink:#ece9e3;--mut:#8d96a5;--mut2:#586273;--gold:#f5c542;--green:#22c55e;--red:#ef4444}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Hanken Grotesk',system-ui,sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh}
+.serif{font-family:'Fraunces',serif}
+.wrap{max-width:640px;margin:0 auto;padding:24px 18px 60px}
+.top{display:flex;align-items:center;gap:12px;margin:6px 0 22px}
+.logo{width:40px;height:40px;border-radius:11px;background:linear-gradient(135deg,#C4714F,#e69a76);display:grid;place-items:center;font-size:20px;color:#1a0f08;font-weight:800}
+.top b{font-size:16px;display:block}.top span{color:var(--mut);font-size:12px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px;margin-bottom:16px}
+h1{font-size:21px;margin:0 0 4px;font-weight:800}
+.sub{color:var(--mut);font-size:13px;line-height:1.5;margin-bottom:18px}
+label{display:block;font-size:12px;color:var(--mut);font-weight:600;margin:14px 0 6px;text-transform:uppercase;letter-spacing:.3px}
+input,select,textarea{width:100%;background:var(--panel2);border:1px solid #1f2a3b;border-radius:10px;color:var(--ink);font-size:15px;padding:12px 14px;font-family:inherit;outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--gold)}
+textarea{resize:vertical;min-height:64px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.big{font-size:24px;font-weight:800;color:var(--gold)}
+.btn{width:100%;margin-top:20px;background:linear-gradient(135deg,#f5c542,#e0a82e);color:#1a1206;border:0;border-radius:11px;font-size:16px;font-weight:800;padding:15px;cursor:pointer;font-family:inherit}
+.btn:active{transform:translateY(1px)}
+.note{font-size:12px;color:var(--mut2);margin-top:14px;line-height:1.5;text-align:center}
+.ok{background:#10241a;border:1px solid rgba(34,197,94,.4);color:#7ee2a8;border-radius:12px;padding:16px;margin-bottom:16px;font-size:14px;line-height:1.5;display:none}
+.ok.show{display:block}
+.hist{margin-top:8px}
+.hrow{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-top:1px solid #1b2230;font-size:13px}
+.hrow .m{font-weight:700;color:var(--gold)}
+.tag{font-size:11px;padding:3px 9px;border-radius:20px;font-weight:700}
+.tag.att{background:#2a2410;color:var(--gold)}
+.tag.app{background:#10241a;color:#7ee2a8}
+.tag.ref{background:#2a1414;color:#f8a4a4}
+.empty{color:var(--mut2);font-size:13px;text-align:center;padding:18px}
+.lock{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+.lockcard{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:28px;max-width:340px;width:100%;text-align:center}
+.lockcard h2{font-size:18px;margin:10px 0 4px}.lockcard p{color:var(--mut);font-size:13px;margin:0 0 18px}
+</style>
+</head>
+<body>
+
+<!-- Verrou simple par code (pas de vraie sécurité serveur — juste éviter les accès distraits) -->
+<div class="lock" id="lock">
+  <div class="lockcard">
+    <div class="logo" style="margin:0 auto 6px">CJ</div>
+    <h2>Espace Comptabilité</h2>
+    <p>Code d'accès pour saisir une demande de validation.</p>
+    <input id="pin" type="password" inputmode="numeric" placeholder="Code à 4 chiffres" style="text-align:center;letter-spacing:6px;font-size:20px">
+    <button class="btn" onclick="unlock()">Entrer</button>
+    <div class="note" id="lockerr"></div>
+  </div>
+</div>
+
+<div class="wrap" id="app" style="display:none">
+  <div class="top">
+    <div class="logo">CJ</div>
+    <div><b>CreaJit · Comptabilité</b><span>Demande de validation de sortie d'argent</span></div>
+  </div>
+
+  <div class="ok" id="ok"></div>
+
+  <div class="card">
+    <h1 class="serif">Nouvelle demande</h1>
+    <div class="sub">Remplis cette demande. Elle part directement à <b>Driss</b> pour validation (rien n'est payé sans son accord). Il reçoit la demande instantanément sur <b>Telegram</b>.</div>
+
+    <label>Objet de la dépense *</label>
+    <input id="poste" placeholder="Ex : Achat tissu velours (10 rouleaux)">
+
+    <label>Bénéficiaire / fournisseur</label>
+    <input id="fournisseur" placeholder="Ex : KY2N Arton">
+
+    <div class="row">
+      <div>
+        <label>Montant (DH) *</label>
+        <input id="montant" type="number" inputmode="numeric" placeholder="0">
+      </div>
+      <div>
+        <label>Échéance souhaitée</label>
+        <input id="echeance" type="date">
+      </div>
+    </div>
+
+    <label>Catégorie</label>
+    <select id="categorie">
+      <option>Achat matières</option>
+      <option>Fournisseur</option>
+      <option>Salaire / avance</option>
+      <option>Charge fixe (loyer, CNSS, leasing…)</option>
+      <option>Transport / livraison</option>
+      <option>Autre</option>
+    </select>
+
+    <label>Demandé par *</label>
+    <input id="demandeur" placeholder="Ton nom (comptable / responsable)">
+
+    <label>Note (optionnel)</label>
+    <textarea id="note" placeholder="Précision, urgence, n° de facture…"></textarea>
+
+    <button class="btn" onclick="envoyer()">📨 Envoyer la demande à Driss</button>
+    <div class="note">Aucun centime ne sort sans l'accord de Driss. Tu seras notifié de sa décision.</div>
+  </div>
+
+  <div class="card">
+    <h1 class="serif" style="font-size:17px">Mes dernières demandes</h1>
+    <div class="hist" id="hist"></div>
+  </div>
+</div>
+
+<script>
+// ── Verrou simple (code modifiable). Ce n'est PAS une sécurité forte :
+// la vraie validation est côté Driss. C'est juste pour cadrer l'accès. ──
+var CODE='2468';
+function unlock(){
+  var v=document.getElementById('pin').value.trim();
+  if(v===CODE){sessionStorage.setItem('cpt_ok','1');showApp();}
+  else{document.getElementById('lockerr').textContent='Code incorrect.';}
+}
+function showApp(){document.getElementById('lock').style.display='none';document.getElementById('app').style.display='block';renderHist();}
+if(sessionStorage.getItem('cpt_ok')==='1')showApp();
+
+function getDemandes(){try{return JSON.parse(localStorage.getItem('daf_demandes')||'[]');}catch(e){return [];}}
+function setDemandes(a){localStorage.setItem('daf_demandes',JSON.stringify(a));}
+
+function envoyer(){
+  var poste=document.getElementById('poste').value.trim();
+  var montant=Number(document.getElementById('montant').value)||0;
+  var demandeur=document.getElementById('demandeur').value.trim();
+  if(!poste||!montant||!demandeur){alert('Remplis au moins : objet, montant et ton nom.');return;}
+  var d={
+    id:Date.now(),
+    date:new Date().toISOString().slice(0,10),
+    poste:poste,
+    fournisseur:document.getElementById('fournisseur').value.trim(),
+    montant:montant,
+    echeance:document.getElementById('echeance').value||'',
+    categorie:document.getElementById('categorie').value,
+    demandeur:demandeur,
+    note:document.getElementById('note').value.trim(),
+    statut:'EN_ATTENTE',
+    source:'comptable'
+  };
+  // 1) stocke localement (l'agent DAF du cockpit la lira)
+  var arr=getDemandes();arr.unshift(d);setDemandes(arr);
+  // 2) notifie Driss sur Telegram via /api/alerte — silencieux si pas branché
+  try{
+    fetch('/api/alerte',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+      type:'sortie_argent',action:'NOUVELLE DEMANDE',poste:d.poste,fournisseur:d.fournisseur,
+      montant:d.montant,demandeur:d.demandeur,date:d.date,echeance:d.echeance,categorie:d.categorie,
+      note:d.note,email:'driss@salle91.com'
+    })}).catch(function(){});
+  }catch(e){}
+  // 3) confirme
+  var ok=document.getElementById('ok');
+  ok.innerHTML='✅ <b>Demande envoyée à Driss.</b><br>'+poste+' — '+montant.toLocaleString('fr-FR')+' DH. Tu seras notifié de sa décision.';
+  ok.classList.add('show');
+  // reset
+  ['poste','fournisseur','montant','echeance','note'].forEach(function(id){document.getElementById(id).value='';});
+  renderHist();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function renderHist(){
+  var box=document.getElementById('hist');
+  var arr=getDemandes().filter(function(d){return d.source==='comptable';});
+  if(!arr.length){box.innerHTML='<div class="empty">Aucune demande pour l\'instant.</div>';return;}
+  box.innerHTML=arr.slice(0,12).map(function(d){
+    var tag=d.statut==='APPROUVE'?'<span class="tag app">✅ Approuvé</span>':d.statut==='REFUSE'?'<span class="tag ref">❌ Refusé</span>':'<span class="tag att">⏳ En attente</span>';
+    return '<div class="hrow"><div><div>'+esc(d.poste)+'</div><div style="color:var(--mut2);font-size:11px">'+d.date+(d.fournisseur?' · '+esc(d.fournisseur):'')+'</div></div><div style="text-align:right"><div class="m">'+d.montant.toLocaleString('fr-FR')+' DH</div>'+tag+'</div></div>';
+  }).join('');
+}
+function esc(s){return String(s==null?'':s).replace(/[&<>]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;'}[c];});}
+</script>
+</body>
+</html>

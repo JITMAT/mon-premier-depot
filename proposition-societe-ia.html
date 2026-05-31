@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CreaJit OS · Société pilotée par l'IA — Proposition</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,800&family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0c1018;--card:#161d2b;--card2:#10151f;--line:rgba(196,113,79,.18);
+ --orange:#C4714F;--orange-b:#e69a76;--green:#22C55E;--red:#E74C3C;--yellow:#EAB308;--blue:#3b82f6;
+ --ink:#ece9e3;--mut:#8d96a5;--mut2:#586273}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:'Hanken Grotesk',system-ui,sans-serif;-webkit-font-smoothing:antialiased;
+ background-image:radial-gradient(1100px 560px at 86% -10%,rgba(196,113,79,.14),transparent 60%),radial-gradient(900px 500px at 5% 0%,rgba(59,130,246,.06),transparent 55%)}
+.serif{font-family:'Fraunces',serif}
+.wrap{max-width:1080px;margin:0 auto;padding:24px 16px 90px}
+a{color:var(--orange-b)}
+
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:30px}
+.brand{display:flex;align-items:center;gap:11px}
+.logo{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,#C4714F,#e69a76);display:grid;place-items:center;font-size:21px;color:#1a0f08;font-weight:800}
+.brand b{font-size:17px}.brand span{display:block;color:var(--mut);font-size:12px}
+.tag-doc{font-size:12px;font-weight:700;color:var(--orange-b);border:1px solid var(--line);padding:7px 13px;border-radius:30px}
+
+.hero{margin:6px 0 30px}
+.kick{display:inline-block;font-size:13px;font-weight:700;color:var(--orange-b);letter-spacing:.6px;text-transform:uppercase;margin-bottom:12px}
+.hero h1{font-size:clamp(30px,5.2vw,50px);line-height:1.04;font-weight:800;letter-spacing:-.9px}
+.hero h1 em{font-style:normal;color:var(--orange-b)}
+.hero p{color:var(--mut);margin-top:15px;font-size:17px;line-height:1.55;max-width:760px}
+
+h2.sec{font-size:23px;font-weight:800;margin:42px 0 6px;letter-spacing:-.3px}
+h2.sec .serif{font-weight:800}
+.sub{color:var(--mut);font-size:15px;margin-bottom:18px;max-width:760px;line-height:1.5}
+
+/* 3 niveaux */
+.levels{display:flex;flex-direction:column;gap:12px}
+.lvl{display:flex;gap:14px;align-items:flex-start;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:17px 18px}
+.lvl .ic{width:46px;height:46px;border-radius:13px;display:grid;place-items:center;font-size:23px;flex:none}
+.lvl .t b{font-size:16px}.lvl .t .r{color:var(--orange-b);font-size:12.5px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px}
+.lvl .t p{color:var(--mut);font-size:14px;line-height:1.5;margin-top:4px}
+.lvl.you{border-color:rgba(34,197,94,.35);background:linear-gradient(180deg,rgba(34,197,94,.07),transparent)}
+.lvl.boss{border-color:rgba(196,113,79,.45);background:linear-gradient(180deg,rgba(196,113,79,.1),transparent)}
+.arrow{text-align:center;color:var(--mut2);font-size:18px;margin:-4px 0}
+
+/* agents grid */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:13px;margin-top:6px}
+.ag{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;position:relative;overflow:hidden}
+.ag:before{content:"";position:absolute;inset:0 0 auto 0;height:3px;background:var(--ac,#C4714F)}
+.ag .h{display:flex;align-items:center;gap:10px;margin-bottom:9px}
+.ag .em{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;font-size:19px;flex:none}
+.ag .h b{font-size:15px}.ag .h span{display:block;color:var(--mut);font-size:12px}
+.ag p{color:var(--mut);font-size:13.3px;line-height:1.5}
+.ag .does{margin-top:9px;font-size:12.5px;color:var(--ink);background:var(--card2);border:1px solid #1b2230;border-radius:10px;padding:9px 11px}
+.ag .does b{color:var(--orange-b)}
+
+/* nervous system */
+.ns{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+.ns .box{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px}
+.ns .box h3{font-size:16px;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.ns ul{list-style:none;display:flex;flex-direction:column;gap:9px}
+.ns li{display:flex;gap:9px;font-size:13.7px;color:var(--mut);line-height:1.45}
+.ns li b{color:var(--ink);font-weight:600}
+.ns li:before{content:"▸";color:var(--orange-b);flex:none}
+@media(max-width:720px){.ns{grid-template-columns:1fr}}
+
+/* day */
+.day{display:flex;flex-direction:column;gap:10px}
+.d{display:flex;gap:13px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;align-items:flex-start}
+.d .hr{font-weight:800;color:var(--orange-b);font-size:14px;flex:none;width:64px;font-family:'Fraunces',serif}
+.d .c b{font-size:14.5px}.d .c p{color:var(--mut);font-size:13.3px;line-height:1.45;margin-top:3px}
+
+/* phases */
+.ph{display:flex;flex-direction:column;gap:11px}
+.phase{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:17px}
+.phase .ph-h{display:flex;align-items:center;gap:11px;margin-bottom:8px}
+.badge{font-size:11px;font-weight:800;padding:4px 11px;border-radius:20px;flex:none}
+.badge.done{background:rgba(34,197,94,.14);color:#7ee2a8;border:1px solid rgba(34,197,94,.3)}
+.badge.now{background:rgba(234,179,8,.15);color:#ecd089;border:1px solid rgba(234,179,8,.3)}
+.badge.next{background:#0e1420;color:var(--mut);border:1px solid #232c3d}
+.phase .ph-h b{font-size:16px}
+.phase p{color:var(--mut);font-size:13.7px;line-height:1.5}
+.phase .li{color:var(--mut);font-size:13.3px;margin-top:6px;padding-left:16px;position:relative}
+.phase .li:before{content:"–";position:absolute;left:2px;color:var(--orange-b)}
+
+.cta{background:linear-gradient(135deg,rgba(196,113,79,.16),rgba(59,130,246,.08));border:1px solid var(--line);border-radius:20px;padding:24px;margin-top:40px;text-align:center}
+.cta h3{font-size:22px;margin-bottom:8px}
+.cta p{color:var(--mut);font-size:15px;max-width:640px;margin:0 auto;line-height:1.55}
+
+.foot{margin-top:34px;text-align:center;color:var(--mut2);font-size:12.5px;line-height:1.7}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="top">
+    <div class="brand"><div class="logo serif">C</div>
+      <div><b>CreaJit OS</b><span>Société pilotée par l'intelligence artificielle</span></div></div>
+    <span class="tag-doc">PROPOSITION · v1</span>
+  </div>
+
+  <div class="hero">
+    <span class="kick">Proposition de construction</span>
+    <h1 class="serif">Une société meublée par des humains,<br><em>dirigée par une intelligence artificielle.</em></h1>
+    <p>L'idée : un <b style="color:var(--ink)">Patron IA</b> qui analyse en permanence toute l'activité de CreaJit,
+       prend des décisions et donne des ordres à une équipe d'<b style="color:var(--ink)">agents IA spécialisés</b> —
+       un par métier, du planning d'atelier au marketing. Eux exécutent et surveillent. <b style="color:var(--ink)">Toi, Driss, tu restes au sommet :</b>
+       tu reçois les synthèses sur WhatsApp, tu valides les décisions importantes, et tu interviens quand tu veux.</p>
+  </div>
+
+  <!-- 3 NIVEAUX -->
+  <h2 class="sec serif">1 · Le principe : 3 niveaux</h2>
+  <p class="sub">Une vraie hiérarchie, comme dans une entreprise — sauf que l'encadrement est de l'IA.</p>
+  <div class="levels">
+    <div class="lvl you"><div class="ic" style="background:rgba(34,197,94,.15)">👑</div>
+      <div class="t"><span class="r">Niveau 1 — Toi, Driss</span><b>Le Décideur</b>
+        <p>Tu ne fais plus le travail de surveillance : tu le pilotes. Tu reçois chaque jour la synthèse et les propositions du Patron IA, tu valides ou refuses d'un mot sur WhatsApp, et tu interviens là où ton jugement compte (gros clients, prix, embauches).</p></div></div>
+    <div class="arrow">↓ donne le cap · reçoit les synthèses</div>
+    <div class="lvl boss"><div class="ic" style="background:rgba(196,113,79,.2)">🧠</div>
+      <div class="t"><span class="r">Niveau 2 — Le Patron IA (Directeur Général)</span><b>Analyse, décide, ordonne</b>
+        <p>Le cerveau central. Il lit ce que remontent tous les agents, croise les infos (ex. « trésorerie basse + 3 grosses commandes en attente → relancer ces impayés d'abord »), fixe les priorités du jour, distribue les ordres aux agents, et fait remonter à toi seulement ce qui compte.</p></div></div>
+    <div class="arrow">↓ donne les ordres · ↑ remonte les analyses</div>
+    <div class="lvl"><div class="ic" style="background:rgba(59,130,246,.15)">🤖</div>
+      <div class="t"><span class="r">Niveau 3 — Les agents IA de terrain</span><b>Exécutent et surveillent</b>
+        <p>Une dizaine d'agents Claude, un par département. Chacun a sa mission écrite, ses données, et ses actions autorisées. Ils surveillent leur périmètre 24h/24, alertent, proposent, et exécutent les tâches simples automatiquement.</p></div></div>
+  </div>
+
+  <!-- AGENTS -->
+  <h2 class="sec serif">2 · L'équipe d'agents IA</h2>
+  <p class="sub">Chaque agent est un « employé IA » avec un rôle précis. Voici l'organigramme proposé pour CreaJit.</p>
+  <div class="grid">
+
+    <div class="ag" style="--ac:#3b82f6"><div class="h"><div class="em" style="background:#3b82f622">🏭</div><div><b>Agent Production</b><span>Fabrication · ateliers</span></div></div>
+      <p>Suit l'état de chaque commande (en attente / en cours / terminé) sur les 9 ateliers.</p>
+      <div class="does"><b>Agit :</b> crée les ordres de fabrication, signale les commandes bloquées, propose l'ordre de lancement.</div></div>
+
+    <div class="ag" style="--ac:#06b6d4"><div class="h"><div class="em" style="background:#06b6d422">📅</div><div><b>Agent Planning</b><span>Ordonnancement · délais</span></div></div>
+      <p>Construit le planning de production et de livraison en fonction de la charge et des dates promises.</p>
+      <div class="does"><b>Agit :</b> calcule les délais réalistes, répartit la charge entre ateliers, alerte sur les goulots.</div></div>
+
+    <div class="ag" style="--ac:#a78bfa"><div class="h"><div class="em" style="background:#a78bfa22">📦</div><div><b>Agent Achats / Matières</b><span>Appro · fournisseurs</span></div></div>
+      <p>Connaît les 559 matières et leurs fournisseurs. Calcule les besoins matières des commandes en cours.</p>
+      <div class="does"><b>Agit :</b> <b>compare les fournisseurs</b> (prix/délai), propose les bons de commande d'achat, alerte sur les ruptures.</div></div>
+
+    <div class="ag" style="--ac:#EAB308"><div class="h"><div class="em" style="background:#EAB30822">💰</div><div><b>Agent Finance</b><span>Encaissement · trésorerie</span></div></div>
+      <p>Surveille le CA, l'encaissé, le reste dû et la trésorerie. Aujourd'hui : 3,5 M DH à encaisser sur 141 commandes.</p>
+      <div class="does"><b>Agit :</b> <b>relance les impayés</b> (WhatsApp/mail au client), priorise les relances, alerte si la caisse baisse.</div></div>
+
+    <div class="ag" style="--ac:#34d399"><div class="h"><div class="em" style="background:#34d39922">🧮</div><div><b>Agent Coût de revient</b><span>Marge · prix</span></div></div>
+      <p>Calcule pour chaque commande : coût matières + coût main d'œuvre (coût horaire atelier) → marge réelle.</p>
+      <div class="does"><b>Agit :</b> donne le <b>prix de vente conseillé</b>, alerte sur les commandes vendues à perte, suit la marge globale.</div></div>
+
+    <div class="ag" style="--ac:#C4714F"><div class="h"><div class="em" style="background:#C4714F22">👥</div><div><b>Agent Commercial</b><span>Ventes · devis</span></div></div>
+      <p>Suit la performance de l'équipe (Kenza, Ikram, Laila…), le CA généré, le taux de transformation.</p>
+      <div class="does"><b>Agit :</b> prépare les devis, relance les prospects, classe les commerciales, signale qui décroche.</div></div>
+
+    <div class="ag" style="--ac:#22C55E"><div class="h"><div class="em" style="background:#22C55E22">🚚</div><div><b>Agent Livraison</b><span>Logistique</span></div></div>
+      <p>Surveille ce qui est à livrer, livré, et surtout en retard. Organise les tournées.</p>
+      <div class="does"><b>Agit :</b> planifie les livraisons, prévient les clients par WhatsApp, alerte sur les retards.</div></div>
+
+    <div class="ag" style="--ac:#f472b6"><div class="h"><div class="em" style="background:#f472b622">👷</div><div><b>Agent RH / Paie</b><span>Équipe · salaires</span></div></div>
+      <p>39 salariés, masse salariale 221 300 DH/mois. Suit pointage, présences, avances, paie.</p>
+      <div class="does"><b>Agit :</b> calcule la paie, suit les présences (pointeuse), alerte sur absences et coût main d'œuvre.</div></div>
+
+    <div class="ag" style="--ac:#e69a76"><div class="h"><div class="em" style="background:#e69a7622">📣</div><div><b>Agent Marketing</b><span>Contenu · pubs · leads</span></div></div>
+      <p>Gère la présence en ligne : posts réseaux sociaux, fiches produits, campagnes pub, génération de leads.</p>
+      <div class="does"><b>Agit :</b> rédige et programme les posts, crée les visuels/textes pub, propose les budgets, suit les retombées.</div></div>
+
+    <div class="ag" style="--ac:#60a5fa"><div class="h"><div class="em" style="background:#60a5fa22">💬</div><div><b>Agent Service client</b><span>WhatsApp · mail</span></div></div>
+      <p>Répond aux clients sur WhatsApp et par mail (via WaliChat + Claude) : disponibilité, devis, suivi de commande.</p>
+      <div class="does"><b>Agit :</b> répond automatiquement aux questions simples, escalade vers toi les cas sensibles.</div></div>
+
+    <div class="ag" style="--ac:#E74C3C"><div class="h"><div class="em" style="background:#E74C3C22">⚠️</div><div><b>Le Veilleur</b><span>Bras droit du Patron IA</span></div></div>
+      <p>Consolide toutes les alertes des agents en une criticité globale et te remonte l'essentiel, classé par gravité.</p>
+      <div class="does"><b>Agit :</b> envoie le briefing du matin et les alertes urgentes directement sur ton WhatsApp.</div></div>
+
+  </div>
+
+  <!-- SYSTEME NERVEUX -->
+  <h2 class="sec serif">3 · Le système nerveux</h2>
+  <p class="sub">Ce qui relie les agents à ton entreprise et à toi. La plupart existe déjà.</p>
+  <div class="ns">
+    <div class="box"><h3>🔌 Les données (ce qu'ils lisent)</h3>
+      <ul>
+        <li><b>Ton application creajit-mes-v1</b> — les 186 commandes, statuts, paiements <i>(déjà branché)</i></li>
+        <li><b>creajit.ma</b> — catalogue produits, 559 matières, fournisseurs</li>
+        <li><b>La pointeuse</b> — présences, retards, absences (à connecter)</li>
+        <li><b>Données RH & ateliers</b> — 39 salariés, coûts horaires <i>(déjà chargé)</i></li>
+        <li><b>Une « mémoire centrale »</b> où les agents écrivent leurs analyses et décisions</li>
+      </ul></div>
+    <div class="box"><h3>📡 Les canaux (comment ils te parlent &amp; agissent)</h3>
+      <ul>
+        <li><b>WhatsApp via WaliChat → Claude</b> — briefings, alertes, réponses clients <i>(tu l'as déjà)</i></li>
+        <li><b>E-mail</b> — relances impayés, devis, rapports</li>
+        <li><b>Notifications &amp; alertes dans le logiciel</b> — directement dans ton cockpit</li>
+        <li><b>Make.com</b> — le chef d'orchestre des automatisations <i>(scénarios déjà en place)</i></li>
+        <li><b>Validation par toi</b> — chaque action sensible attend ton « OK » sur WhatsApp</li>
+      </ul></div>
+  </div>
+
+  <!-- JOURNEE TYPE -->
+  <h2 class="sec serif">4 · Une journée type</h2>
+  <p class="sub">Concrètement, voilà à quoi ressemble ta journée une fois le système en place.</p>
+  <div class="day">
+    <div class="d"><div class="hr">8h00</div><div class="c"><b>Briefing du matin sur ton WhatsApp</b><p>Le Patron IA : « Bonjour Driss. 3 priorités aujourd'hui : 1) relancer 4 impayés (820 000 DH), 2) lancer 12 commandes en attente, 3) 2 livraisons à caler. Je m'en occupe — je te préviens si besoin. »</p></div></div>
+    <div class="d"><div class="hr">11h00</div><div class="c"><b>Une décision attend ton OK</b><p>« Le client Naani veut -15% sur une commande de 22 000 DH. Marge si j'accepte : 18%. Je propose -8% max. Tu valides ? [Oui / Non / Je gère] »</p></div></div>
+    <div class="d"><div class="hr">14h00</div><div class="c"><b>Les agents bossent en autonomie</b><p>L'agent Achats compare 3 fournisseurs de travertin et passe la commande au moins cher. L'agent Marketing programme 2 posts. L'agent Service client répond à 9 messages.</p></div></div>
+    <div class="d"><div class="hr">18h00</div><div class="c"><b>Bilan du jour</b><p>« Journée : +47 000 DH encaissés, 12 commandes lancées, 2 livrées, marge moyenne 31%. 1 point d'attention : atelier Peinture surchargé demain. »</p></div></div>
+  </div>
+
+  <!-- PLAN -->
+  <h2 class="sec serif">5 · Le plan de construction</h2>
+  <p class="sub">On construit de zéro, mais par étapes — chaque phase apporte un résultat concret et utilisable.</p>
+  <div class="ph">
+    <div class="phase"><div class="ph-h"><span class="badge done">PHASE 0 · FAIT</span><b>Les fondations</b></div>
+      <p>Les données de ton app sont branchées, et 9 agents de surveillance calculent déjà sur tes 186 vraies commandes (3,9 M DH).</p></div>
+    <div class="phase"><div class="ph-h"><span class="badge now">PHASE 1 · MAINTENANT</span><b>Le Patron IA + WhatsApp</b></div>
+      <p>On crée le Patron IA (Claude) qui analyse tout et envoie le briefing + les alertes sur ton WhatsApp via WaliChat.</p>
+      <div class="li">Briefing matin + alertes urgentes automatiques</div>
+      <div class="li">Tu réponds « Oui / Non » et il agit</div></div>
+    <div class="phase"><div class="ph-h"><span class="badge next">PHASE 2</span><b>Les agents qui agissent</b></div>
+      <p>On active Finance (relances impayés), Achats (comparaison fournisseurs + commandes), Coût de revient (marge + prix conseillé).</p></div>
+    <div class="phase"><div class="ph-h"><span class="badge next">PHASE 3</span><b>Marketing + Service client</b></div>
+      <p>Agents Marketing (posts, pubs, leads) et Service client (réponses WhatsApp/mail automatiques) connectés à WaliChat.</p></div>
+    <div class="phase"><div class="ph-h"><span class="badge next">PHASE 4</span><b>Temps réel total</b></div>
+      <p>Pointeuse, stock matières en direct, planning automatique des ateliers. Le Patron IA pilote l'usine en continu.</p></div>
+  </div>
+
+  <div class="cta">
+    <h3 class="serif">On commence par la Phase 1 ?</h3>
+    <p>Le plus impactant et le plus rapide : <b style="color:var(--ink)">ton Patron IA qui t'écrit sur WhatsApp.</b>
+       Dis-moi juste « go phase 1 » et le numéro WhatsApp à utiliser — je le construis et tu reçois ton premier briefing.</p>
+  </div>
+
+  <div class="foot">
+    <b>CreaJit OS</b> — proposition de société pilotée par l'IA · agents Claude + WaliChat + Make.com<br>
+    Document de travail — chiffres basés sur tes données réelles du 30/05/2026.
+  </div>
+</div>
+</body>
+</html>

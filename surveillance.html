@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Centre de surveillance · CreaJit IA</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,800&family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<!-- Données de référence + commandes (figées au départ, remplacées par le live) -->
+<script src="creajit-commandes-reelles.js"></script>
+<script src="creajit-salaires.js"></script>
+<script src="creajit-ateliers.js"></script>
+<script src="creajit-couthoraire.js"></script>
+<script src="creajit-matieres.js"></script>
+<script src="creajit-orders.js"></script>
+<script src="creajit-agents.js"></script>
+<style>
+:root{--bg:#0c1018;--card:#161d2b;--card2:#10151f;--line:rgba(196,113,79,.18);
+ --orange:#C4714F;--orange-b:#e69a76;--green:#22C55E;--red:#E74C3C;--yellow:#EAB308;
+ --ink:#ece9e3;--mut:#8d96a5;--mut2:#586273}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:'Hanken Grotesk',sans-serif;-webkit-font-smoothing:antialiased;
+ background-image:radial-gradient(1100px 560px at 86% -10%,rgba(196,113,79,.13),transparent 60%)}
+.serif{font-family:'Fraunces',serif}
+.wrap{max-width:1200px;margin:0 auto;padding:20px 16px 70px}
+a{color:inherit;text-decoration:none}
+::-webkit-scrollbar{width:9px}::-webkit-scrollbar-thumb{background:#222c3d;border-radius:9px}
+
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+.live{display:inline-flex;align-items:center;gap:8px;background:#10241a;border:1px solid rgba(34,197,94,.3);
+ color:#7ee2a8;padding:7px 13px;border-radius:30px;font-weight:700;font-size:13px}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--green);animation:pulse 1.8s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(34,197,94,.5)}70%{box-shadow:0 0 0 9px rgba(34,197,94,0)}100%{box-shadow:0 0 0 0 rgba(34,197,94,0)}}
+.ttags{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:13px;color:var(--mut)}
+.src{padding:5px 11px;border-radius:20px;border:1px solid var(--line);font-weight:600}
+.src.snap{color:var(--yellow);border-color:rgba(234,179,8,.3)}
+.src.liv{color:#7ee2a8;border-color:rgba(34,197,94,.3)}
+.home{padding:7px 14px;border-radius:24px;background:var(--orange);color:#1a0f08;font-weight:800;font-size:13px}
+
+.hero{margin:6px 0 22px}
+.hero h1{font-size:30px;line-height:1.1;font-weight:800;letter-spacing:-.5px}
+.hero p{color:var(--mut);margin-top:7px;font-size:15px;max-width:680px}
+
+.veil{background:linear-gradient(180deg,#191017,#12131c);border:1px solid var(--line);border-radius:20px;padding:18px;margin-bottom:20px}
+.veil .vh{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.av{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;font-size:22px;flex:none;background:#0e1420}
+.veil .vt b{font-size:17px}.veil .vt span{display:block;color:var(--mut);font-size:13px}
+.crit{margin-left:auto;text-align:right}.crit .n{font-size:30px;font-weight:800;line-height:1}.crit .l{font-size:12px;color:var(--mut)}
+.alerts{display:flex;flex-direction:column;gap:8px}
+.al{display:flex;align-items:center;gap:10px;padding:11px 13px;border-radius:12px;background:#0e1420;border:1px solid #1c2433;font-size:14px}
+.al.red{border-color:rgba(231,76,60,.4);background:rgba(231,76,60,.08)}
+.al.org{border-color:rgba(234,179,8,.35);background:rgba(234,179,8,.07)}
+.al.ok{border-color:rgba(34,197,94,.3);background:rgba(34,197,94,.06)}
+.al.info{opacity:.92}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;position:relative;overflow:hidden}
+.card:before{content:"";position:absolute;inset:0 0 auto 0;height:3px;background:var(--ac,#C4714F)}
+.ch{display:flex;align-items:center;gap:11px;margin-bottom:13px}
+.ch .nm b{font-size:15px}.ch .nm span{display:block;color:var(--mut);font-size:12.5px}
+.watch{margin-left:auto;font-size:11px;color:#7ee2a8;display:inline-flex;align-items:center;gap:5px;font-weight:600}
+.kpis{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:12px}
+.kpi{background:var(--card2);border:1px solid #1b2230;border-radius:12px;padding:10px 11px}
+.kpi .n{font-size:18px;font-weight:800;line-height:1.1}.kpi .l{font-size:11.5px;color:var(--mut);margin-top:3px}
+.allist{display:flex;flex-direction:column;gap:6px}
+.alm{font-size:13px;padding:8px 11px;border-radius:10px;background:#0e1420;border:1px solid #1c2433;color:var(--mut)}
+.alm.red{color:#f3a79c;border-color:rgba(231,76,60,.35);background:rgba(231,76,60,.08)}
+.alm.org{color:#ecd089;border-color:rgba(234,179,8,.3);background:rgba(234,179,8,.06)}
+.alm.ok{color:#9fe6bb;border-color:rgba(34,197,94,.28);background:rgba(34,197,94,.05)}
+.miss{margin-top:11px}
+.miss summary{cursor:pointer;font-size:12.5px;color:var(--orange-b);font-weight:700;list-style:none;user-select:none}
+.miss summary::-webkit-details-marker{display:none}
+.miss summary:before{content:"📋 ";}
+.miss .body{margin-top:9px;font-size:12.7px;line-height:1.55;color:var(--mut)}
+.miss .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.tag{font-size:11px;padding:3px 9px;border-radius:20px;background:#0e1420;border:1px solid #232c3d;color:var(--mut)}
+.foot{margin-top:24px;text-align:center;color:var(--mut2);font-size:12.5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="top">
+    <span class="live"><span class="dot"></span> Ton équipe IA veille</span>
+    <div class="ttags">
+      <span id="src" class="src snap">données figées</span>
+      <span id="clock"></span>
+      <a class="home" href="index.html">← Accueil</a>
+    </div>
+  </div>
+
+  <div class="hero">
+    <h1 class="serif">Tu bosses. <span style="color:var(--orange-b)">Eux surveillent.</span></h1>
+    <p>Chaque agent a une mission précise et veille en continu une partie de ton application CreaJit. Ils calculent, alertent et te résument tout. Ouvre « Ses instructions » sur chaque agent pour voir sa feuille de route.</p>
+  </div>
+
+  <div id="veil" class="veil"></div>
+  <div id="grid" class="grid"></div>
+
+  <div class="foot" id="foot"></div>
+</div>
+
+<!-- branchement live : remplit les vraies commandes de TON app puis re-render -->
+<script src="creajit-api.js"></script>
+<script>
+(function(){
+  function esc(s){ return String(s).replace(/[&<>]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c];}); }
+
+  function srcBadge(live){
+    var el=document.getElementById('src');
+    el.textContent = live ? 'données en direct · creajit-mes-v1' : 'données figées (30/05)';
+    el.className = 'src ' + (live ? 'liv' : 'snap');
+  }
+
+  function kpiHTML(k){ return '<div class="kpi"><div class="n">'+esc(k.n)+'</div><div class="l">'+esc(k.l)+'</div></div>'; }
+  function alHTML(a,cls){ return '<div class="'+cls+' '+(a.niveau||'info')+'">'+esc(a.txt)+'</div>'; }
+
+  function missionHTML(ag){
+    var tags = (ag.surveille||[]).map(function(s){return '<span class="tag">'+esc(s)+'</span>';}).join('');
+    return '<details class="miss"><summary>Ses instructions</summary>'+
+      '<div class="body">'+esc(ag.mission)+
+      '<div class="tags"><b style="color:var(--mut2);font-size:11px;width:100%;display:block;margin-bottom:2px">SURVEILLE :</b>'+tags+'</div>'+
+      '</div></details>';
+  }
+
+  function render(){
+    if(!window.CJ_AGENTS){ return; }
+    var live = (window.CJ_DATA_SOURCE === 'live');
+    srcBadge(live);
+
+    var all = window.CJ_AGENTS.analyserTout();
+    var veil = all[0];            // Le Veilleur en bandeau
+    var rest = all.slice(1);
+
+    // ----- bandeau Veilleur -----
+    var vr = veil.resultat;
+    var crit = (vr.kpis[0] && vr.kpis[0].n) || 0;
+    var critColor = crit>60?'var(--red)':(crit>25?'var(--yellow)':'var(--green)');
+    document.getElementById('veil').innerHTML =
+      '<div class="vh">'+
+        '<div class="av">'+veil.agent.emoji+'</div>'+
+        '<div class="vt"><b class="serif">'+esc(veil.agent.nom)+'</b><span>'+esc(vr.resume)+'</span></div>'+
+        '<div class="crit"><div class="n" style="color:'+critColor+'">'+esc(crit)+'</div><div class="l">criticité</div></div>'+
+      '</div>'+
+      '<div class="alerts">'+ vr.alertes.map(function(a){return alHTML(a,'al');}).join('') +'</div>'+
+      missionHTML(veil.agent);
+
+    // ----- cartes agents -----
+    document.getElementById('grid').innerHTML = rest.map(function(x){
+      var ag=x.agent, r=x.resultat;
+      return '<div class="card" style="--ac:'+ag.couleur+'">'+
+        '<div class="ch"><div class="av" style="background:'+ag.couleur+'22">'+ag.emoji+'</div>'+
+          '<div class="nm"><b>'+esc(ag.nom)+'</b><span>'+esc(ag.role)+'</span></div>'+
+          '<span class="watch"><span class="dot"></span>en surveillance</span></div>'+
+        '<div class="kpis">'+ r.kpis.map(kpiHTML).join('') +'</div>'+
+        '<div class="allist">'+ r.alertes.slice(0,4).map(function(a){return alHTML(a,'alm');}).join('') +'</div>'+
+        missionHTML(ag)+
+      '</div>';
+    }).join('');
+
+    document.getElementById('foot').textContent =
+      'Dernière analyse : '+ new Date().toLocaleTimeString('fr-FR') +
+      ' · '+ (live ? 'connecté en direct à ton app creajit-mes-v1' : 'snapshot du 30/05/2026 — passera en direct au déploiement') +
+      ' · '+ all.length +' agents en surveillance';
+  }
+
+  function clock(){ var c=document.getElementById('clock'); if(c) c.textContent=new Date().toLocaleTimeString('fr-FR'); }
+  clock(); setInterval(clock,1000);
+
+  window.render = render;   // creajit-api.js re-render après l'arrivée du live
+  render();
+  setInterval(render, 60000); // les agents ré-analysent en continu
+})();
+</script>
+</body>
+</html>

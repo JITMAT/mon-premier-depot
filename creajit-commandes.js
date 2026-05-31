@@ -1,0 +1,21 @@
+// Commandes réelles CreaJit (partagé : Kenza commercial, Sabiri compta…)
+window.CJ_CMD = [
+  {ref:'26040019',client:'2A WEDDING',com:'Ikram Benaddi',statut:'confirmed',total:95000,paye:40016,reste:54984},
+  {ref:'26050010',client:'Mme Soumali',com:'Ikram Benaddi',statut:'confirmed',total:39000,paye:19500,reste:19500},
+  {ref:'26050015',client:'Mme Yasmine',com:'Laila Boudil',statut:'confirmed',total:31000,paye:15500,reste:15500},
+  {ref:'26040052',client:'Mr Benjamin',com:'Ikram Benaddi',statut:'ready',total:26000,paye:26000,reste:0},
+  {ref:'26040024',client:'Mme Anisa Guerroumi',com:'Ikram Benaddi',statut:'ready',total:21000,paye:21000,reste:0},
+  {ref:'26040045',client:'Mr Yazid',com:'Kenza Mokhantar',statut:'ready',total:20000,paye:20000,reste:0},
+  {ref:'26040059',client:'Mme Zaki Nadia',com:'Ikram Benaddi',statut:'confirmed',total:20000,paye:10000,reste:10000},
+  {ref:'26040048',client:'Azzozi Relax Houses',com:'Laila Boudil',statut:'ready',total:12300,paye:12300,reste:0},
+  {ref:'26040022',client:'Mme Ilhame',com:'Laila Boudil',statut:'ready',total:12000,paye:12000,reste:0},
+  {ref:'26050030',client:'Mme Daniela Douhi',com:'Kenza Mokhantar',statut:'ready',total:10000,paye:10000,reste:0},
+  {ref:'26040008',client:'Mr Youssef Ajdir',com:'Kenza Mokhantar',statut:'ready',total:10000,paye:10000,reste:0},
+  {ref:'26050007',client:'Mr Maliki',com:'Laila Boudil',statut:'confirmed',total:7850,paye:3600,reste:4250},
+  {ref:'26040026',client:'Mr Soufiane',com:'Laila Boudil',statut:'ready',total:6500,paye:6500,reste:0},
+  {ref:'26040016',client:'Mme Perez',com:'Kenza Mokhantar',statut:'ready',total:5500,paye:5500,reste:0},
+  {ref:'26040060',client:'Mme Laila',com:'Laila Boudil',statut:'confirmed',total:5300,paye:2650,reste:2650},
+  {ref:'26050019',client:'Mme Nazha',com:'Ikram Benaddi',statut:'ready',total:3200,paye:3200,reste:0},
+  {ref:'26040053',client:'Expresse Beuty',com:'Laila Boudil',statut:'confirmed',total:2800,paye:400,reste:2400},
+  {ref:'26040025',client:'Showroom',com:'Fatima Sedky',statut:'ready',total:1,paye:0,reste:1},
+];

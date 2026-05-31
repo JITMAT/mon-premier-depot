@@ -1,0 +1,154 @@
+<!-- CREAJIT — Pointage : qui travaille, sur quel produit. L'ouvrier (ou Hanane) appuie Démarrer / Pause / Fini -->
+<script src="creajit-matieres.js"></script>
+<script src="creajit-ateliers.js"></script>
+<script src="creajit-couthoraire.js"></script>
+<script src="creajit-departements.js"></script>
+<script src="creajit-salaires.js"></script>
+<script src="creajit-workers.js"></script>
+<script src="creajit-data.js"></script>
+<script src="creajit-commandes-reelles.js"></script>
+<script src="creajit-orders.js"></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<title>CREAJIT — Pointage atelier</title>
+<style>
+:root{--bg:#0d111b;--card:#161d2b;--line:#283449;--ink:#eef2f8;--mut:#94a3b8;--green:#34d399;--red:#f87171;--yellow:#fbbf24;--blue:#60a5fa;--orange:#C4714F;--orange-b:#e69a76}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:'Hanken Grotesk',system-ui,sans-serif;padding:16px;max-width:760px;margin:0 auto;padding-bottom:80px}
+h1{font-family:'Fraunces',serif;font-size:23px}.sub{color:var(--mut);font-size:13px}
+.head{display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+.av0{width:48px;height:48px;border-radius:13px;background:linear-gradient(135deg,#C4714F,#8a4d34);display:grid;place-items:center;font-size:22px;flex:none}
+.menu{margin-left:auto;display:flex;gap:7px;flex-wrap:wrap}
+.menu a{font-size:12px;color:var(--mut);text-decoration:none;background:var(--card);border:1px solid var(--line);padding:7px 11px;border-radius:9px}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:13px;text-align:center;cursor:pointer}
+.kpi.on{border-color:var(--orange)}
+.kpi .v{font-family:Fraunces;font-weight:700;font-size:24px}.kpi .l{color:var(--mut);font-size:12px;margin-top:2px}
+.kpi.g .v{color:var(--green)}.kpi.y .v{color:var(--yellow)}.kpi.r .v{color:var(--red)}
+input.q{width:100%;background:#0f1622;border:1px solid var(--line);color:var(--ink);border-radius:10px;padding:11px 13px;font-family:inherit;font-size:14px;margin-bottom:12px}
+.w{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--line);border-radius:13px;padding:11px 13px;margin-bottom:9px}
+.w.work{border-left-color:var(--green)}.w.pause{border-left-color:var(--yellow)}.w.idle{border-left-color:#3a4658}
+.top{display:flex;align-items:center;gap:11px}
+.ava{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;font-weight:700;color:#fff;flex:none;font-size:14px}
+.nm{font-weight:600;font-size:14.5px}.at{color:var(--mut);font-size:12px;margin-top:1px}
+.stt{margin-left:auto;font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;flex:none}
+.stt.work{background:rgba(52,211,153,.15);color:var(--green)}.stt.pause{background:rgba(251,191,36,.15);color:var(--yellow)}.stt.idle{background:rgba(148,163,184,.12);color:var(--mut)}
+.prod{font-size:13px;margin-top:9px;padding:8px 11px;background:#0f1622;border-radius:9px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.prod b{font-weight:600}.prod .t{color:var(--mut);font-size:12px;margin-left:auto}
+.acts{display:flex;gap:8px;margin-top:9px;flex-wrap:wrap}
+.btn{flex:1;min-width:96px;border:none;font-family:inherit;font-weight:700;font-size:14px;padding:12px;border-radius:11px;cursor:pointer}
+.btn.go{background:var(--green);color:#06281c}.btn.pa{background:var(--yellow);color:#3a2c05}.btn.fi{background:var(--orange);color:#1a0f08}.btn.gh{background:#1f2937;color:var(--ink)}
+.row2{display:flex;gap:8px;margin-top:9px}
+.row2 input{flex:1;background:#0f1622;border:1px solid var(--line);color:var(--ink);border-radius:10px;padding:11px;font-family:inherit;font-size:13.5px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.chip{font-size:12px;background:#1f2937;border:1px solid var(--line);color:var(--ink);border-radius:18px;padding:5px 11px;cursor:pointer}
+.empty{color:var(--mut);font-size:13px;text-align:center;padding:18px}
+</style>
+
+<div class="head">
+  <div class="av0">⏱️</div>
+  <div><h1>Pointage atelier</h1><div class="sub">Qui travaille, sur quel produit. Appuie ▶ Démarrer dès qu'un ouvrier commence.</div></div>
+  <div class="menu"><a href="index.html">🏠 Cockpit</a><a href="paie.html">💼 Paie</a></div>
+</div>
+
+<div class="kpis" id="kpis"></div>
+<input class="q" id="q" placeholder="🔎 Chercher un ouvrier…">
+<div id="list"></div>
+
+<script>
+(function(){
+  var filtre='', recherche='';
+  var PRODUITS=['Canapé','Fauteuil','Chaise','Lit','Sommier','Méridienne','Table','Tableau','Cadre','Structure','Peinture'];
+  function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+  function ini(n){return (n||'?').split(' ').map(function(w){return w[0]||'';}).join('').slice(0,2).toUpperCase();}
+  function atNom(c){var a=(window.CJ_OUVRIERS,window.CJ_ATELIERS||[]).find(function(x){return x.code===c;});return a?(a.nom||('Atelier '+c)):('Atelier '+c);}
+  function couleurAt(c){var a=(window.CJ_ATELIERS_DOC||[]).find(function(x){return x.code===c;});return a?a.couleur:'#C4714F';}
+
+  // état courant d'un ouvrier : son article actif (encours/pause) ou le plus récent affecté
+  function etatOuvrier(w){
+    var jobs=(window.CJ&&CJ.affectationsOuvrier)?CJ.affectationsOuvrier(w.id):[];
+    var actif=jobs.find(function(j){return j.statut==='encours';})
+            || jobs.find(function(j){return j.statut==='pause';})
+            || jobs.filter(function(j){return j.statut==='affecte';}).slice(-1)[0]
+            || null;
+    var statut = actif? (actif.statut==='encours'?'work':(actif.statut==='pause'?'pause':'idle')) : 'idle';
+    return {statut:statut, job:actif, nbAffectes:jobs.filter(function(j){return j.statut!=='fini';}).length};
+  }
+
+  function render(){
+    var OUV=(window.CJ_OUVRIERS||[]);
+    var arr=OUV.map(function(w){var e=etatOuvrier(w);return {w:w,statut:e.statut,job:e.job};});
+    var nW=arr.filter(function(x){return x.statut==='work';}).length;
+    var nP=arr.filter(function(x){return x.statut==='pause';}).length;
+    var nI=arr.length-nW-nP;
+    document.getElementById('kpis').innerHTML=
+      '<div class="kpi g'+(filtre==='work'?' on':'')+'" data-f="work"><div class="v">'+nW+'</div><div class="l">🟢 au travail</div></div>'+
+      '<div class="kpi y'+(filtre==='pause'?' on':'')+'" data-f="pause"><div class="v">'+nP+'</div><div class="l">🟡 en pause</div></div>'+
+      '<div class="kpi r'+(filtre==='idle'?' on':'')+'" data-f="idle"><div class="v">'+nI+'</div><div class="l">🔴 sans produit</div></div>';
+    document.querySelectorAll('.kpi').forEach(function(k){k.onclick=function(){var f=k.getAttribute('data-f');filtre=(filtre===f)?'':f;render();};});
+
+    var liste=arr;
+    if(filtre) liste=liste.filter(function(x){return x.statut===filtre;});
+    if(recherche){var q=recherche.toLowerCase();liste=liste.filter(function(x){return (x.w.nm+' '+atNom(x.w.at)).toLowerCase().indexOf(q)>=0;});}
+    // tri : au travail, puis pause, puis idle
+    var ordre={work:0,pause:1,idle:2};
+    liste.sort(function(a,b){return ordre[a.statut]-ordre[b.statut] || a.w.nm.localeCompare(b.w.nm);});
+
+    if(!liste.length){document.getElementById('list').innerHTML='<div class="empty">Aucun ouvrier.</div>';return;}
+    document.getElementById('list').innerHTML=liste.map(function(x){return carte(x.w,x.statut,x.job);}).join('');
+    brancher();
+  }
+
+  function carte(w,statut,job){
+    var lib={work:'au travail',pause:'en pause',idle:'sans produit'}[statut];
+    var html='<div class="w '+statut+'" data-w="'+w.id+'">'+
+      '<div class="top"><div class="ava" style="background:'+couleurAt(w.at)+'">'+ini(w.nm)+'</div>'+
+      '<div style="min-width:0"><div class="nm">'+esc(w.nm)+(w.chef?' · chef':'')+'</div><div class="at">'+esc(atNom(w.at))+'</div></div>'+
+      '<span class="stt '+statut+'">'+lib+'</span></div>';
+    if(statut==='work'){
+      html+='<div class="prod">🔧 <b>'+esc(job.nom)+'</b>'+(job.client?' <span class="at">· '+esc(job.client)+'</span>':'')+'<span class="t">⏱️ '+(job.heures||0)+'h</span></div>'+
+        '<div class="acts"><button class="btn pa" data-act="pause" data-a="'+job.articleId+'" data-o="'+w.id+'">⏸ Pause</button>'+
+        '<button class="btn fi" data-act="fini" data-a="'+job.articleId+'" data-o="'+w.id+'">✓ Fini</button></div>';
+    } else if(statut==='pause'){
+      html+='<div class="prod">⏸️ <b>'+esc(job.nom)+'</b>'+(job.motif?' <span class="at">— '+esc(job.motif)+'</span>':'')+'<span class="t">⏱️ '+(job.heures||0)+'h</span></div>'+
+        '<div class="acts"><button class="btn go" data-act="reprendre" data-a="'+job.articleId+'" data-o="'+w.id+'">▶ Reprendre</button>'+
+        '<button class="btn fi" data-act="fini" data-a="'+job.articleId+'" data-o="'+w.id+'">✓ Fini</button></div>';
+    } else {
+      // sans produit : soit un article déjà affecté en attente, soit on saisit le produit
+      if(job){
+        html+='<div class="prod">📋 affecté : <b>'+esc(job.nom)+'</b></div>'+
+          '<div class="acts"><button class="btn go" data-act="reprendre" data-a="'+job.articleId+'" data-o="'+w.id+'">▶ Démarrer</button></div>';
+      } else {
+        html+='<div class="row2"><input placeholder="Sur quel produit ?" data-inp="'+w.id+'"><button class="btn go" style="flex:none;min-width:120px" data-act="nouveau" data-o="'+w.id+'" data-at="'+w.at+'">▶ Démarrer</button></div>'+
+          '<div class="chips">'+PRODUITS.map(function(p){return '<span class="chip" data-chip="'+w.id+'" data-p="'+p+'">'+p+'</span>';}).join('')+'</div>';
+      }
+    }
+    return html+'</div>';
+  }
+
+  function brancher(){
+    document.querySelectorAll('[data-chip]').forEach(function(c){c.onclick=function(){
+      var inp=document.querySelector('[data-inp="'+c.getAttribute('data-chip')+'"]');if(inp)inp.value=c.getAttribute('data-p');
+    };});
+    document.querySelectorAll('[data-act]').forEach(function(b){b.onclick=function(){
+      var a=b.getAttribute('data-a'),o=b.getAttribute('data-o'),act=b.getAttribute('data-act');
+      if(act==='pause'){var m=prompt('Motif de la pause ? (optionnel)','');CJ.pauserTravail(a,o,m||'');}
+      else if(act==='fini'){CJ.finirTravail(a,o);}
+      else if(act==='reprendre'){CJ.demarrerTravail(a,o);}
+      else if(act==='nouveau'){
+        var inp=document.querySelector('[data-inp="'+o+'"]');var nom=(inp&&inp.value.trim())||'';
+        if(!nom){if(inp)inp.focus();return;}
+        var aid='P_'+o+'_'+Date.now().toString(36);
+        CJ.ajouterAffArticle(aid,o,b.getAttribute('data-at'),nom,{nom:nom});
+        CJ.demarrerTravail(aid,o);
+      }
+      render();
+    };});
+  }
+
+  document.getElementById('q').oninput=function(){recherche=this.value;render();};
+  if(window.CJ&&CJ.abonner) CJ.abonner(render);
+  render();
+})();
+</script>

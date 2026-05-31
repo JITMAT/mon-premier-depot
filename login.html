@@ -1,0 +1,50 @@
+<!doctype html><html lang="fr"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CREAJIT IA — Connexion</title>
+<script src="creajit-ateliers.js"></script>
+<script src="creajit-workers.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0d111b;--card:#1a2230;--line:#2c3850;--orange:#C4714F;--ink:#eef2f8;--mut:#8d96a5}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:'Hanken Grotesk',sans-serif;min-height:100vh;display:grid;place-items:center;padding:20px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:26px;width:380px;max-width:100%}
+h1{font-family:'Fraunces',serif;font-size:28px;margin-bottom:4px}
+.sub{color:var(--mut);font-size:13px;margin-bottom:20px}
+label{display:block;font-size:12px;color:var(--mut);margin-bottom:6px}
+select,input{width:100%;background:#0f1622;border:1px solid var(--line);color:var(--ink);border-radius:10px;padding:12px;font-size:15px;margin-bottom:14px;font-family:inherit}
+button{width:100%;background:var(--orange);color:#1a0f08;border:none;border-radius:10px;padding:13px;font-weight:700;font-size:15px;cursor:pointer}
+.err{color:#e8584a;font-size:13px;margin-bottom:10px;min-height:16px}
+</style></head><body>
+<form class="card" id="f">
+  <h1>CREAJIT <span style="color:var(--orange)">IA</span></h1>
+  <div class="sub">Connexion — choisis ton compte</div>
+  <label>Qui es-tu ?</label>
+  <select id="who"></select>
+  <label>Code</label>
+  <input id="pin" type="password" inputmode="numeric" placeholder="••••" value="">
+  <div class="err" id="err"></div>
+  <button type="submit">Se connecter</button>
+  <div class="sub" style="margin-top:14px;text-align:center">Code partagé : 0000</div>
+</form>
+<script>
+(function(){
+  var who=document.getElementById('who');
+  var dir=(window.CJ_DIRECTION||[]); var ouv=(window.CJ_OUVRIERS||[]);
+  function opt(list,grpLabel){ if(!list.length)return; var g=document.createElement('optgroup'); g.label=grpLabel;
+    list.forEach(function(w){ var o=document.createElement('option'); o.value=JSON.stringify({id:w.id,nm:w.nm,role:w.role||'',at:w.at||'',page:w.page||''}); o.textContent=(w.role?(w.nm+' — '+w.role):(w.nm+(w.at?(' (atelier '+w.at+')'):''))); g.appendChild(o); });
+    who.appendChild(g);
+  }
+  opt(dir,'Direction & agents'); opt(ouv,'Ouvriers');
+  document.getElementById('f').onsubmit=function(e){
+    e.preventDefault();
+    if(document.getElementById('pin').value!=='0000'){ document.getElementById('err').textContent='Code incorrect.'; return; }
+    var u=JSON.parse(who.value);
+    localStorage.setItem('creajit_user', JSON.stringify(u));
+    // redirige vers la page de l'agent
+    if(u.page){ location.href=u.page; }
+    else { location.href='ouvrier.html?w='+u.id; }
+  };
+})();
+</script>
+</body></html>

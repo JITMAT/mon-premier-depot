@@ -1,13 +1,184 @@
 <!doctype html>
 <html lang="fr">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <meta name="theme-color" content="#0F172A" />
-    <title>CREAJIT MES</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CREAJIT IA — Ton équipe intelligente</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0e17;--bg2:#0d121e;--card:#141b29;--card2:#18202f;--line:#26303f;
+  --ink:#f1f5fb;--mut:#93a1b5;--mut2:#64748b;
+  --orange:#C4714F;--orange-b:#e89a76;--orange-g:#ff8a5c;
+  --green:#34d399;--blue:#60a5fa;--violet:#a78bfa;--gold:#fbbf24;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:'Hanken Grotesk',system-ui,sans-serif;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+/* halos d'ambiance */
+body::before{content:"";position:fixed;top:-20%;left:-10%;width:60vw;height:60vw;background:radial-gradient(circle,rgba(196,113,79,.18),transparent 60%);filter:blur(40px);z-index:0;pointer-events:none}
+body::after{content:"";position:fixed;bottom:-25%;right:-15%;width:55vw;height:55vw;background:radial-gradient(circle,rgba(96,165,250,.10),transparent 60%);filter:blur(40px);z-index:0;pointer-events:none}
+.wrap{position:relative;z-index:1;max-width:1120px;margin:0 auto;padding:22px 20px 60px}
+
+/* top bar */
+.top{display:flex;align-items:center;gap:13px;margin-bottom:46px}
+.logo{width:46px;height:46px;border-radius:13px;background:linear-gradient(140deg,var(--orange-g),var(--orange),#8a4d34);display:grid;place-items:center;font-family:Fraunces;font-weight:700;font-size:22px;color:#1a0f08;box-shadow:0 8px 24px rgba(196,113,79,.35)}
+.brandtxt b{font-family:Fraunces;font-weight:700;font-size:17px;letter-spacing:.3px;display:block;line-height:1}
+.brandtxt span{font-size:11.5px;color:var(--mut);letter-spacing:2px;text-transform:uppercase}
+.toplinks{margin-left:auto;display:flex;gap:8px}
+.toplinks a{font-size:13px;color:var(--mut);text-decoration:none;padding:9px 14px;border-radius:10px;border:1px solid transparent;transition:.2s;font-weight:500}
+.toplinks a:hover{color:var(--ink);border-color:var(--line);background:var(--card)}
+.toplinks a.cta{background:linear-gradient(135deg,var(--orange),#9c5635);color:#1a0f08;font-weight:700;border:none}
+.toplinks a.cta:hover{filter:brightness(1.08)}
+
+/* hero */
+.hero{text-align:center;margin-bottom:30px}
+.pill{display:inline-flex;align-items:center;gap:8px;background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.25);color:var(--green);font-size:12.5px;font-weight:600;padding:7px 15px;border-radius:30px;margin-bottom:22px}
+.pulse{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 0 0 rgba(52,211,153,.6);animation:pulse 2s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(52,211,153,.55)}70%{box-shadow:0 0 0 9px rgba(52,211,153,0)}100%{box-shadow:0 0 0 0 rgba(52,211,153,0)}}
+.hero h1{font-family:Fraunces;font-weight:700;font-size:clamp(34px,6vw,62px);line-height:1.02;letter-spacing:-1px;margin-bottom:18px}
+.hero h1 .g{background:linear-gradient(120deg,var(--orange-b),var(--gold));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{color:var(--mut);font-size:clamp(15px,2vw,18px);max-width:620px;margin:0 auto 26px;line-height:1.6}
+.heroBtns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.bbig{display:inline-flex;align-items:center;gap:9px;padding:14px 26px;border-radius:13px;font-family:inherit;font-weight:700;font-size:15px;text-decoration:none;cursor:pointer;border:none;transition:.2s}
+.bbig.p{background:linear-gradient(135deg,var(--orange-g),#9c5635);color:#1a0f08;box-shadow:0 10px 30px rgba(196,113,79,.35)}
+.bbig.p:hover{transform:translateY(-2px);box-shadow:0 14px 36px rgba(196,113,79,.45)}
+.bbig.s{background:var(--card);color:var(--ink);border:1px solid var(--line)}
+.bbig.s:hover{border-color:var(--orange);background:var(--card2)}
+
+/* bandeau chiffres live */
+.ticker{display:grid;grid-template-columns:repeat(4,1fr);gap:13px;margin:38px 0 46px}
+.tk{background:linear-gradient(160deg,var(--card),var(--bg2));border:1px solid var(--line);border-radius:16px;padding:18px 16px;text-align:center;position:relative;overflow:hidden}
+.tk::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--orange),transparent);opacity:.6}
+.tk .v{font-family:Fraunces;font-weight:700;font-size:clamp(22px,3vw,30px);line-height:1}
+.tk .l{color:var(--mut);font-size:12px;margin-top:6px}
+.tk.g .v{color:var(--green)}.tk.o .v{color:var(--orange-b)}.tk.b .v{color:var(--blue)}.tk.y .v{color:var(--gold)}
+
+/* section agents */
+.sechd{display:flex;align-items:flex-end;gap:12px;margin-bottom:6px}
+.sechd h2{font-family:Fraunces;font-weight:600;font-size:24px}
+.sechd .live{display:inline-flex;align-items:center;gap:7px;font-size:12px;color:var(--green);font-weight:600;margin-bottom:4px}
+.sub{color:var(--mut);font-size:14px;margin-bottom:22px}
+
+.agents{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.agent{background:linear-gradient(165deg,var(--card),var(--bg2));border:1px solid var(--line);border-radius:20px;padding:22px;cursor:pointer;position:relative;overflow:hidden;transition:.25s;text-decoration:none;color:inherit;display:block}
+.agent::after{content:"";position:absolute;inset:0;border-radius:20px;padding:1px;background:linear-gradient(140deg,var(--ac,#C4714F),transparent 55%);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;opacity:0;transition:.25s}
+.agent:hover{transform:translateY(-5px);border-color:transparent;box-shadow:0 18px 40px rgba(0,0,0,.45)}
+.agent:hover::after{opacity:1}
+.agent:hover .arr{opacity:1;transform:translateX(0)}
+.aTop{display:flex;align-items:center;gap:13px;margin-bottom:16px}
+.aAv{width:54px;height:54px;border-radius:15px;display:grid;place-items:center;font-family:Fraunces;font-weight:700;font-size:21px;color:#fff;flex:none;position:relative;background:var(--ac,#C4714F)}
+.aAv .on{position:absolute;right:-2px;bottom:-2px;width:15px;height:15px;border-radius:50%;background:var(--green);border:3px solid var(--card)}
+.aName{font-weight:700;font-size:16.5px;line-height:1.15}
+.aRole{color:var(--mut);font-size:12.5px;margin-top:2px}
+.aStat{display:flex;align-items:baseline;gap:7px;padding-top:14px;border-top:1px solid var(--line)}
+.aStat .v{font-family:Fraunces;font-weight:700;font-size:21px;color:var(--ac,#e89a76)}
+.aStat .l{color:var(--mut);font-size:12px}
+.aFoot{display:flex;align-items:center;gap:7px;margin-top:14px;font-size:12.5px;color:var(--mut)}
+.aFoot .dot{width:6px;height:6px;border-radius:50%;background:var(--green)}
+.arr{margin-left:auto;color:var(--ac,#e89a76);font-weight:700;opacity:0;transform:translateX(-6px);transition:.25s}
+
+/* accès rapide */
+.quick{display:grid;grid-template-columns:repeat(4,1fr);gap:13px;margin-top:46px}
+.qk{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:18px;text-decoration:none;color:inherit;transition:.2s;display:flex;flex-direction:column;gap:9px}
+.qk:hover{border-color:var(--orange);transform:translateY(-3px);background:var(--card2)}
+.qk .ic{font-size:24px}
+.qk b{font-weight:700;font-size:14.5px}
+.qk span{color:var(--mut);font-size:12px}
+
+footer{text-align:center;color:var(--mut2);font-size:12.5px;margin-top:54px}
+@media(max-width:860px){.agents{grid-template-columns:repeat(2,1fr)}.ticker{grid-template-columns:repeat(2,1fr)}.quick{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:520px){.agents{grid-template-columns:1fr}.toplinks a:not(.cta){display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="top">
+    <div class="logo">C</div>
+    <div class="brandtxt"><b>CREAJIT IA</b><span>Atelier intelligent</span></div>
+    <div class="toplinks">
+      <a href="#agents">L'équipe</a>
+      <a href="pointage.html">Pointage</a>
+      <a href="surveillance.html" class="cta">Surveillance →</a>
+    </div>
+  </div>
+
+  <div class="hero">
+    <div class="pill"><span class="pulse"></span> 9 agents IA · en ligne · <span id="heureLive"></span></div>
+    <h1>Ton atelier travaille,<br><span class="g">ton équipe IA veille.</span></h1>
+    <p>Chaque pôle de CREAJIT a son agent intelligent : commercial, production, qualité, finance, paie. Ils suivent, alertent et te font gagner du temps — en temps réel.</p>
+    <div class="heroBtns">
+      <a href="surveillance.html" class="bbig p">👁️ Mes agents en surveillance</a>
+      <a href="cockpit.html" class="bbig s">🧭 Tableau de bord</a>
+    </div>
+  </div>
+
+  <div class="ticker" id="ticker"></div>
+
+  <div id="agents">
+    <div class="sechd">
+      <h2>Ton équipe de direction IA</h2>
+      <span class="live"><span class="pulse"></span>tous actifs</span>
+    </div>
+    <div class="sub">Clique sur un agent pour entrer dans son espace.</div>
+    <div class="agents" id="agentsGrid"></div>
+  </div>
+
+  <div class="quick">
+    <a class="qk" href="pointage.html"><span class="ic">⏱️</span><b>Pointage</b><span>Qui travaille, sur quoi</span></a>
+    <a class="qk" href="paie.html"><span class="ic">💼</span><b>Paie & RH</b><span>Salaires par atelier</span></a>
+    <a class="qk" href="cockpit.html"><span class="ic">🏭</span><b>Commandes</b><span>Suivi en temps réel</span></a>
+    <a class="qk" href="cockpit.html"><span class="ic">🤖</span><b>Assistant IA</b><span>Pose-lui une question</span></a>
+  </div>
+
+  <footer>CREAJIT IA · Atelier de meubles sur mesure · Marrakech</footer>
+</div>
+
+<script src="creajit-photos.js"></script>
+<script>
+(function(){
+  // Agents (mêmes que le cockpit). Couleur = identité de l'agent.
+  var AGENTS=[
+    {id:'kenza', nm:'Kenza', role:'Responsable commerciale', ini:'K', ac:'#a78bfa', v:'20', l:'commandes en cours', etat:'suit les devis', link:'kenza.html'},
+    {id:'hanane', nm:'Hanane Ajdi', role:'Responsable exploitation', ini:'HA', ac:'#C4714F', v:'20', l:'en fabrication', etat:'lance la production', link:'hanane.html'},
+    {id:'said', nm:'Said Chnitifa', role:'Chef de tous les ateliers', ini:'SC', ac:'#34d399', v:'9', l:'ateliers pilotés', etat:'supervise l\'atelier', link:'ouvrier.html?w=said'},
+    {id:'fatima', nm:'Fatima Ezzahra', role:'Contrôle qualité & Logistique', ini:'FE', ac:'#60a5fa', v:'26', l:'livrés ce mois', etat:'contrôle & expédie', link:'fatima.html'},
+    {id:'sabiri', nm:'Mohamed Sabiri', role:'Comptable / Finance', ini:'MS', ac:'#fbbf24', v:'333 289', l:'avances ce mois (DH)', etat:'suit les paiements', link:'sabiri.html'},
+    {id:'mohamedmag', nm:'Mohamed Moumen', role:'Magasin / Achat', ini:'M', ac:'#f87171', v:'·', l:'bons matière', etat:'gère le stock', link:'magasin.html'},
+    {id:'hassan', nm:'Hassan Laagouri', role:'Réception matière', ini:'HL', ac:'#3b82f6', v:'·', l:'réceptions', etat:'reçoit la matière', link:'reception.html'},
+    {id:'abdelali', nm:'Abdelali', role:'Caissier', ini:'A', ac:'#2dd4bf', v:'·', l:'encaissements', etat:'gère la caisse', link:'cockpit.html'},
+    {id:'abdelhakim', nm:'Abdelhakim', role:'Livreur', ini:'A', ac:'#f59e0b', v:'·', l:'livraisons', etat:'livre les commandes', link:'cockpit.html'},
+  ];
+  var PH=(window.CJ_PHOTOS)||{};
+  function av(a){
+    var img=PH[a.id];
+    var inner=img?('<img src="'+img+'" style="width:100%;height:100%;object-fit:cover;border-radius:15px">'):a.ini;
+    return '<div class="aAv" style="--ac:'+a.ac+'">'+inner+'<span class="on"></span></div>';
+  }
+  document.getElementById('agentsGrid').innerHTML=AGENTS.map(function(a){
+    return '<a class="agent" style="--ac:'+a.ac+'" href="'+a.link+'">'+
+      '<div class="aTop">'+av(a)+'<div><div class="aName">'+a.nm+'</div><div class="aRole">'+a.role+'</div></div></div>'+
+      '<div class="aStat"><span class="v">'+a.v+'</span><span class="l">'+a.l+'</span></div>'+
+      '<div class="aFoot"><span class="dot"></span>'+a.etat+'<span class="arr">Ouvrir →</span></div>'+
+    '</a>';
+  }).join('');
+
+  // Chiffres live (vrais si le socle est chargé, sinon valeurs du cockpit)
+  var k={fab:20,livr:26,retard:10,ca:'3,5M'};
+  var ticker=[
+    ['o','186','commandes au total'],
+    ['g',k.fab,'en fabrication'],
+    ['b',k.livr,'livrées ce mois'],
+    ['y',k.ca+' DH','à encaisser'],
+  ];
+  document.getElementById('ticker').innerHTML=ticker.map(function(t){
+    return '<div class="tk '+t[0]+'"><div class="v">'+t[1]+'</div><div class="l">'+t[2]+'</div></div>';
+  }).join('');
+
+  function tic(){var d=new Date();document.getElementById('heureLive').textContent=d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});}
+  tic();setInterval(tic,30000);
+})();
+</script>
+</body>
 </html>

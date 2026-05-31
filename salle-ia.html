@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CreaJit OS · Salle IA — les agents analysent ta société</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&family=Hanken+Grotesk:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0e15;--panel:#121927;--panel2:#0e1420;--line:rgba(196,113,79,.16);
+ --orange:#C4714F;--orange-b:#e69a76;--green:#22C55E;--red:#E74C3C;--yellow:#EAB308;--blue:#3b82f6;
+ --ink:#ece9e3;--mut:#8d96a5;--mut2:#586273}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:'Hanken Grotesk',system-ui,sans-serif;-webkit-font-smoothing:antialiased;height:100vh;overflow:hidden;
+ background-image:radial-gradient(1000px 500px at 88% -8%,rgba(196,113,79,.12),transparent 60%)}
+.serif{font-family:'Fraunces',serif}.mono{font-family:'JetBrains Mono',monospace}
+.app{max-width:1200px;margin:0 auto;height:100vh;display:flex;flex-direction:column;padding:14px 16px 16px}
+.hd{display:flex;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap}
+.logo{width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,#C4714F,#e69a76);display:grid;place-items:center;font-size:19px;color:#1a0f08;font-weight:800}
+.hd .ti b{font-size:16px}.hd .ti span{display:block;color:var(--mut);font-size:12px}
+.live{margin-left:auto;display:inline-flex;align-items:center;gap:8px;background:#10241a;border:1px solid rgba(34,197,94,.3);color:#7ee2a8;padding:7px 13px;border-radius:30px;font-weight:700;font-size:12.5px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--green);animation:pulse 1.6s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(34,197,94,.5)}70%{box-shadow:0 0 0 8px rgba(34,197,94,0)}100%{box-shadow:0 0 0 0 rgba(34,197,94,0)}}
+.clock{color:var(--mut);font-size:13px;font-weight:600}
+.main{flex:1;display:grid;grid-template-columns:1fr 280px;gap:14px;min-height:0}
+.feedwrap{background:var(--panel);border:1px solid var(--line);border-radius:18px;display:flex;flex-direction:column;min-height:0;overflow:hidden}
+.feedwrap .fh{padding:13px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:9px;font-weight:700;font-size:14px;flex:none}
+.feedwrap .fh .tagn{margin-left:auto;font-size:11px;color:var(--mut);font-weight:600}
+.feed{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:13px}
+.feed::-webkit-scrollbar{width:8px}.feed::-webkit-scrollbar-thumb{background:#222c3d;border-radius:8px}
+.msg{display:flex;gap:11px;animation:in .35s ease}
+@keyframes in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.av{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;font-size:18px;flex:none}
+.bubble{background:var(--panel2);border:1px solid #1b2230;border-radius:4px 13px 13px 13px;padding:9px 13px;max-width:82%}
+.who{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.who b{font-size:13px}.who .role{font-size:10.5px;color:var(--mut2);text-transform:uppercase;letter-spacing:.4px}
+.who .tm{margin-left:6px;font-size:10.5px;color:var(--mut2)}
+.txt{font-size:13.6px;line-height:1.5;color:var(--ink)}
+.txt .k{color:var(--orange-b);font-weight:700}.txt .r{color:#f3a79c;font-weight:700}.txt .g{color:#7ee2a8;font-weight:700}
+.msg.boss .bubble{background:linear-gradient(180deg,rgba(196,113,79,.16),rgba(196,113,79,.05));border-color:rgba(196,113,79,.4)}
+.msg.boss .who b{color:var(--orange-b)}
+.ordre{display:inline-block;font-size:10px;font-weight:800;color:#1a0f08;background:var(--orange-b);padding:2px 8px;border-radius:20px;margin-bottom:6px;letter-spacing:.5px}
+.msg.you .bubble{background:linear-gradient(180deg,rgba(34,197,94,.13),rgba(34,197,94,.04));border-color:rgba(34,197,94,.4)}
+.msg.you .who b{color:#7ee2a8}
+.btns{display:flex;gap:7px;margin-top:8px;flex-wrap:wrap}
+.btn{font-size:12px;font-weight:700;padding:6px 13px;border-radius:9px;border:1px solid #2a3445;background:#0e1420;color:var(--mut)}
+.btn.y{background:rgba(34,197,94,.15);color:#7ee2a8;border-color:rgba(34,197,94,.35)}
+.typing{display:flex;gap:11px;align-items:center}
+.tdots{background:var(--panel2);border:1px solid #1b2230;border-radius:13px;padding:11px 14px;display:flex;gap:4px}
+.tdots i{width:6px;height:6px;border-radius:50%;background:var(--mut2);animation:bl 1.2s infinite}
+.tdots i:nth-child(2){animation-delay:.2s}.tdots i:nth-child(3){animation-delay:.4s}
+@keyframes bl{0%,60%,100%{opacity:.25}30%{opacity:1}}
+.side{display:flex;flex-direction:column;gap:14px;min-height:0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px}
+.card h3{font-size:12px;color:var(--mut);text-transform:uppercase;letter-spacing:.5px;margin-bottom:11px;font-weight:700;display:flex;align-items:center;gap:7px}
+.kpibox{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.kp{background:var(--panel2);border:1px solid #1b2230;border-radius:10px;padding:9px 10px}
+.kp .n{font-size:14px;font-weight:800;line-height:1.1}.kp .l{font-size:10.5px;color:var(--mut);margin-top:3px}
+.kp.red .n{color:#f3a79c}.kp.grn .n{color:#7ee2a8}
+.team{display:flex;flex-direction:column;gap:8px;overflow-y:auto}
+.mem{display:flex;align-items:center;gap:9px;font-size:13px}
+.mem .a{width:27px;height:27px;border-radius:8px;display:grid;place-items:center;font-size:14px;flex:none}
+.mem b{font-size:12.5px}.mem span{display:block;color:var(--mut2);font-size:10.5px}
+.mem .on{margin-left:auto;width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 0 3px rgba(34,197,94,.12)}
+.crit{display:flex;align-items:center;gap:12px}
+.crit .big{font-size:34px;font-weight:800;font-family:'Fraunces',serif}.crit .l{font-size:11px;color:var(--mut)}
+@media(max-width:840px){.main{grid-template-columns:1fr}.side{display:none}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="hd">
+    <div class="logo serif">C</div>
+    <div class="ti"><b>CreaJit OS · Salle IA</b><span>Tes agents analysent ta société — en direct</span></div>
+    <span class="clock mono" id="clock">09:30</span>
+    <span class="live"><span class="dot"></span> 11 agents en ligne</span>
+  </div>
+  <div class="main">
+    <div class="feedwrap">
+      <div class="fh">💬 Les agents discutent <span class="tagn" id="cnt">analyse en cours…</span></div>
+      <div class="feed" id="feed"></div>
+    </div>
+    <div class="side">
+      <div class="card" style="flex:none">
+        <h3>⚠️ Criticité société</h3>
+        <div class="crit"><div class="big" id="critN" style="color:#E74C3C">100</div>
+          <div><div class="l">sur 100</div><div class="l" style="color:#f3a79c;margin-top:3px">tension trésorerie</div></div></div>
+      </div>
+      <div class="card" style="flex:none">
+        <h3>📊 Ta société en chiffres</h3>
+        <div class="kpibox" id="kpibox"></div>
+      </div>
+      <div class="card" style="flex:1;min-height:0;overflow:auto">
+        <h3>👥 Agents connectés</h3>
+        <div class="team" id="team"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ===== TES VRAIES DONNÉES — extraites de tes 186 commandes le 30/05/2026 ===== */
+var F = {"stats":{"total":186,"ca":3908562,"paye":409510,"reste":3499052,"impayes":141,"enFab":35,"enAttente":101,"termine":50,"aLivrer":145,"livre":41,"articles":442},"fmt":{"ca":"3 908 562 DH","paye":"409 510 DH","reste":"3 499 052 DH"},"impayes":[{"client":"Mr LADI MOUSTAPHA","reste":252300,"total":252300,"vendeur":"Ikram","ref":""},{"client":"Mme Chehrazade ","reste":135392,"total":135392,"vendeur":"Kenza","ref":""},{"client":"Mr Bachar","reste":130000,"total":130000,"vendeur":"Ikram","ref":""},{"client":"Mr Bachar","reste":110000,"total":110000,"vendeur":"Ikram","ref":""},{"client":"Mr Bachar","reste":110000,"total":110000,"vendeur":"Ikram","ref":""},{"client":"Mme Thanina ","reste":106900,"total":106900,"vendeur":"Kenza","ref":""},{"client":"Moulay Rechid","reste":106250,"total":106250,"vendeur":"Laila","ref":""},{"client":"Mr Ludo ","reste":99490,"total":99490,"vendeur":"Kenza","ref":""},{"client":"2A WEDDING","reste":95000,"total":95000,"vendeur":"Ikram","ref":"26040019"},{"client":"Mme Hafida Allali","reste":80000,"total":80000,"vendeur":"Laila","ref":"26040032"}],"gros":[{"client":"Mr LADI MOUSTAPHA","total":252300,"vendeur":"Ikram","art":"Lit Sleep weel"},{"client":"Mme Chehrazade ","total":135392,"vendeur":"Kenza","art":"Bureau Enfant "},{"client":"Mr Bachar","total":130000,"vendeur":"Ikram","art":"Cuisine : -Caissons Mdf Mélanie 18mm -Portes higloss 18mm -Charnières hydrauliques très bon qualité -Tiroirs tendim box -Vitrages 5mm bronze cadre aluminium noir -Plan de travail en SILISTONE "},{"client":"Mr Bachar","total":110000,"vendeur":"Ikram","art":"Cuisine Mr BACHAR: -Caissons Mdf Mélanie 18mm -Portes higloss 18mm -Charnières hydrauliques très bon qualité -Tiroirs tendim box -Vitrages 5mm bronze cadre aluminium noir -Plan de travail en granite glaxi"},{"client":"Mr Bachar","total":110000,"vendeur":"Ikram","art":" Cuisine Mr BACHAR:  -Caissons Mdf Mélanie 18mm  -Portes higloss 18mm  -Charnières hydrauliques très bon qualité  -Tiroirs tendim box   -Vitrages 5mm bronze cadre aluminium noir  -Plan de travail en granite glaxi  Prix 110000 dh"},{"client":"Mme Thanina ","total":106900,"vendeur":"Kenza","art":"EGO I"}],"pending":[{"client":"El Baidouri Chaimaa ","total":7200,"date":"2026-04-06","vendeur":"Ikram"},{"client":"IKRAM","total":4965,"date":"2026-04-06","vendeur":"Laila"},{"client":"Mme Horiya","total":10500,"date":"2026-04-08","vendeur":"Ikram"},{"client":"Mme Kenza","total":5700,"date":"2026-04-08","vendeur":"Ikram"},{"client":"Mme Ghizlane ","total":18992,"date":"2026-04-09","vendeur":"Kenza"},{"client":"Mr Yazid ","total":55400,"date":"2026-04-09","vendeur":"Kenza"}],"vendeurs":[{"v":"Ikram","nb":65,"ca":1552312,"reste":1375082},{"v":"Kenza","nb":63,"ca":1449694,"reste":1341154},{"v":"Laila","nb":53,"ca":906555,"reste":782815},{"v":"Fatima","nb":3,"ca":1,"reste":1}],"topArt":[{"nom":"Chaise Enfant","q":147},{"nom":"Chaise Cartel","q":105},{"nom":"Pose Porte isoplane existante sans finition vernis","q":60},{"nom":"Commode Enfant","q":56},{"nom":"Transat EDGY","q":54},{"nom":"Chaise MARRY","q":53}]};
+
+var TEAM = [
+  {em:'🧠',c:'#C4714F',n:'Patron IA',r:'Direction'},
+  {em:'⚠️',c:'#E74C3C',n:'Le Veilleur',r:'Supervision'},
+  {em:'🏭',c:'#3b82f6',n:'Production',r:'Hanane'},
+  {em:'📅',c:'#06b6d4',n:'Planning',r:'Délais'},
+  {em:'💰',c:'#EAB308',n:'Finance',r:'Encaissement'},
+  {em:'🧮',c:'#34d399',n:'Coût de revient',r:'Marge'},
+  {em:'📦',c:'#a78bfa',n:'Achats',r:'Moumen'},
+  {em:'🚚',c:'#22C55E',n:'Livraison',r:'Fatima'},
+  {em:'👥',c:'#e69a76',n:'Commercial',r:'Ventes'},
+  {em:'📣',c:'#f59e0b',n:'Marketing',r:'Pub & leads'},
+  {em:'👷',c:'#f472b6',n:'RH / Paie',r:'Équipe'}
+];
+var BY={}; TEAM.forEach(function(t){BY[t.n]=t;});
+function fmt(n){return (Math.round(n)||0).toLocaleString('fr-FR')+' DH';}
+function pick(arr,i){return arr[((i%arr.length)+arr.length)%arr.length];}
+
+document.getElementById('team').innerHTML = TEAM.map(function(t){
+  return '<div class="mem"><div class="a" style="background:'+t.c+'22">'+t.em+'</div>'+
+    '<div><b>'+t.n+'</b><span>'+t.r+'</span></div><span class="on"></span></div>';}).join('');
+var KPI=[['CA suivi',F.fmt.ca,''],['Reste à encaisser',F.fmt.reste,'red'],['En attente',F.stats.enAttente,''],['Livré',F.stats.livre,'grn'],['Impayés',F.stats.impayes,'red'],['Articles',F.stats.articles,'']];
+document.getElementById('kpibox').innerHTML = KPI.map(function(k){
+  return '<div class="kp '+k[2]+'"><div class="n">'+k[1]+'</div><div class="l">'+k[0]+'</div></div>';}).join('');
+
+/* ===== GÉNÉRATEUR DE DISCUSSION — pioche de vrais faits, change à chaque tour ===== */
+function buildScript(cy){
+  var imp1=pick(F.impayes,cy), imp2=pick(F.impayes,cy+1), imp3=pick(F.impayes,cy+2);
+  var gro=pick(F.gros,cy), pend=pick(F.pending,cy), art=pick(F.topArt,cy);
+  var vTop=F.vendeurs[0]||{v:'—',ca:0,reste:0,nb:0};
+  var vFoc=pick(F.vendeurs,cy);
+  var fournA=1450, fournB=1290, m2=Math.max(2,(cy%6)+2), eco=(fournA-fournB)*m2;
+  return [
+   {a:'Patron IA',boss:1,ordre:'BRIEFING',m:'On reprend l\'analyse — '+F.stats.total+' commandes, <span class="k">'+F.fmt.ca+'</span> de CA. Mais regardez la caisse : encaissé seulement <span class="r">'+F.fmt.paye+'</span>. Chacun son point.'},
+   {a:'Finance',m:'Le gros morceau aujourd\'hui : <span class="r">'+imp1.client+'</span> nous doit <span class="r">'+fmt(imp1.reste)+'</span> (vente '+imp1.vendeur+'). Juste derrière : '+imp2.client+' '+fmt(imp2.reste)+'. Total impayés : <span class="r">'+F.fmt.reste+'</span> sur '+F.stats.impayes+' commandes.'},
+   {a:'Le Veilleur',m:'Criticité <span class="r">100/100</span>, tirée par la trésorerie. Le client le plus à risque : <span class="r">'+imp1.client+'</span>. Côté livraison par contre, tout est clean : <span class="g">0 retard</span>.'},
+   {a:'Commercial',m:'Attention : <span class="k">'+vTop.v+'</span> fait le plus gros CA ('+fmt(vTop.ca)+', '+vTop.nb+' cmd) mais traîne <span class="r">'+fmt(vTop.reste)+'</span> d\'impayés. Nos meilleures ventes encaissent mal — c\'est là qu\'il faut serrer.'},
+   {a:'Patron IA',boss:1,ordre:'ORDRE',m:'Clair. <span class="k">Finance</span> → relance <span class="k">'+imp1.client+'</span> ('+fmt(imp1.reste)+') en priorité aujourd\'hui, puis '+imp2.client+' et '+imp3.client+'. <span class="k">'+vTop.v+'</span> rappelle ses clients en personne.'},
+   {a:'Finance',m:'C\'est parti 👍 Message de relance prêt pour <span class="r">'+imp1.client+'</span>. Je propose un échéancier si gros montant, pour pas braquer le client.'},
+   {a:'Production',m:'Atelier : <span class="k">'+F.stats.enAttente+' en attente</span>, '+F.stats.enFab+' en cours, '+F.stats.termine+' terminées. La plus vieille qui traîne : <span class="k">'+pend.client+'</span> du '+pend.date+' ('+fmt(pend.total)+'). On la lance ?'},
+   {a:'Coût de revient',m:'Grosse commande à sécuriser : <span class="k">'+gro.client+'</span> — '+fmt(gro.total)+' ('+(gro.art||'').slice(0,40)+'…). À ce montant je veux valider la marge AVANT de lancer la matière.'},
+   {a:'Achats',m:'Pour cette commande il faut de la matière. Je compare 2 fournisseurs : <span class="k">A '+fournA+' DH/m² · B '+fournB+' DH/m²</span>. Sur '+m2+' m² → on économise <span class="g">'+fmt(eco)+'</span> avec B.'},
+   {a:'Planning',m:'Je cale le planning : je lance d\'abord '+pend.client+' (déjà ancienne). ⚠️ L\'atelier Peinture sature jeudi — je décale 2 commandes non urgentes pour pas créer de retard.'},
+   {a:'Marketing',m:'Pendant qu\'on assainit la caisse, je remplis le carnet : notre best-seller du moment c\'est <span class="k">'+art.nom+'</span> ('+art.q+' vendus). Je pousse 2 posts dessus + relance pub.'},
+   {a:'Service client',m:'3 clients demandent leur statut sur WhatsApp, je réponds avec le réel. '+vFoc.v+' m\'a transmis 1 demande de remise → je remonte au Patron.'},
+   {a:'Patron IA',boss:1,you:1,m:'Driss, décision 👇 <span class="k">'+imp1.client+'</span> ('+fmt(imp1.reste)+' dû) demande un délai de paiement supplémentaire. Je propose un <span class="k">échéancier 3x</span> plutôt qu\'une remise. Tu valides ?'},
+   {a:'Le Veilleur',m:'Plan acté : relancer '+imp1.client+' & '+imp2.client+', lancer '+pend.client+', valider la marge sur '+gro.client+', acheter chez le fournisseur B. Je surveille et je te ping si ça bouge, Driss. 👁️'}
+  ];
+}
+
+var feed=document.getElementById('feed');
+function bubble(item){
+  var t=BY[item.a]||{em:'•',c:'#888',r:''};
+  var cls='msg'+(item.boss?' boss':'')+(item.you?' you':'');
+  var ordre=item.ordre?'<div class="ordre">'+item.ordre+'</div>':'';
+  var btns=item.you?'<div class="btns"><span class="btn y">✓ Échéancier 3x</span><span class="btn">Remise</span><span class="btn">Je gère</span></div>':'';
+  var el=document.createElement('div'); el.className=cls;
+  el.innerHTML='<div class="av" style="background:'+t.c+'22">'+t.em+'</div>'+
+    '<div class="bubble">'+ordre+'<div class="who"><b>'+item.a+'</b><span class="role">'+(t.r||'')+'</span><span class="tm mono">'+item.t+'</span></div>'+
+    '<div class="txt">'+item.m+'</div>'+btns+'</div>';
+  feed.appendChild(el); feed.scrollTop=feed.scrollHeight;
+}
+function typing(item,cb){
+  var t=BY[item.a]||{em:'•',c:'#888'};
+  var el=document.createElement('div'); el.className='typing';
+  el.innerHTML='<div class="av" style="background:'+t.c+'22">'+t.em+'</div><div class="tdots"><i></i><i></i><i></i></div>';
+  feed.appendChild(el); feed.scrollTop=feed.scrollHeight;
+  setTimeout(function(){ if(el.parentNode)feed.removeChild(el); bubble(item); cb&&cb(); }, item.boss?900:680);
+}
+var cycle=0, script=buildScript(0), i=0;
+var baseMin = 9*60+30;
+function stamp(k){var tot=baseMin+k; var h=Math.floor(tot/60)%24, mn=tot%60; return (h<10?'0':'')+h+':'+(mn<10?'0':'')+mn;}
+function next(){
+  if(i>=script.length){
+    document.getElementById('cnt').textContent='analyse #'+(cycle+1)+' terminée';
+    setTimeout(function(){ feed.innerHTML=''; cycle++; script=buildScript(cycle); i=0;
+      document.getElementById('cnt').textContent='nouvelle analyse…'; next(); }, 6500); return;
+  }
+  var item=script[i]; item.t=stamp(i); document.getElementById('clock').textContent=item.t;
+  i++; typing(item, function(){ setTimeout(next, 950); });
+}
+next();
+</script>
+</body>
+</html>

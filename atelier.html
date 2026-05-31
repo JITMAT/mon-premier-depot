@@ -1,0 +1,174 @@
+<!-- Espace ATELIER (chef d'atelier) : ses articles, étapes à valider, matière, fiche -->
+<script src="creajit-matieres.js"></script>
+<script src="creajit-ateliers.js"></script>
+<script src="creajit-couthoraire.js"></script>
+<script src="creajit-departements.js"></script>
+<script src="creajit-data.js"></script>
+<script src="creajit-commandes-reelles.js"></script>
+<script src="creajit-orders.js"></script>
+<script src="creajit-photos.js"></script>
+<script src="creajit-workers.js"></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<title>CREAJIT — Atelier</title>
+<style>
+:root{--bg:#0d111b;--card:#161d2b;--card2:#111825;--line:#283449;--ink:#eef2f8;--mut:#94a3b8;--green:#34d399;--red:#f87171;--yellow:#fbbf24;--blue:#60a5fa;--orange:#C4714F;--orange-b:#e69a76}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:'Hanken Grotesk',system-ui,sans-serif;padding:18px;max-width:1000px;margin:0 auto;padding-bottom:80px}
+h1{font-family:'Fraunces',serif;font-size:23px}
+.sub{color:var(--mut);font-size:13px}
+.head{display:flex;align-items:center;gap:13px;margin-bottom:16px;flex-wrap:wrap}
+.av0{width:52px;height:52px;border-radius:13px;display:grid;place-items:center;font-family:Fraunces;font-weight:700;font-size:22px;color:#fff;flex:none}
+.menu{margin-left:auto;display:flex;gap:7px;flex-wrap:wrap}
+.menu a{font-size:12px;color:var(--mut);text-decoration:none;background:var(--card);border:1px solid var(--line);padding:7px 11px;border-radius:9px}
+.pick{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:18px}
+.pick button{background:var(--card);border:1px solid var(--line);color:var(--ink);font-family:inherit;font-weight:700;font-size:13px;padding:9px 13px;border-radius:10px;cursor:pointer}
+.pick button.on{color:#fff}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;margin-bottom:18px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:13px 15px}
+.kpi .v{font-family:Fraunces;font-weight:700;font-size:22px}.kpi .l{color:var(--mut);font-size:12px;margin-top:3px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:13px 15px;margin-bottom:11px}
+.crow{display:flex;align-items:center;gap:12px}
+.vig{width:46px;height:46px;border-radius:9px;object-fit:cover;background:#0c1018;flex:none;display:grid;place-items:center;font-size:20px}
+.nm{font-weight:600;font-size:14.5px}.mt{color:var(--mut);font-size:12px;margin-top:2px}
+.tag{font-size:11px;padding:2px 8px;border-radius:20px;font-weight:600;margin-left:auto;flex:none}
+.t-ok{background:rgba(52,211,153,.15);color:var(--green)}.t-wait{background:rgba(148,163,184,.14);color:var(--mut)}.t-go{background:rgba(251,191,36,.15);color:var(--yellow)}
+.step{display:flex;align-items:center;gap:9px;padding:9px 0;border-top:1px dashed var(--line);flex-wrap:wrap}
+.dot{width:9px;height:9px;border-radius:50%;flex:none}.dot.ok{background:var(--green)}.dot.cur{background:var(--yellow)}.dot.wait{background:var(--mut)}
+.sn{font-size:13px;font-weight:600}.sc{font-size:11px;color:var(--mut)}
+.sact{margin-left:auto;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.sact input{width:60px;background:#0f1622;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:6px;font-family:inherit}
+.sact select{background:#0f1622;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:6px;font-family:inherit;font-size:12px;max-width:130px}
+.btn{background:var(--orange);color:#1a0f08;border:none;border-radius:8px;padding:7px 12px;font-weight:700;font-size:12px;cursor:pointer;font-family:inherit}
+.btn.gho{background:transparent;border:1px solid var(--line);color:var(--ink)}
+.btn.green{background:var(--green);color:#06210f}
+.empty{color:var(--mut);font-size:13px;padding:18px;text-align:center;background:var(--card);border:1px dashed var(--line);border-radius:13px}
+.costline{display:flex;justify-content:space-between;font-size:12px;color:var(--mut);margin-top:9px;border-top:1px solid var(--line);padding-top:8px}
+.costline b{color:var(--orange-b)}
+</style>
+
+<div class="head">
+  <div class="av0" id="av">A</div>
+  <div><h1 id="atTitre">Atelier</h1><div class="sub" id="atSub">Chef · départements</div></div>
+  <div class="menu"><a href="index.html">🏠 Cockpit</a><a href="cout-revient.html">📊 Coûts</a><a href="hanane.html">📋 Hanane</a></div>
+</div>
+
+<div class="pick" id="pick"></div>
+<div class="kpis" id="kpis"></div>
+<div id="list"></div>
+
+<div id="toast" style="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1f2937;border:1px solid var(--line);padding:11px 18px;border-radius:10px;opacity:0;transition:.3s;pointer-events:none;z-index:50"></div>
+
+<script>
+(function(){
+  var ORD=(window.CJ_ORDERS?window.CJ_ORDERS.all():[]);
+  var ATS=(window.CJ_ATELIERS||[]);
+  var atelier=new URLSearchParams(location.search).get('a')||'A';
+  function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+  function dh(n){return Math.round(n||0).toLocaleString('fr-FR')+' DH';}
+  function infoAt(code){return ATS.find(function(x){return x.code===code;})||{};}
+  function depts(){return (window.cjDeptsAtelier?window.cjDeptsAtelier(atelier):[]);}
+  function vig(o){var a=(o.articles||[])[0]||{};return a.photo?'<img class="vig" src="'+esc(a.photo)+'">':'<div class="vig">🛋️</div>';}
+  function ouvriersAtelier(){return (window.CJ_OUVRIERS||[]).filter(function(w){return w.at===atelier;});}
+
+  // articles dont le parcours passe par CET atelier
+  function articlesIci(){
+    var res=[];
+    ORD.forEach(function(o){(o.articles||[]).forEach(function(a){
+      var p=window.CJ?window.CJ.parcoursDe(a.id):[];
+      var ici=p.filter(function(e){var d=window.cjDept(e.dept);return d&&d.atelier===atelier;});
+      if(ici.length) res.push({o:o,a:a,p:p,ici:ici});
+    });});
+    return res;
+  }
+
+  function render(){
+    var inf=infoAt(atelier);
+    var col=inf.couleur||'#C4714F';
+    document.getElementById('av').style.background=col;
+    document.getElementById('av').textContent=atelier;
+    document.getElementById('atTitre').textContent='Atelier '+atelier+(inf.nom?(' — '+inf.nom):'');
+    document.getElementById('atSub').textContent=(inf.chef?('Chef : '+inf.chef+' · '):'')+depts().length+' département(s) · '+ (inf.coutH||'') +(inf.coutH?' DH/h':'');
+    // sélecteur d'atelier
+    document.getElementById('pick').innerHTML=ATS.map(function(x){return '<button class="'+(x.code===atelier?'on':'')+'" style="'+(x.code===atelier?('background:'+(x.couleur||'#C4714F')):'')+'" data-at="'+x.code+'">🏭 '+x.code+'</button>';}).join('');
+    document.querySelectorAll('[data-at]').forEach(function(b){b.onclick=function(){atelier=b.getAttribute('data-at');history.replaceState(null,'','?a='+atelier);render();};});
+
+    var arts=articlesIci();
+    // KPIs : étapes à faire ici, validées, coût MO de l'atelier
+    var aFaire=0,valid=0,coutMO=0;
+    arts.forEach(function(x){x.ici.forEach(function(e){if(e.statut==='valide'){valid++;coutMO+=(e.heures||0)*window.cjCoutDept(e.dept);}else aFaire++;});});
+    document.getElementById('kpis').innerHTML=
+      '<div class="kpi"><div class="v">'+aFaire+'</div><div class="l">étapes à faire ici</div></div>'+
+      '<div class="kpi"><div class="v" style="color:var(--green)">'+valid+'</div><div class="l">étapes validées</div></div>'+
+      '<div class="kpi"><div class="v">'+dh(coutMO)+'</div><div class="l">main d\'œuvre atelier</div></div>';
+
+    if(!arts.length){document.getElementById('list').innerHTML='<div class="empty">Aucun article dans cet atelier.<br>Quand Hanane affecte un PARCOURS qui passe par l\'atelier '+atelier+', les articles arrivent ici.</div>';return;}
+
+    var ouv=ouvriersAtelier();
+    var ouvOpts='<option value="">— ouvrier —</option>'+ouv.map(function(w){return '<option value="'+w.id+'">'+esc(w.nm)+'</option>';}).join('');
+
+    document.getElementById('list').innerHTML=arts.map(function(x){
+      var o=x.o,a=x.a;
+      var c=window.CJ.coutArticle(a.id);
+      // statut global de l'article dans cet atelier
+      var tousValid=x.ici.every(function(e){return e.statut==='valide';});
+      var tag=tousValid?'<span class="tag t-ok">✅ fini ici</span>':'<span class="tag t-go">🔧 en cours</span>';
+      // étapes DE CET ATELIER (avec validation)
+      var hChrono=window.CJ.heuresChrono?window.CJ.heuresChrono(a.id):0;
+      var steps=x.ici.map(function(e){
+        var d=window.cjDept(e.dept);
+        var done=e.statut==='valide';
+        var w=(window.CJ_OUVRIERS||[]).find(function(z){return z.id===e.ouvrierId;});
+        return '<div class="step"><span class="dot '+(done?'ok':'cur')+'"></span>'+
+          '<div><div class="sn">'+esc(e.dept)+' · '+esc(d?d.nom:'')+'</div>'+
+          '<div class="sc">'+(d?d.coutH:'')+' DH/h'+(done?(' · validé : '+e.heures+'h = '+dh((e.heures||0)*d.coutH)+(w?(' · '+esc(w.nm)):'')):'')+'</div></div>'+
+          (done?'<span class="tag t-ok" style="margin-left:auto">✅</span>':
+            ('<div class="sact"><select data-w="'+a.id+'|'+e.dept+'">'+ouvOpts+'</select>'+
+             '<input type="number" min="0" step="0.5" placeholder="h" value="'+(hChrono>0?hChrono:'')+'" data-h="'+a.id+'|'+e.dept+'">'+
+             (hChrono>0?'<button class="btn gho" data-chrono="'+a.id+'|'+e.dept+'|'+hChrono+'" title="Heures du chrono ouvrier">⏱️ '+hChrono+'h</button>':'')+
+             '<button class="btn green" data-val="'+a.id+'|'+e.dept+'">✅ Valider</button></div>'))+
+          '</div>';
+      }).join('');
+      return '<div class="card"><div class="crow">'+vig(o)+
+        '<div style="flex:1;min-width:0"><div class="nm">'+esc(a.nm)+'</div>'+
+        '<div class="mt">'+esc(o.client)+' · '+esc(o.ref||'')+'</div></div>'+tag+'</div>'+
+        steps+
+        '<div class="costline"><span>Coût de revient cumulé (toutes étapes)</span><b>'+dh(c.total)+'</b></div>'+
+        '<div style="margin-top:9px;display:flex;gap:6px;flex-wrap:wrap">'+
+          '<button class="btn gho" data-mat="'+a.id+'|'+esc(o.client)+'">📦 Commander matière</button>'+
+          '<a class="btn gho" style="text-decoration:none" href="cout-revient.html">📊 Voir le coût</a>'+
+        '</div></div>';
+    }).join('');
+
+    // valider une étape
+    // bouton ⏱️ : remplit le champ heures avec le chrono ouvrier
+    document.querySelectorAll('[data-chrono]').forEach(function(b){b.onclick=function(){
+      var parts=b.getAttribute('data-chrono').split('|'),aid=parts[0],dept=parts[1],h=parts[2];
+      var hEl=document.querySelector('[data-h="'+aid+'|'+dept+'"]'); if(hEl){hEl.value=h;toast('⏱️ '+h+'h depuis le chrono');}
+    };});
+    document.querySelectorAll('[data-val]').forEach(function(b){b.onclick=function(){
+      var parts=b.getAttribute('data-val').split('|'),aid=parts[0],dept=parts[1];
+      var hEl=document.querySelector('[data-h="'+aid+'|'+dept+'"]');
+      var wEl=document.querySelector('[data-w="'+aid+'|'+dept+'"]');
+      var h=parseFloat(hEl&&hEl.value)||0;
+      if(h<=0){toast('⏱️ Mets le nombre d\'heures');return;}
+      window.CJ.validerEtape(aid,dept,h,wEl&&wEl.value);
+      toast('✅ Étape '+dept+' validée — '+h+'h');render();
+    };});
+    // commander matière (bon simple)
+    document.querySelectorAll('[data-mat]').forEach(function(b){b.onclick=function(){
+      var parts=b.getAttribute('data-mat').split('|'),aid=parts[0],client=parts[1];
+      var nom=prompt('Quelle matière commander ?');if(!nom)return;
+      var q=parseFloat(prompt('Quantité ?','1'))||1;
+      window.CJ.bon({articleId:aid,client:client,par:'Atelier '+atelier,statut:'envoye',lignes:[{nom:nom,qty:q}]});
+      window.CJ.evenement('warn','Atelier '+atelier,'Bon matière : '+q+' '+nom+' ('+client+').','→ Mohamed (magasin)');
+      toast('📦 Bon envoyé au magasin');render();
+    };});
+  }
+  var tt;function toast(m){var t=document.getElementById('toast');t.textContent=m;t.style.opacity=1;clearTimeout(tt);tt=setTimeout(function(){t.style.opacity=0;},2600);}
+  window.addEventListener('load',render);
+  if(window.CJ) window.CJ.abonner(render);
+  render();
+})();
+</script>

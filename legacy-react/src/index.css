@@ -1,0 +1,102 @@
+/* ───────────────────────────────────────────────────────────────
+   CREAJIT IA — Système de design (voir CONTEXT.md §9)
+   Thème sombre, gros chiffres, clair, pas surchargé.
+   ─────────────────────────────────────────────────────────────── */
+
+:root {
+  /* Couleurs (CONTEXT §9) */
+  --fond:        #0d111b;
+  --carte:       #1a2230;
+  --carte-2:     #222c3d;
+  --bordure:     #2c3850;
+  --orange:      #c4714f;
+  --vert:        #2fbd74;
+  --jaune:       #e8b53b;
+  --rouge:       #e8584a;
+
+  --texte:       #eef2f8;
+  --texte-doux:  #9aa7bd;
+  --texte-faible:#65728a;
+
+  /* Polices */
+  --f-titre: 'Fraunces', Georgia, serif;
+  --f-texte: 'Hanken Grotesk', system-ui, sans-serif;
+
+  /* Divers */
+  --rayon: 14px;
+  --ombre: 0 6px 24px rgba(0, 0, 0, .35);
+}
+
+* { box-sizing: border-box; }
+
+html, body, #root { height: 100%; }
+
+body {
+  margin: 0;
+  background: var(--fond);
+  color: var(--texte);
+  font-family: var(--f-texte);
+  font-size: 16px;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3 { font-family: var(--f-titre); font-weight: 600; margin: 0; }
+
+a { color: inherit; text-decoration: none; }
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+input, select, textarea {
+  font-family: inherit;
+  font-size: 16px;
+}
+
+/* ── Composants utilitaires ───────────────────────────────────── */
+
+.carte {
+  background: var(--carte);
+  border: 1px solid var(--bordure);
+  border-radius: var(--rayon);
+  padding: 18px;
+}
+
+.btn {
+  border: 1px solid var(--bordure);
+  background: var(--carte-2);
+  color: var(--texte);
+  border-radius: 10px;
+  padding: 11px 16px;
+  font-weight: 600;
+  font-size: 15px;
+  transition: filter .15s ease, transform .05s ease;
+}
+.btn:hover { filter: brightness(1.12); }
+.btn:active { transform: translateY(1px); }
+.btn-primaire { background: var(--orange); border-color: var(--orange); color: #1a0f08; }
+.btn-block { width: 100%; }
+
+.champ {
+  width: 100%;
+  background: #0f1622;
+  border: 1px solid var(--bordure);
+  border-radius: 10px;
+  padding: 12px 14px;
+  color: var(--texte);
+  outline: none;
+}
+.champ:focus { border-color: var(--orange); }
+
+.label { display: block; font-size: 13px; color: var(--texte-doux); margin-bottom: 6px; }
+
+/* Pastilles de statut ouvrier (CONTEXT §9) */
+.pastille { display: inline-block; width: 10px; height: 10px; border-radius: 50%; }
+.pastille.travail { background: var(--vert); }
+.pastille.pause   { background: var(--jaune); }
+.pastille.sans    { background: var(--rouge); }
+
+.muet { color: var(--texte-doux); }
+.faible { color: var(--texte-faible); }
