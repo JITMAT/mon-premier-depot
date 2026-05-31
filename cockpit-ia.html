@@ -222,7 +222,7 @@ function dafView(a){
   // BLOC 4 : validation des sorties d'argent
   '<div class="tcard"><div class="th">🛡️ Validation des sorties d\'argent — aucun centime sans ton accord'+
   '<span class="cnt"><button class="btn y" style="cursor:pointer" onclick="dafNouvelleDemande()">+ Nouvelle demande</button></span></div>'+
-  '<div style="padding:14px 16px;color:var(--mut2);font-size:12px;border-bottom:1px solid var(--bord)">Ton comptable saisit une demande de paiement → je l\'analyse et te conseille → <b>tu approuves ou refuses</b>. Tu reçois aussi la demande par email + Google Agenda.</div>'+
+  '<div style="padding:14px 16px;color:var(--mut2);font-size:12px;border-bottom:1px solid var(--bord)">Ton comptable saisit une demande de paiement → je l\'analyse et te conseille → <b>tu approuves ou refuses</b>. Tu reçois aussi la demande sur <b>Telegram</b> (avec boutons Approuver / Refuser).</div>'+
   '<div id="dafDemandes" style="padding:8px 0"></div></div>';
 }
 function show(id){document.querySelectorAll('.item').forEach(function(el){el.classList.toggle('on',el.getAttribute('data-id')===id);});var m=document.getElementById('main');m.innerHTML=content(id);m.scrollTop=0;if(id==='rentabilite')setTimeout(function(){analyseRenta(false);},200);if(id==='daf')setTimeout(dafRenderDemandes,50);}
@@ -262,7 +262,7 @@ function dafDecision(id,decision){
  dafRenderDemandes();
 }
 function dafNotifier(d,action){
- // Envoie email + Google Agenda via le webhook Make/Netlify si dispo (sinon silencieux)
+ // Envoie la notif sur Telegram via /api/alerte (sinon silencieux)
  try{
   fetch('/api/alerte',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
    type:'sortie_argent', action:action, poste:d.poste, fournisseur:d.fournisseur,

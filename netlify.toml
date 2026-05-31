@@ -27,10 +27,17 @@
   status = 200
   force = true
 
-# /api/alerte  →  notifie Driss d'une sortie d'argent (email + Google Agenda via Make)
+# /api/alerte  →  notifie Driss d'une sortie d'argent (Telegram)
 [[redirects]]
   from = "/api/alerte"
   to = "/.netlify/functions/alerte"
+  status = 200
+  force = true
+
+# /api/telegram  →  utilitaire Telegram (récupérer chat_id, test)
+[[redirects]]
+  from = "/api/telegram"
+  to = "/.netlify/functions/telegram"
   status = 200
   force = true
 

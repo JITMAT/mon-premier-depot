@@ -66,7 +66,7 @@ textarea{resize:vertical;min-height:64px}
 
   <div class="card">
     <h1 class="serif">Nouvelle demande</h1>
-    <div class="sub">Remplis cette demande. Elle part directement à <b>Driss</b> pour validation (rien n'est payé sans son accord). Il reçoit aussi un email + un événement agenda.</div>
+    <div class="sub">Remplis cette demande. Elle part directement à <b>Driss</b> pour validation (rien n'est payé sans son accord). Il reçoit la demande instantanément sur <b>Telegram</b>.</div>
 
     <label>Objet de la dépense *</label>
     <input id="poste" placeholder="Ex : Achat tissu velours (10 rouleaux)">
@@ -146,7 +146,7 @@ function envoyer(){
   };
   // 1) stocke localement (l'agent DAF du cockpit la lira)
   var arr=getDemandes();arr.unshift(d);setDemandes(arr);
-  // 2) notifie Driss (email + Google Agenda via Make) — silencieux si pas branché
+  // 2) notifie Driss sur Telegram via /api/alerte — silencieux si pas branché
   try{
     fetch('/api/alerte',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
       type:'sortie_argent',action:'NOUVELLE DEMANDE',poste:d.poste,fournisseur:d.fournisseur,
