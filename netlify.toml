@@ -20,3 +20,10 @@
   status = 200
   force = true
 
+# /api/rentabilite  →  fonction qui lit la page rentabilité/dispatch du MES
+[[redirects]]
+  from = "/api/rentabilite"
+  to = "/.netlify/functions/rentabilite"
+  status = 200
+  force = true
+

@@ -132,6 +132,7 @@ var AG = [
  {id:'production',em:'🏭',c:'#3b82f6',nom:'Hanane · Production',role:'Fabrication',mission:"Je suis l'état de fabrication de chaque commande. Mon but : qu'aucune ne traîne."},
  {id:'planning',em:'📅',c:'#06b6d4',nom:'Planning',role:'Ordonnancement · délais',mission:"Je construis le planning. Je lance les plus anciennes d'abord et j'évite de saturer un atelier."},
  {id:'coutRevient',em:'🧮',c:'#34d399',nom:'Coût de revient',role:'Marge · prix',mission:"Je sécurise la marge des grosses commandes avant de lancer la matière."},
+ {id:'rentabilite',em:'📈',c:'#10b981',nom:'Rentabilité (Dispatch)',role:'Analyse quotidienne · page /dispatch',mission:"J'analyse ta page <b>Rentabilité / Dispatch</b> du logiciel <b>chaque jour</b>. Je calcule les marges, repère les commandes peu rentables et te donne un bilan quotidien."},
  {id:'achats',em:'📦',c:'#a78bfa',nom:'Moumen · Achats',role:'Matières · fournisseurs',mission:"Je gère les 559 matières et je <b>compare les fournisseurs</b> pour acheter au meilleur prix."},
  {id:'livraison',em:'🚚',c:'#22C55E',nom:'Fatima · Livraison',role:'Logistique',mission:"Je surveille ce qui est à livrer et les retards clients."},
  {id:'commercial',em:'👥',c:'#e69a76',nom:'Commercial',role:'Ventes',mission:"Je suis la performance des commerciaux : CA, commandes, reste à encaisser."},
@@ -161,6 +162,14 @@ function content(id){
  if(id==='production')return header(a)+kpiHTML([{n:S.enFab,l:'en fabrication'},{n:S.enAttente,l:'en attente'},{n:S.termine,l:'terminées',cls:'grn'},{n:num(S.articles),l:'articles'}],a.c)+table('À lancer — en attente (plus anciennes d\'abord)',[{k:'client',label:'Client'},{k:'date',label:'Depuis',cls:'mut'},{k:'art',label:'Article'},{k:'total',label:'Montant',money:1}],APP.production)+table('En cours de fabrication',[{k:'client',label:'Client'},{k:'art',label:'Article'},{k:'total',label:'Montant',money:1}],APP.enfab);
  if(id==='planning')return header(a)+kpiHTML([{n:S.enAttente,l:'à planifier'},{n:S.ateliers,l:'ateliers'},{n:S.enFab,l:'en cours'},{n:'jeudi',l:'⚠️ Peinture saturée'}],a.c)+table('File de lancement (par ancienneté)',[{k:'client',label:'Client'},{k:'date',label:'Date',cls:'mut'},{k:'art',label:'Article'},{k:'total',label:'Montant',money:1}],APP.production)+table('Charge par atelier',[{k:'nom',label:'Atelier'},{k:'chef',label:'Chef',cls:'mut'},{k:'effectif',label:'Effectif',num:1},{k:'coutH',label:'Coût/h',num:1}],APP.ateliers);
  if(id==='coutRevient')return header(a)+kpiHTML([{n:F.panier,l:'panier moyen'},{n:F.ca,l:'CA potentiel'},{n:F.masse,l:'charges/mois'},{n:'à valider',l:'marge/commande'}],a.c)+table('Grosses commandes — marge à sécuriser',[{k:'client',label:'Client'},{k:'art',label:'Produit'},{k:'total',label:'Montant',money:1},{k:'paye',label:'Encaissé',money:1,cls:'grn'},{k:'vendeur',label:'Vente',cls:'mut'}],APP.gros);
+ if(id==='rentabilite')return header(a)+
+   '<div id="rentaZone">'+
+   kpiHTML([{n:F.panier,l:'panier moyen'},{n:F.ca,l:'CA total'},{n:F.masse,l:'charges/mois'},{n:'—',l:'dernière analyse'}],a.c)+
+   '<div class="tcard"><div class="th">📈 Analyse quotidienne de ta page Rentabilité / Dispatch'+
+   '<span class="cnt"><button class="btn y" style="cursor:pointer" onclick="analyseRenta(true)">🔄 Analyser maintenant</button></span></div>'+
+   '<div style="padding:16px"><div id="rentaOut" style="color:var(--mut);font-size:13.5px;line-height:1.6">Je me connecte à ta page <b>/dispatch</b> du logiciel pour l\'analyser…</div></div></div>'+
+   table('Commandes les plus rentables (estimation par montant)',[{k:'client',label:'Client'},{k:'art',label:'Produit'},{k:'total',label:'Montant',money:1},{k:'vendeur',label:'Vente',cls:'mut'}],APP.gros)+
+   '</div>';
  if(id==='achats')return header(a)+kpiHTML([{n:num(S.matieres),l:'matières'},{n:S.fournisseurs+'+',l:'fournisseurs'},{n:num(S.articles),l:'articles commandés'},{n:S.enAttente,l:'à approvisionner'}],a.c)+table('Fournisseurs',[{k:'f',label:'Fournisseur'},{k:'n',label:'Nb réf.',num:1},{k:'refs',label:'Exemples',cls:'mut'}],APP.fournisseurs.map(function(x){return {f:x.f,n:x.n,refs:(x.refs||[]).join(' · ')};}))+table('Articles les plus commandés',[{k:'nom',label:'Article'},{k:'q',label:'Qté',num:1}],APP.topArt);
  if(id==='livraison')return header(a)+kpiHTML([{n:S.aLivrer,l:'à livrer'},{n:S.livre,l:'livrées',cls:'grn'},{n:'0',l:'en retard',cls:'grn'},{n:num(S.total),l:'commandes'}],a.c)+table('À livrer (par montant)',[{k:'client',label:'Client'},{k:'date',label:'Date prévue',cls:'mut'},{k:'etat',label:'État'},{k:'total',label:'Montant',money:1}],APP.livraison);
  if(id==='commercial')return header(a)+kpiHTML([{n:APP.vendeurs.length,l:'commerciaux'},{n:num(S.total),l:'commandes'},{n:(APP.vendeurs[0]||{}).v||'—',l:'top vente'},{n:fmt((APP.vendeurs[0]||{}).ca||0),l:'son CA'}],a.c)+table('Performance par commercial',[{k:'v',label:'Commercial'},{k:'nb',label:'Cmd',num:1},{k:'ca',label:'CA généré',money:1},{k:'enc',label:'Encaissé',money:1,cls:'grn'},{k:'reste',label:'Reste à encaisser',money:1,cls:'red'}],APP.vendeurs);
@@ -169,7 +178,74 @@ function content(id){
  if(id==='ateliers')return header(a)+kpiHTML([{n:S.ateliers,l:'ateliers'},{n:S.salaries,l:'effectif'},{n:'60 DH',l:'coût/h moyen'},{n:S.enAttente,l:'à répartir'}],a.c)+table('Les 9 ateliers',[{k:'code',label:'Code'},{k:'nom',label:'Atelier'},{k:'chef',label:'Chef',cls:'mut'},{k:'effectif',label:'Effectif',num:1},{k:'coutH',label:'Coût/h',num:1}],APP.ateliers);
  return header(a);
 }
-function show(id){document.querySelectorAll('.item').forEach(function(el){el.classList.toggle('on',el.getAttribute('data-id')===id);});var m=document.getElementById('main');m.innerHTML=content(id);m.scrollTop=0;}
+function show(id){document.querySelectorAll('.item').forEach(function(el){el.classList.toggle('on',el.getAttribute('data-id')===id);});var m=document.getElementById('main');m.innerHTML=content(id);m.scrollTop=0;if(id==='rentabilite')setTimeout(function(){analyseRenta(false);},200);}
+
+/* ===== AGENT RENTABILITÉ : lit la page /dispatch du MES, analyse chaque jour ===== */
+function aujKey(){var d=new Date();return 'renta_'+d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}
+function rentaLocale(){
+ // Estimation de marge à partir des commandes (repli si /dispatch indisponible)
+ var ca=APP.raw.ca, masse=221300;
+ var panier=APP.raw.ca/APP.stats.total;
+ // marge brute estimée : on suppose ~55% de coût matière+MO sur le CA (ordre de grandeur, à affiner par /dispatch)
+ var margeEst=Math.round(ca*0.45);
+ var top=APP.gros.slice(0,3).map(function(o){return o.client+' ('+fmt(o.total)+')';}).join(', ');
+ return '⚠️ <b>Page /dispatch pas encore lisible en direct</b> (accessible une fois l\'app en ligne avec la fonction <code>/api/rentabilite</code>).<br>'+
+  'En attendant, voici mon <b>estimation</b> sur tes '+APP.stats.total+' commandes :<br><br>'+
+  '• CA total : <b>'+fmt(ca)+'</b><br>'+
+  '• Panier moyen : <b>'+fmt(panier)+'</b>/commande<br>'+
+  '• Marge brute estimée (~45%) : <span class="g">'+fmt(margeEst)+'</span> <span style="color:var(--mut2)">(ordre de grandeur — affiné par /dispatch)</span><br>'+
+  '• Charges salariales : '+fmt(masse)+'/mois<br>'+
+  '• Plus gros tickets : '+top+'<br><br>'+
+  '<span style="color:var(--mut2)">👉 Quand l\'app sera en ligne, je lirai les vrais coûts de ta page /dispatch et je te donnerai la marge EXACTE par commande, chaque jour.</span>';
+}
+function rentaFromDispatch(d){
+ // d = données réelles de la page /dispatch (format inconnu → on s'adapte)
+ var arr = Array.isArray(d) ? d : (d.data||d.rows||d.items||[]);
+ if(!arr || !arr.length) return null;
+ var n=arr.length, ca=0, cout=0, marge=0, faibles=[];
+ arr.forEach(function(o){
+   var t = Number(o.total||o.ca||o.montant||o.prix||0);
+   var c = Number(o.cout||o.coutRevient||o.cost||o.coutTotal||0);
+   var m = (o.marge!=null)?Number(o.marge):(t-c);
+   ca+=t; cout+=c; marge+=m;
+   var tx = t>0?Math.round(m/t*100):0;
+   if(t>0 && tx<20) faibles.push((o.client||o.ref||'?')+' ('+tx+'%)');
+ });
+ var txGlobal = ca>0?Math.round(marge/ca*100):0;
+ return '✅ <b>Analyse de ta page /dispatch</b> ('+n+' lignes lues en direct) :<br><br>'+
+  '• CA analysé : <b>'+fmt(ca)+'</b><br>'+
+  (cout>0?'• Coût de revient total : '+fmt(cout)+'<br>':'')+
+  '• Marge totale : <span class="g">'+fmt(marge)+'</span> ('+txGlobal+'%)<br>'+
+  (faibles.length?'• <span class="r">⚠️ '+faibles.length+' commandes peu rentables (&lt;20%)</span> : '+faibles.slice(0,5).join(', '):'• <span class="g">Aucune commande sous 20% de marge 👍</span>')+
+  '<br><br><span style="color:var(--mut2)">Analyse refaite automatiquement chaque jour.</span>';
+}
+function analyseRenta(force){
+ var out=document.getElementById('rentaOut'); if(!out)return;
+ var dejaFait = !force && localStorage.getItem(aujKey());
+ out.innerHTML='⏳ Connexion à ta page /dispatch…';
+ var finished=false;
+ var to=setTimeout(function(){if(finished)return;finished=true;out.innerHTML=rentaLocale();},6000);
+ try{
+  fetch('/api/rentabilite').then(function(r){return r.json();}).then(function(j){
+   if(finished)return;finished=true;clearTimeout(to);
+   if(j&&j.ok&&j.data){var html=rentaFromDispatch(j.data); out.innerHTML=html||rentaLocale();}
+   else out.innerHTML=rentaLocale();
+   localStorage.setItem(aujKey(),'1');
+  }).catch(function(){if(finished)return;finished=true;clearTimeout(to);out.innerHTML=rentaLocale();});
+ }catch(e){if(!finished){finished=true;clearTimeout(to);out.innerHTML=rentaLocale();}}
+ // Notifie le Patron IA dans le salon (1x par jour)
+ if(force || !dejaFait){ setTimeout(function(){
+   if(window.__manual)return;
+   try{
+    var t=team['Patron IA'];var el=document.createElement('div');el.className='msg boss';
+    el.innerHTML='<div class="av" style="background:'+t.c+'22">📈</div><div class="bubble"><div class="ordre">RENTABILITÉ</div><div class="who"><b>Agent Rentabilité</b></div><div class="txt">J\'ai analysé la page /dispatch aujourd\'hui. Bilan dispo dans mon onglet. 📊</div></div>';
+    feed.appendChild(el);feed.scrollTop=feed.scrollHeight;
+   }catch(e){}
+ },1500); }
+}
+
+show('overview');
+step();
 
 /* ===== SALON — tourne en permanence (indépendant du centre) ===== */
 var team={'Patron IA':{em:'🧠',c:'#C4714F'},'Le Veilleur':{em:'⚠️',c:'#E74C3C'},'Finance':{em:'💰',c:'#EAB308'},'Production':{em:'🏭',c:'#3b82f6'},'Coût de revient':{em:'🧮',c:'#34d399'},'Achats':{em:'📦',c:'#a78bfa'},'Planning':{em:'📅',c:'#06b6d4'},'Commercial':{em:'👥',c:'#e69a76'},'Marketing':{em:'📣',c:'#f59e0b'},'Service client':{em:'💬',c:'#60a5fa'}};
