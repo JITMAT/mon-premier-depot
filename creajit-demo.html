@@ -1,0 +1,461 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="theme-color" content="#0F172A" />
+<title>CREAJIT MES — Démo</title>
+<style>
+  :root{
+    --bg:#0B1120; --c1:#111A2E; --c2:#0F1626; --bd:#1E2A44;
+    --tx:#E7ECF5; --mu:#7C8AA5; --or:#C4714F; --gn:#27AE60; --rd:#E74C3C;
+    --bl:#3498DB; --yl:#F1C40F; --shadow:0 8px 30px rgba(0,0,0,.4);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+    background:var(--bg);color:var(--tx);min-height:100dvh;-webkit-font-smoothing:antialiased}
+  .hidden{display:none!important}
+  button{font-family:inherit;cursor:pointer}
+  .spin{animation:spin .7s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* LOGIN */
+  #login{min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:20px}
+  .card{width:100%;max-width:400px;background:var(--c1);border:1px solid var(--bd);
+    border-radius:16px;padding:36px;box-shadow:var(--shadow)}
+  .logo{text-align:center;margin-bottom:28px}
+  .logo .sys{font-size:11px;color:var(--mu);letter-spacing:.15em;text-transform:uppercase;margin-bottom:8px}
+  .logo .nm{font-size:34px;font-weight:900;letter-spacing:-1px}
+  .logo .nm em{color:var(--or);font-style:normal}
+  .logo .sub{font-size:12px;color:var(--mu);margin-top:4px}
+  label{display:block;font-size:10px;font-weight:700;letter-spacing:.08em;color:var(--mu);
+    text-transform:uppercase;margin-bottom:6px}
+  input,select{width:100%;background:var(--c2);border:1.5px solid var(--bd);border-radius:8px;
+    padding:11px 14px;color:var(--tx);font-size:14px;outline:none;font-family:inherit}
+  input:focus,select:focus{border-color:var(--or)}
+  .btn{width:100%;padding:13px;border-radius:8px;border:none;background:var(--or);color:#fff;
+    font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px}
+  .hint{text-align:center;margin-top:18px;font-size:11px;color:var(--mu);line-height:1.6}
+
+  /* APP */
+  #app{max-width:760px;margin:0 auto;min-height:100dvh;display:flex;flex-direction:column}
+  .top{background:#070D18;border-bottom:1px solid var(--bd);padding:12px 16px;
+    display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
+  .top .lg{font-size:18px;font-weight:900}
+  .top .lg em{color:var(--or);font-style:normal}
+  .top .meta{font-size:9px;color:#475569}
+  .clk{font-family:monospace;font-size:13px;color:var(--mu)}
+  .ava{width:32px;height:32px;border-radius:50%;background:rgba(196,113,79,.2);color:var(--or);
+    display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}
+  .body{flex:1;padding:14px;overflow-y:auto}
+  .nav{background:#070D18;border-top:1px solid var(--bd);display:flex;position:sticky;bottom:0}
+  .nb{flex:1;background:none;border:none;color:var(--mu);font-size:9px;padding:8px 2px;
+    display:flex;flex-direction:column;align-items:center;gap:3px}
+  .nb i{font-size:18px;font-style:normal}
+  .nb.on{color:var(--or)}
+
+  /* STATS */
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+  .stat{background:var(--c1);border:1px solid var(--bd);border-radius:10px;padding:10px 8px;text-align:center}
+  .stat .v{font-family:monospace;font-size:18px;font-weight:700}
+  .stat .l{font-size:9px;color:var(--mu);text-transform:uppercase;letter-spacing:.05em;margin-top:2px}
+
+  .search{margin-bottom:12px}
+
+  /* ORDER CARD */
+  .ord{background:var(--c1);border:1px solid var(--bd);border-radius:12px;padding:12px 14px;
+    margin-bottom:10px;cursor:pointer;transition:border-color .15s}
+  .ord:hover{border-color:var(--or)}
+  .ord .row1{display:flex;justify-content:space-between;align-items:start;margin-bottom:6px}
+  .ord .ref{font-family:monospace;font-size:12px;color:var(--mu)}
+  .ord .cl{font-size:15px;font-weight:700;margin-top:2px}
+  .badge{font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;white-space:nowrap}
+  .ord .row2{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--mu)}
+  .ord .tot{font-family:monospace;font-weight:700;color:var(--or)}
+  .late{color:var(--rd);font-weight:700}
+  .chips{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}
+  .chip{font-size:10px;background:var(--c2);border:1px solid var(--bd);border-radius:6px;padding:3px 7px}
+
+  /* DETAIL */
+  .back{background:none;border:none;color:var(--or);font-size:13px;font-weight:700;margin-bottom:12px}
+  .art{background:var(--c1);border:1px solid var(--bd);border-radius:12px;padding:14px;margin-bottom:12px}
+  .art .h{display:flex;justify-content:space-between;align-items:start;margin-bottom:4px}
+  .art .nom{font-size:15px;font-weight:700}
+  .art .info{font-size:12px;color:var(--mu);margin-bottom:10px}
+  .steps{display:flex;flex-direction:column;gap:6px}
+  .step{display:flex;align-items:center;gap:10px;background:var(--c2);border:1px solid var(--bd);
+    border-radius:8px;padding:8px 10px}
+  .step .ic{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;
+    justify-content:center;font-size:15px;flex-shrink:0}
+  .step .nm{font-size:13px;font-weight:600}
+  .step .at{font-size:10px;color:var(--mu)}
+  .step .est{margin-left:auto;font-size:11px;font-family:monospace;color:var(--mu)}
+  .sdot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+  .sec-t{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--mu);margin:18px 0 8px}
+  .demo-tag{position:fixed;bottom:64px;left:50%;transform:translateX(-50%);background:var(--or);
+    color:#fff;font-size:10px;font-weight:700;padding:4px 12px;border-radius:20px;z-index:20;opacity:.92}
+</style>
+</head>
+<body>
+
+<!-- ╔══════════════ LOGIN ══════════════╗ -->
+<div id="login">
+  <div class="card">
+    <div class="logo">
+      <div class="sys">Système de Gestion</div>
+      <div class="nm">CREA<em>JIT</em></div>
+      <div class="sub">Manufacturing Execution System</div>
+    </div>
+    <div style="margin-bottom:16px">
+      <label>Utilisateur (démo)</label>
+      <select id="userSel"></select>
+    </div>
+    <div style="margin-bottom:22px">
+      <label>Mot de passe</label>
+      <input type="password" id="pass" value="demo" />
+    </div>
+    <button class="btn" onclick="doLogin()">🔐 Se connecter</button>
+    <div class="hint">
+      Démo locale — mot de passe : <b>demo</b><br>
+      CREAJIT MES v2.0 — Marrakech 🇲🇦
+    </div>
+  </div>
+</div>
+
+<!-- ╔══════════════ APP ══════════════╗ -->
+<div id="app" class="hidden">
+  <div class="top">
+    <div>
+      <div class="lg">CREA<em>JIT</em> <span style="color:#475569;font-weight:400;font-size:10px">MES v2</span></div>
+      <div class="meta" id="topMeta"></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px">
+      <span class="clk" id="clk"></span>
+      <div class="ava" id="ava" onclick="logout()" title="Déconnexion"></div>
+    </div>
+  </div>
+  <div class="body" id="view"></div>
+  <div class="nav" id="nav"></div>
+</div>
+
+<div class="demo-tag hidden" id="demoTag">● MODE DÉMO — données fictives</div>
+
+<script>
+/* ─── ATELIERS ─────────────────────────────────────── */
+const AT = {
+  menuisier:{nom:'Menuiserie',icon:'🪵',color:'#27AE60'},
+  peinture:{nom:'Peinture',icon:'🎨',color:'#E67E22'},
+  tapissier:{nom:'Tapisserie',icon:'🧵',color:'#9B59B6'},
+  couturier:{nom:'Couture',icon:'✂️',color:'#E67E22'},
+  ferronier:{nom:'Ferronnerie',icon:'🔧',color:'#7F8C8D'},
+  pierre:{nom:'Pierre',icon:'🪨',color:'#8D6748'},
+  cnc:{nom:'CNC Laser',icon:'⚡',color:'#4A90D9'},
+  cuivre:{nom:'Cuivre',icon:'🟡',color:'#D4A017'},
+  resine:{nom:'Résine',icon:'🧪',color:'#2ECC71'},
+};
+
+/* ─── WORKFLOWS (extrait fidèle de l'app) ──────────── */
+const WORKFLOWS = {
+  canape:{nom:'Canapé / Banquette',icon:'🛋️',keywords:['canap','banquet','brooklyn','ego','prestige','arcus','nova','nuage'],
+    steps:[
+      {at:'menuisier',nom:'Carcasse bois',icon:'🪵',estH:10},
+      {at:'menuisier',nom:'Sangles & ressorts',icon:'🔩',estH:2},
+      {at:'couturier',nom:'Coupe & couture tissu',icon:'✂️',estH:5},
+      {at:'tapissier',nom:'Garniture mousse & habillage',icon:'🧵',estH:12},
+    ]},
+  fauteuil:{nom:'Fauteuil',icon:'💺',keywords:['fauteuil'],
+    steps:[
+      {at:'menuisier',nom:'Carcasse bois',icon:'🪵',estH:5},
+      {at:'couturier',nom:'Coupe tissu',icon:'✂️',estH:2},
+      {at:'tapissier',nom:'Garniture & habillage',icon:'🧵',estH:5},
+    ]},
+  chaise_bois:{nom:'Chaise bois',icon:'🪑',keywords:['marry','pulsy','hermes','harmonie','chaise'],
+    steps:[
+      {at:'menuisier',nom:'Carcasse bois',icon:'🪵',estH:4},
+      {at:'peinture',nom:'Vernis / laque',icon:'🎨',estH:2},
+      {at:'couturier',nom:'Coupe tissu assise',icon:'✂️',estH:1},
+      {at:'tapissier',nom:'Habillage assise & dossier',icon:'🧵',estH:2},
+    ]},
+  table_travertin:{nom:'Table travertin / marbre',icon:'🪨',keywords:['travertin','marbre','aurax','aeris','rocasa','stone','pierre'],
+    steps:[
+      {at:'pierre',nom:'Découpe plateau',icon:'🪨',estH:3},
+      {at:'pierre',nom:'Polissage & finition',icon:'🪨',estH:3},
+    ]},
+  table_ceram:{nom:'Table céramique pied métal',icon:'🟫',keywords:['ceratrav','ceramique','linea','duo linea'],
+    steps:[
+      {at:'ferronier',nom:'Pieds métal soudés',icon:'🔧',estH:4},
+      {at:'peinture',nom:'Laquage pieds',icon:'🎨',estH:2},
+      {at:'pierre',nom:'Découpe plateau céramique',icon:'🪨',estH:3},
+    ]},
+  lit:{nom:'Lit / Tête de lit',icon:'🛏️',keywords:['lit','tete de lit','olia','zenora','orion','celestia'],
+    steps:[
+      {at:'menuisier',nom:'Structure bois lit',icon:'🪵',estH:10},
+      {at:'couturier',nom:'Coupe tissu tête de lit',icon:'✂️',estH:2},
+      {at:'tapissier',nom:'Habillage tête de lit',icon:'🧵',estH:4},
+    ]},
+  cuivre:{nom:'Produit Cuivre Signature',icon:'🟡',keywords:['cuivre','cuikech','cuiline','souffle','maple','leaf'],
+    steps:[
+      {at:'cuivre',nom:'Découpe feuille de cuivre',icon:'🟡',estH:4},
+      {at:'cuivre',nom:'Martelage & formage',icon:'🟡',estH:6},
+      {at:'cuivre',nom:'Patine & finition',icon:'🟡',estH:3},
+    ]},
+  resine:{nom:'Produit Résine / Époxy',icon:'🧪',keywords:['resine','résine','epoxy','ceramlux'],
+    steps:[
+      {at:'resine',nom:'Préparation moule',icon:'🧪',estH:2},
+      {at:'resine',nom:'Coulage résine & pigments',icon:'🧪',estH:3},
+      {at:'resine',nom:'Démoulage & ponçage',icon:'🔩',estH:4},
+      {at:'resine',nom:'Vernis & finitions',icon:'✨',estH:2},
+    ]},
+};
+function detectWorkflow(nom=''){
+  const n=nom.toLowerCase();
+  for(const [k,wf] of Object.entries(WORKFLOWS)) if(wf.keywords.some(x=>n.includes(x))) return k;
+  return null;
+}
+
+/* ─── UTILISATEURS DÉMO ─────────────────────────────── */
+const USERS = [
+  {email:'driss@salle91.com',name:'Driss Admin',role:'admin'},
+  {email:'kenza@creajit.ma',name:'Kenza (Commercial)',role:'commercial'},
+  {email:'atelier@creajit.ma',name:'Chef Production',role:'production'},
+];
+
+/* ─── COMMANDES DÉMO (produits & ateliers réels) ─────── */
+const ORDERS = [
+  {ref:'CMD-2026-0412', cl:'Villa Amelkis — M. Bennani', com:'Kenza', date:'2026-05-10', liv:'2026-06-05',
+   status:'confirmed', late:true, j:3, tot:84500, sol:42250,
+   articles:[
+     {nom:'Canapé d\'angle Brooklyn 6 places', q:1, prix:38000, dim:'320×210 cm', notes:'Tissu velours bleu nuit, pieds laiton'},
+     {nom:'Fauteuil Prestige assorti', q:2, prix:9500, dim:'90×85 cm', notes:'Même tissu que le canapé'},
+     {nom:'Table basse travertin Aurax', q:1, prix:18500, dim:'130×70 cm', notes:'Travertin beige poli'},
+   ]},
+  {ref:'CMD-2026-0418', cl:'Riad Dar Zaman — Réception', com:'Ikram', date:'2026-05-15', liv:'2026-06-12',
+   status:'ready', late:false, j:0, tot:52000, sol:0,
+   articles:[
+     {nom:'Lit double Olia 180', q:1, prix:14000, dim:'180×200 cm', notes:'Tête de lit capitonnée lin écru'},
+     {nom:'Chaise Marry (lot)', q:8, prix:1800, dim:'45×52 cm', notes:'Bois hêtre vernis naturel, assise beige'},
+   ]},
+  {ref:'CMD-2026-0421', cl:'Hôtel Atlas Medina', com:'Laila', date:'2026-05-18', liv:'2026-07-01',
+   status:'pending', late:false, j:0, tot:126000, sol:126000,
+   articles:[
+     {nom:'Table céramique Duo Linea pied métal', q:6, prix:9500, dim:'200×100 cm', notes:'Céramique effet marbre, pieds noir mat'},
+     {nom:'Banquette Nova sur mesure', q:4, prix:12000, dim:'240×80 cm', notes:'Tissu outdoor, structure renforcée'},
+   ]},
+  {ref:'CMD-2026-0425', cl:'Boutique Lumière — Gueliz', com:'Kenza', date:'2026-05-22', liv:'2026-06-20',
+   status:'confirmed', late:false, j:0, tot:31000, sol:15500,
+   articles:[
+     {nom:'Lampe sculpture Cuivre Souffle', q:3, prix:6500, dim:'H 120 cm', notes:'Patine cuivre vieilli, finition vernis'},
+     {nom:'Plateau décoratif Résine Ceramlux', q:5, prix:2300, dim:'Ø 40 cm', notes:'Pigments terracotta & or'},
+   ]},
+  {ref:'CMD-2026-0429', cl:'Particulier — Mme El Idrissi', com:'Ikram', date:'2026-05-25', liv:'2026-05-28',
+   status:'partial', late:true, j:3, tot:22500, sol:7000,
+   articles:[
+     {nom:'Tête de lit Zenora', q:1, prix:8500, dim:'200×130 cm', notes:'Velours vert sauge, capitonnage losange'},
+     {nom:'Fauteuil lecture', q:1, prix:9500, dim:'80×90 cm', notes:'Cuir camel'},
+     {nom:'Table basse marbre Rocasa', q:1, prix:4500, dim:'90×90 cm', notes:''},
+   ]},
+];
+
+const STATUS = {
+  confirmed:{c:'#3498DB',bg:'rgba(52,152,219,.14)',l:'Confirmée'},
+  ready:{c:'#2ECC71',bg:'rgba(46,204,113,.14)',l:'Prête'},
+  partial:{c:'#F1C40F',bg:'rgba(241,196,15,.14)',l:'Part. livrée'},
+  pending:{c:'#88889A',bg:'rgba(136,136,154,.14)',l:'En attente'},
+  paid:{c:'#2ECC71',bg:'rgba(46,204,113,.14)',l:'Payée'},
+};
+const dh = n => Math.round(n||0).toLocaleString('fr') + ' DH';
+
+/* ─── ÉTAT ──────────────────────────────────────────── */
+let state = { user:null, tab:'orders', selRef:null };
+
+const TABS = [
+  {id:'orders',ic:'📋',l:'Commandes'},
+  {id:'team',ic:'👷',l:'Équipe'},
+  {id:'planning',ic:'🗓️',l:'Planning'},
+  {id:'alerts',ic:'🔔',l:'Alertes'},
+];
+
+/* ─── LOGIN ─────────────────────────────────────────── */
+function initLogin(){
+  const sel = document.getElementById('userSel');
+  sel.innerHTML = USERS.map(u=>`<option value="${u.email}">${u.name} — ${u.role}</option>`).join('');
+}
+function doLogin(){
+  const email = document.getElementById('userSel').value;
+  state.user = USERS.find(u=>u.email===email);
+  document.getElementById('login').classList.add('hidden');
+  document.getElementById('app').classList.remove('hidden');
+  document.getElementById('demoTag').classList.remove('hidden');
+  document.getElementById('ava').textContent = state.user.name.slice(0,2).toUpperCase();
+  state.tab='orders'; state.selRef=null;
+  render();
+}
+function logout(){
+  state.user=null;
+  document.getElementById('app').classList.add('hidden');
+  document.getElementById('demoTag').classList.add('hidden');
+  document.getElementById('login').classList.remove('hidden');
+}
+
+/* ─── HORLOGE ───────────────────────────────────────── */
+setInterval(()=>{
+  const c=document.getElementById('clk'); if(!c) return;
+  const d=new Date();
+  c.textContent=[d.getHours(),d.getMinutes(),d.getSeconds()].map(x=>String(x).padStart(2,'0')).join(':');
+},1000);
+
+/* ─── RENDER ────────────────────────────────────────── */
+function render(){
+  document.getElementById('topMeta').textContent = ORDERS.length+' cmd · sync à l\'instant';
+  // nav
+  document.getElementById('nav').innerHTML = TABS.map(t=>
+    `<button class="nb ${state.tab===t.id||(state.tab==='cmd'&&t.id==='orders')?'on':''}" onclick="go('${t.id}')">
+       <i>${t.ic}</i>${t.l}</button>`).join('');
+  const v = document.getElementById('view');
+  if(state.tab==='orders') v.innerHTML = viewOrders();
+  else if(state.tab==='cmd') v.innerHTML = viewDetail();
+  else if(state.tab==='team') v.innerHTML = viewTeam();
+  else if(state.tab==='planning') v.innerHTML = viewPlanning();
+  else if(state.tab==='alerts') v.innerHTML = viewAlerts();
+  document.getElementById('view').scrollTop=0;
+}
+function go(tab){ state.tab=tab; state.selRef=null; render(); }
+function openOrder(ref){ state.selRef=ref; state.tab='cmd'; render(); }
+
+/* ─── VUE COMMANDES ─────────────────────────────────── */
+function viewOrders(){
+  const retards = ORDERS.filter(o=>o.late).length;
+  const sol = ORDERS.reduce((s,o)=>s+o.sol,0);
+  const cards = ORDERS.map(o=>{
+    const st=STATUS[o.status];
+    const chips = o.articles.map(a=>{
+      const wf=detectWorkflow(a.nom); const ic=wf?WORKFLOWS[wf].icon:'📦';
+      return `<span class="chip">${ic} ${a.q}× ${a.nom.split(' ').slice(0,3).join(' ')}</span>`;
+    }).join('');
+    return `<div class="ord" onclick="openOrder('${o.ref}')">
+      <div class="row1">
+        <div><div class="ref">${o.ref}</div><div class="cl">${o.cl}</div></div>
+        <span class="badge" style="background:${st.bg};color:${st.c}">${st.l}</span>
+      </div>
+      <div class="row2">
+        <span>${o.com} · Livr. ${o.liv}${o.late?` · <span class="late">⚠ +${o.j}j retard</span>`:''}</span>
+        <span class="tot">${dh(o.tot)}</span>
+      </div>
+      <div class="chips">${chips}</div>
+    </div>`;
+  }).join('');
+  return `
+    <div class="stats">
+      <div class="stat"><div class="v">${ORDERS.length}</div><div class="l">Commandes</div></div>
+      <div class="stat"><div class="v" style="color:${retards?'var(--rd)':'var(--mu)'}">${retards}</div><div class="l">Retards</div></div>
+      <div class="stat"><div class="v" style="color:var(--or);font-size:13px">${dh(sol)}</div><div class="l">À encaisser</div></div>
+    </div>
+    <div class="search"><input placeholder="🔍 Rechercher client, référence..." oninput="filterOrders(this.value)"/></div>
+    <div id="ordList">${cards}</div>`;
+}
+function filterOrders(q){
+  q=q.toLowerCase();
+  document.querySelectorAll('#ordList .ord').forEach(el=>{
+    el.style.display = el.textContent.toLowerCase().includes(q)?'':'none';
+  });
+}
+
+/* ─── VUE DÉTAIL COMMANDE ───────────────────────────── */
+function viewDetail(){
+  const o = ORDERS.find(x=>x.ref===state.selRef);
+  if(!o) return '<button class="back" onclick="go(\'orders\')">← Retour</button>';
+  const st=STATUS[o.status];
+  const arts = o.articles.map(a=>{
+    const wfId=detectWorkflow(a.nom);
+    const wf=wfId?WORKFLOWS[wfId]:null;
+    let stepsHtml='<div class="info">Atelier à définir</div>';
+    if(wf){
+      // 1er step "en cours", reste "à faire" (démo)
+      stepsHtml = '<div class="steps">'+wf.steps.map((s,i)=>{
+        const at=AT[s.at]||{};
+        const status = i===0?{c:'#F1C40F',l:'en cours'}:i===1?{c:'#3498DB',l:'à faire'}:{c:'#475569',l:'attente'};
+        return `<div class="step">
+          <span class="ic" style="background:${(at.color||'#333')}22;color:${at.color}">${s.icon}</span>
+          <div><div class="nm">${s.nom}</div><div class="at">${at.nom||s.at}</div></div>
+          <span class="sdot" style="background:${status.c}" title="${status.l}"></span>
+          <span class="est">${s.estH}h</span>
+        </div>`;
+      }).join('')+'</div>';
+    }
+    return `<div class="art">
+      <div class="h">
+        <div><div class="nom">${wf?wf.icon:'📦'} ${a.nom}</div>
+        <div class="info">Qté ${a.q} · ${a.dim||'—'} · ${dh(a.prix)}/u${a.notes?` · <span style="color:var(--mu)">${a.notes}</span>`:''}</div></div>
+      </div>
+      <div class="sec-t" style="margin-top:0">Workflow production ${wf?'· '+wf.nom:''}</div>
+      ${stepsHtml}
+    </div>`;
+  }).join('');
+  return `
+    <button class="back" onclick="go('orders')">← Retour aux commandes</button>
+    <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:4px">
+      <div><div class="ref" style="font-family:monospace;color:var(--mu);font-size:12px">${o.ref}</div>
+      <div style="font-size:20px;font-weight:800">${o.cl}</div></div>
+      <span class="badge" style="background:${st.bg};color:${st.c}">${st.l}</span>
+    </div>
+    <div style="font-size:12px;color:var(--mu);margin-bottom:14px">
+      Commercial ${o.com} · Commande ${o.date} · Livraison ${o.liv}
+      ${o.late?` · <span class="late">⚠ +${o.j}j de retard</span>`:''}
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="v" style="font-size:13px;color:var(--or)">${dh(o.tot)}</div><div class="l">Total</div></div>
+      <div class="stat"><div class="v" style="font-size:13px;color:var(--gn)">${dh(o.tot-o.sol)}</div><div class="l">Encaissé</div></div>
+      <div class="stat"><div class="v" style="font-size:13px;color:${o.sol?'var(--rd)':'var(--mu)'}">${dh(o.sol)}</div><div class="l">Solde</div></div>
+    </div>
+    <div class="sec-t">${o.articles.length} article(s)</div>
+    ${arts}`;
+}
+
+/* ─── VUE ÉQUIPE (aperçu) ───────────────────────────── */
+function viewTeam(){
+  const counts = {};
+  ORDERS.forEach(o=>o.articles.forEach(a=>{
+    const wf=detectWorkflow(a.nom); if(!wf) return;
+    WORKFLOWS[wf].steps.forEach(s=>{counts[s.at]=(counts[s.at]||0)+a.q;});
+  }));
+  const cards = Object.entries(AT).map(([id,at])=>{
+    const charge=counts[id]||0;
+    return `<div class="art" style="display:flex;align-items:center;gap:12px;padding:12px 14px">
+      <span class="ic" style="width:38px;height:38px;background:${at.color}22;color:${at.color};border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px">${at.icon}</span>
+      <div style="flex:1"><div class="nm" style="font-size:14px;font-weight:700">${at.nom}</div>
+      <div class="at" style="font-size:11px;color:var(--mu)">${charge} tâche(s) en file</div></div>
+      <span class="badge" style="background:${charge?at.color+'22':'#1E2A44'};color:${charge?at.color:'var(--mu)'}">${charge?'Actif':'Libre'}</span>
+    </div>`;
+  }).join('');
+  return `<div class="sec-t" style="margin-top:0">Ateliers & charge actuelle</div>${cards}
+    <div class="hint" style="color:var(--mu);margin-top:14px">Démo — l'app complète gère les 37 salariés, pointage et temps réels.</div>`;
+}
+
+/* ─── VUE PLANNING (aperçu) ─────────────────────────── */
+function viewPlanning(){
+  const rows = [...ORDERS].sort((a,b)=>new Date(a.liv)-new Date(b.liv)).map(o=>{
+    const st=STATUS[o.status];
+    return `<div class="ord" onclick="openOrder('${o.ref}')" style="cursor:pointer">
+      <div class="row2"><span><b>${o.liv}</b> · ${o.cl}</span>
+      <span class="badge" style="background:${st.bg};color:${st.c}">${st.l}</span></div>
+    </div>`;
+  }).join('');
+  return `<div class="sec-t" style="margin-top:0">Planning livraisons</div>${rows}`;
+}
+
+/* ─── VUE ALERTES (aperçu) ──────────────────────────── */
+function viewAlerts(){
+  const late = ORDERS.filter(o=>o.late);
+  if(!late.length) return `<div class="sec-t" style="margin-top:0">Alertes</div><div class="hint">✅ Aucune alerte</div>`;
+  return `<div class="sec-t" style="margin-top:0">${late.length} alerte(s) — retards</div>`+
+    late.map(o=>`<div class="art" style="border-left:3px solid var(--rd)">
+      <div class="nm" style="font-weight:700">⚠ ${o.cl}</div>
+      <div class="info">${o.ref} · livraison prévue ${o.liv} · <span class="late">+${o.j}j de retard</span></div>
+    </div>`).join('');
+}
+
+initLogin();
+</script>
+</body>
+</html>
