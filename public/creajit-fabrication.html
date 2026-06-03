@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="theme-color" content="#0B1120"/>
+<title>CREAJIT — Suivi Fabrication</title>
+<style>
+:root{--bg:#0B1120;--c1:#111A2E;--c2:#0F1626;--bd:#1E2A44;--tx:#E7ECF5;--mu:#7C8AA5;--or:#C4714F;--gn:#27AE60;--rd:#E74C3C;--bl:#3498DB;--yl:#F1C40F;--vi:#9B59B6;--shadow:0 8px 30px rgba(0,0,0,.4)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--tx);min-height:100dvh}
+button{font-family:inherit;cursor:pointer}
+.top{background:#070D18;border-bottom:1px solid var(--bd);padding:12px 18px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
+.lg{font-size:20px;font-weight:900}.lg em{color:var(--or);font-style:normal}
+.lg small{color:#475569;font-weight:400;font-size:10px;letter-spacing:.1em}
+.clk{font-family:monospace;font-size:15px;color:var(--mu)}
+.tabs{display:flex;gap:6px;padding:12px 18px}
+.tab{background:var(--c1);border:1px solid var(--bd);color:var(--mu);border-radius:10px;padding:9px 16px;font-weight:700;font-size:13px}
+.tab.on{background:var(--or);color:#fff;border-color:var(--or)}
+.wrap{padding:0 18px 40px;max-width:1100px;margin:0 auto}
+.h1{font-size:20px;font-weight:800;margin:6px 0 2px}.sub{color:var(--mu);font-size:13px;margin-bottom:16px}
+.card{background:var(--c1);border:1px solid var(--bd);border-radius:14px;padding:18px;margin-bottom:16px}
+.scan{width:100%;background:var(--c2);border:2px solid var(--bd);border-radius:12px;padding:15px 18px;font-size:18px;color:var(--tx);outline:none;letter-spacing:1px}
+.scan:focus{border-color:var(--or)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px;margin-top:12px}
+.wbtn{background:var(--c2);border:1px solid var(--bd);border-radius:12px;padding:12px;text-align:left;display:flex;align-items:center;gap:10px;color:var(--tx)}
+.wbtn:hover{border-color:var(--or)}
+.av{width:38px;height:38px;border-radius:50%;background:rgba(196,113,79,.2);color:var(--or);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0}
+.wbtn .n{font-weight:700;font-size:14px}.wbtn .a{font-size:11px;color:var(--mu)}
+.dotw{margin-left:auto;width:9px;height:9px;border-radius:50%}
+.btnP{padding:16px;border-radius:12px;border:none;font-size:17px;font-weight:800;color:#fff;width:100%}
+.btnP.go{background:var(--gn)}.btnP.stop{background:var(--rd)}
+.sel{width:100%;background:var(--c2);border:1.5px solid var(--bd);border-radius:10px;padding:13px 14px;color:var(--tx);font-size:15px;outline:none;margin-bottom:12px}
+.artbtn{display:block;width:100%;text-align:left;background:var(--c2);border:1px solid var(--bd);border-radius:10px;padding:12px 14px;color:var(--tx);margin-bottom:8px;font-size:14px}
+.artbtn.sel{border-color:var(--or);background:rgba(196,113,79,.08)}
+.artbtn .em{font-size:11px;color:var(--mu)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{text-align:left;padding:10px;border-bottom:1px solid var(--bd)}
+th{color:var(--mu);font-size:10px;text-transform:uppercase;letter-spacing:.05em}
+.tag{font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;white-space:nowrap}
+.live{display:flex;align-items:center;gap:8px;background:var(--c2);border:1px solid var(--bd);border-left:3px solid var(--gn);border-radius:10px;padding:11px 14px;margin-bottom:8px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:16px}
+.kpi{background:var(--c1);border:1px solid var(--bd);border-radius:12px;padding:13px 15px}
+.kpi .v{font-size:22px;font-weight:800;font-family:monospace}.kpi .l{color:var(--mu);font-size:10px;text-transform:uppercase;margin-top:2px}
+.back{background:none;border:none;color:var(--or);font-weight:700;font-size:13px;margin-bottom:10px}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--gn);color:#fff;font-weight:700;padding:14px 26px;border-radius:30px;z-index:80;box-shadow:var(--shadow);display:none}
+.pulse{animation:pl 1.4s infinite}@keyframes pl{0%,100%{opacity:1}50%{opacity:.35}}
+</style>
+</head>
+<body>
+<div class="top">
+  <div class="lg">CREA<em>JIT</em> <small>SUIVI FABRICATION</small></div>
+  <span class="clk" id="clk">--:--:--</span>
+</div>
+<div class="tabs">
+  <button class="tab on" id="tab-atelier" onclick="goTab('atelier')">🛠️ Atelier</button>
+  <button class="tab" id="tab-suivi" onclick="goTab('suivi')">📊 Suivi production</button>
+</div>
+<div class="wrap" id="view"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ════ ATELIERS ════ */
+const AT={menuisier:{n:'Menuiserie',e:'🪵',c:'#27AE60',tx:26},peinture:{n:'Peinture',e:'🎨',c:'#E67E22',tx:22},
+tapissier:{n:'Tapisserie',e:'🧵',c:'#9B59B6',tx:26},couturier:{n:'Couture',e:'✂️',c:'#E67E22',tx:26},
+ferronier:{n:'Ferronnerie',e:'🔧',c:'#7F8C8D',tx:25},pierre:{n:'Pierre',e:'🪨',c:'#8D6748',tx:29},
+cnc:{n:'CNC Laser',e:'⚡',c:'#4A90D9',tx:28},cuivre:{n:'Cuivre',e:'🟡',c:'#D4A017',tx:29},resine:{n:'Résine',e:'🧪',c:'#2ECC71',tx:24}};
+
+/* ════ OUVRIERS (démo) ════ */
+const WORKERS=[
+ {id:'CJ-W004',n:'Abdelilah Dakhama',at:'tapissier'},
+ {id:'CJ-W014',n:'Ayoub Chair',at:'menuisier'},
+ {id:'CJ-W040',n:'Said Chnitifa',at:'menuisier'},
+ {id:'CJ-W008',n:'Mohamed Elkarmani',at:'peinture'},
+ {id:'CJ-W020',n:'Yassine Madidi',at:'ferronier'},
+ {id:'CJ-W006',n:'Noureddine Ouzzat',at:'cuivre'},
+ {id:'CJ-W021',n:'Mustapha Aababou',at:'pierre'},
+ {id:'CJ-W056',n:'Ettaib Bougatouch',at:'cnc'},
+];
+
+/* ════ COMMANDES & ARTICLES (démo) ════ */
+const ORDERS=[
+ {ref:'CMD-2026-0412',cl:'Villa Amelkis',articles:[
+   {nom:"Canapé d'angle Brooklyn 6 places",at:'tapissier',etape:'Garniture mousse & habillage'},
+   {nom:'Table basse travertin Aurax',at:'pierre',etape:'Polissage & finition'}]},
+ {ref:'CMD-2026-0418',cl:'Riad Dar Zaman',articles:[
+   {nom:'Lit double Olia 180',at:'menuisier',etape:'Structure bois lit'},
+   {nom:'Chaise Marry (lot 8)',at:'menuisier',etape:'Carcasse bois'}]},
+ {ref:'CMD-2026-0421',cl:'Hôtel Atlas Medina',articles:[
+   {nom:'Table céramique Duo Linea',at:'ferronier',etape:'Pieds métal soudés'},
+   {nom:'Banquette Nova sur mesure',at:'tapissier',etape:'Habillage'}]},
+ {ref:'CMD-2026-0425',cl:'Boutique Lumière',articles:[
+   {nom:'Lampe Cuivre Souffle',at:'cuivre',etape:'Martelage & formage'},
+   {nom:'Plateau Résine Ceramlux',at:'resine',etape:'Coulage résine'}]},
+];
+
+/* ════ STORAGE ════ */
+const KEY='cj2_fab';
+let SES=JSON.parse(localStorage.getItem(KEY)||'[]');   // [{id,wid,wn,at,ref,cl,art,etape,t0,t1}]
+const persist=()=>localStorage.setItem(KEY,JSON.stringify(SES));
+
+/* ════ HELPERS ════ */
+const pad=n=>String(n).padStart(2,'0');
+const hhmm=iso=>{const d=new Date(iso);return pad(d.getHours())+':'+pad(d.getMinutes());};
+const ini=n=>(n||'?').split(' ').map(x=>x[0]||'').join('').slice(0,2).toUpperCase();
+const today=()=>new Date().toISOString().slice(0,10);
+const worker=id=>WORKERS.find(w=>w.id===id);
+const activeOf=wid=>SES.find(s=>s.wid===wid && !s.t1);
+const durMin=s=>Math.round(((s.t1?new Date(s.t1):new Date())-new Date(s.t0))/60000);
+const durTxt=m=>(m>=60?Math.floor(m/60)+'h':'')+pad(m%60)+(m<60?'min':'');
+function toast(msg,c){const t=document.getElementById('toast');t.textContent=msg;t.style.background=c||'var(--gn)';t.style.display='block';clearTimeout(window._t);window._t=setTimeout(()=>t.style.display='none',2400);}
+
+/* ════ HORLOGE ════ */
+setInterval(()=>{const d=new Date();const c=document.getElementById('clk');if(c)c.textContent=pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds());
+  // refresh live durations
+  document.querySelectorAll('[data-live]').forEach(el=>{const s=SES.find(x=>x.id===el.dataset.live);if(s)el.textContent=durTxt(durMin(s));});
+},1000);
+
+/* ════ NAV ════ */
+let TAB='atelier', SELW=null, SELART=null;
+function goTab(t){TAB=t;SELW=null;SELART=null;document.getElementById('tab-atelier').classList.toggle('on',t==='atelier');document.getElementById('tab-suivi').classList.toggle('on',t==='suivi');render();}
+function render(){document.getElementById('view').innerHTML = TAB==='atelier'?viewAtelier():viewSuivi();
+  const sc=document.getElementById('scan');if(sc)sc.focus();}
+
+/* ════ ATELIER (kiosk) ════ */
+function viewAtelier(){
+  if(SELW){ return viewWorker(SELW); }
+  const cards=WORKERS.map(w=>{const act=activeOf(w.id);return `<button class="wbtn" onclick="pickW('${w.id}')">
+    <span class="av">${ini(w.n)}</span>
+    <span><span class="n">${w.n}</span><br><span class="a">${AT[w.at].e} ${AT[w.at].n}</span></span>
+    <span class="dotw" style="background:${act?'var(--gn)':'#334155'}" title="${act?'en cours':'libre'}"></span>
+  </button>`}).join('');
+  const enCours=SES.filter(s=>!s.t1);
+  return `<div class="h1">Qui travaille sur quoi ?</div><div class="sub">Scanne ton badge ou touche ton nom — puis choisis le produit. Démarre / termine.</div>
+  <div class="card"><input id="scan" class="scan" placeholder="Scanner badge — ex: CJ-W014" autocomplete="off" onkeydown="if(event.key==='Enter')scanW()"/>
+  <div class="grid">${cards}</div></div>
+  ${enCours.length?`<div class="h1" style="font-size:16px">⏱ En cours (${enCours.length})</div>
+  <div class="card">${enCours.map(s=>`<div class="live"><span class="pulse" style="color:var(--gn)">●</span>
+    <b>${s.wn}</b> — ${s.art} <span style="color:var(--mu)">(${s.ref})</span>
+    <span style="margin-left:auto;font-family:monospace;color:var(--gn)" data-live="${s.id}">${durTxt(durMin(s))}</span></div>`).join('')}</div>`:''}`;
+}
+
+function pickW(id){SELW=id;SELART=null;render();}
+function scanW(){const v=(document.getElementById('scan').value||'').trim().toUpperCase();const w=worker(v);if(!w){toast('Badge inconnu','var(--rd)');return;}pickW(w.id);}
+
+function viewWorker(id){
+  const w=worker(id);const act=activeOf(id);
+  if(act){
+    return `<button class="back" onclick="goTab('atelier')">← Retour</button>
+    <div class="card" style="text-align:center">
+      <span class="av" style="width:54px;height:54px;font-size:18px;margin:0 auto 10px">${ini(w.n)}</span>
+      <div class="h1" style="text-align:center">${w.n}</div>
+      <div class="sub" style="text-align:center">${AT[w.at].e} ${AT[w.at].n}</div>
+      <div style="background:var(--c2);border:1px solid var(--bd);border-radius:12px;padding:16px;margin:14px 0">
+        <div style="color:var(--mu);font-size:12px">EN COURS DEPUIS ${hhmm(act.t0)}</div>
+        <div style="font-size:18px;font-weight:800;margin:6px 0">${act.art}</div>
+        <div style="color:var(--mu);font-size:13px">${act.ref} · ${act.cl} · ${AT[act.at].n}</div>
+        <div style="font-family:monospace;font-size:30px;color:var(--gn);margin-top:8px" data-live="${act.id}">${durTxt(durMin(act))}</div>
+      </div>
+      <button class="btnP stop" onclick="finir('${act.id}')">⏹ TERMINER</button>
+    </div>`;
+  }
+  // choisir commande + article
+  const opts=ORDERS.map((o,i)=>`<option value="${i}">${o.ref} — ${o.cl}</option>`).join('');
+  return `<button class="back" onclick="goTab('atelier')">← Retour</button>
+  <div class="card">
+    <span class="av" style="margin-bottom:8px">${ini(w.n)}</span>
+    <div class="h1">${w.n}</div><div class="sub">${AT[w.at].e} ${AT[w.at].n} — sur quel produit démarres-tu ?</div>
+    <label style="font-size:10px;color:var(--mu);font-weight:700;text-transform:uppercase">Commande</label>
+    <select class="sel" id="ord" onchange="renderArts()">${opts}</select>
+    <div id="arts"></div>
+    <button class="btnP go" id="goBtn" onclick="demarrer('${id}')" disabled style="opacity:.5">▶ DÉMARRER</button>
+  </div>
+  <script>renderArts()<\/script>`;
+}
+function renderArts(){
+  const i=+document.getElementById('ord').value;const o=ORDERS[i];
+  document.getElementById('arts').innerHTML=o.articles.map((a,j)=>`<button class="artbtn ${SELART&&SELART.i===i&&SELART.j===j?'sel':''}" onclick="selArt(${i},${j})">
+    ${AT[a.at].e} <b>${a.nom}</b><br><span class="em">Atelier ${AT[a.at].n} · étape : ${a.etape}</span></button>`).join('');
+  const g=document.getElementById('goBtn');const ok=SELART&&SELART.i===i;g.disabled=!ok;g.style.opacity=ok?1:.5;
+}
+function selArt(i,j){SELART={i,j};renderArts();}
+function demarrer(wid){
+  if(!SELART){toast('Choisis un produit','var(--rd)');return;}
+  const w=worker(wid),o=ORDERS[SELART.i],a=o.articles[SELART.j];
+  SES.push({id:'f'+Date.now(),wid,wn:w.n,at:a.at,ref:o.ref,cl:o.cl,art:a.nom,etape:a.etape,t0:new Date().toISOString(),t1:null});
+  persist();SELART=null;SELW=null;TAB='atelier';render();
+  toast('▶ Démarré — '+w.n+' sur '+a.nom,'var(--gn)');
+}
+function finir(sid){
+  const s=SES.find(x=>x.id===sid);if(!s)return;s.t1=new Date().toISOString();persist();
+  SELW=null;render();toast('⏹ Terminé — '+s.wn+' · '+durTxt(durMin(s)),'var(--bl)');
+}
+
+/* ════ SUIVI ════ */
+function viewSuivi(){
+  const td=SES.filter(s=>s.t0.slice(0,10)===today());
+  const done=td.filter(s=>s.t1), live=td.filter(s=>!s.t1);
+  const totMin=td.reduce((a,s)=>a+durMin(s),0);
+  // heures + coût par atelier
+  const byAt={};td.forEach(s=>{byAt[s.at]=byAt[s.at]||{min:0};byAt[s.at].min+=durMin(s);});
+  const kpiAt=Object.entries(byAt).map(([at,v])=>`<div class="kpi"><div class="v" style="color:${AT[at].c}">${(v.min/60).toFixed(1)}h</div><div class="l">${AT[at].e} ${AT[at].n} · ${Math.round(v.min/60*AT[at].tx)} DH</div></div>`).join('');
+  const rows=td.slice().reverse().map(s=>`<tr>
+    <td>${s.wn}</td><td>${AT[s.at].e} ${s.art}<br><span style="color:var(--mu);font-size:11px">${s.ref} · ${s.cl}</span></td>
+    <td>${AT[s.at].n}</td><td>${hhmm(s.t0)}</td><td>${s.t1?hhmm(s.t1):'<span style="color:var(--gn)" class="pulse">en cours</span>'}</td>
+    <td><b ${s.t1?'':`data-live="${s.id}"`}>${durTxt(durMin(s))}</b></td>
+    <td>${s.t1?Math.round(durMin(s)/60*AT[s.at].tx)+' DH':'—'}</td></tr>`).join('');
+  return `<div class="h1">Suivi production — ${today()}</div><div class="sub">Temps réel passé par produit, atelier et ouvrier → alimente la rentabilité.</div>
+  <div class="kpis">
+    <div class="kpi"><div class="v">${td.length}</div><div class="l">Tâches du jour</div></div>
+    <div class="kpi"><div class="v" style="color:var(--gn)">${live.length}</div><div class="l">En cours</div></div>
+    <div class="kpi"><div class="v" style="color:var(--or)">${(totMin/60).toFixed(1)}h</div><div class="l">Heures cumulées</div></div>
+    ${kpiAt}
+  </div>
+  <div style="margin-bottom:12px"><button class="tab" onclick="exportCSV()">⬇ Export CSV</button></div>
+  <div class="card"><table><thead><tr><th>Ouvrier</th><th>Produit</th><th>Atelier</th><th>Début</th><th>Fin</th><th>Durée</th><th>Coût MO</th></tr></thead>
+  <tbody>${rows||'<tr><td colspan="7" style="color:var(--mu)">Aucune tâche aujourd\'hui</td></tr>'}</tbody></table></div>`;
+}
+function exportCSV(){
+  const rows=[['Ouvrier','Produit','Commande','Client','Atelier','Etape','Debut','Fin','Duree_min','Cout_MO_DH']];
+  SES.forEach(s=>rows.push([s.wn,s.art,s.ref,s.cl,AT[s.at].n,s.etape,s.t0,s.t1||'',s.t1?durMin(s):'',s.t1?Math.round(durMin(s)/60*AT[s.at].tx):'']));
+  const csv=rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(';')).join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['﻿'+csv],{type:'text/csv'}));a.download='fabrication_'+today()+'.csv';a.click();
+  toast('Export CSV généré','var(--bl)');
+}
+
+render();
+</script>
+</body>
+</html>
