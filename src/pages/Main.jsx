@@ -7,6 +7,7 @@ import Achat from './Achat'
 import Rentabilite from './Rentabilite'
 import Planning from './Planning'
 import Devis from './Devis'
+import Pointeuse from './Pointeuse'
 
 const TABS = [
   { id: 'orders',   ic: '📋', l: 'Commandes', roles: ['admin','production','commercial','livraison'] },
@@ -15,6 +16,7 @@ const TABS = [
   { id: 'achat',    ic: '🛒', l: 'Achats',    roles: ['admin','production','magasin'] },
   { id: 'rent',     ic: '📊', l: 'Rentab.',   roles: ['admin'] },
   { id: 'planning', ic: '🗓️', l: 'Planning',  roles: ['admin','production'] },
+  { id: 'pointeuse',ic: '⏱', l: 'Pointeuse', roles: ['admin','production'] },
   { id: 'alerts',   ic: '🔔', l: 'Alertes',   roles: ['admin','production','commercial','livraison','magasin'] },
   { id: 'admin',    ic: '⚙️', l: 'Admin',     roles: ['admin'] },
 ]
