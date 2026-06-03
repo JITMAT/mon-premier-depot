@@ -1,0 +1,531 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="theme-color" content="#0B1120" />
+<title>CREAJIT — Pointage &amp; RH</title>
+<style>
+:root{
+  --bg:#0B1120;--c1:#111A2E;--c2:#0F1626;--bd:#1E2A44;--tx:#E7ECF5;--mu:#7C8AA5;
+  --or:#C4714F;--gn:#27AE60;--rd:#E74C3C;--bl:#3498DB;--yl:#F1C40F;--vi:#9B59B6;
+  --shadow:0 8px 30px rgba(0,0,0,.4);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--tx);min-height:100dvh}
+button{font-family:inherit;cursor:pointer}
+input,select{font-family:inherit}
+.hidden{display:none!important}
+.spin{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* ── POINTEUSE (plein écran tablette) ── */
+#kiosk{min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center}
+.klogo{font-size:40px;font-weight:900;letter-spacing:-1.5px;margin-bottom:4px}
+.klogo em{color:var(--or);font-style:normal}
+.ksub{color:var(--mu);font-size:13px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:24px}
+.kclock{font-family:monospace;font-size:54px;font-weight:700;letter-spacing:2px;margin-bottom:6px}
+.kdate{color:var(--mu);font-size:14px;margin-bottom:28px}
+.kscan{width:100%;max-width:420px;background:var(--c1);border:2px solid var(--bd);border-radius:16px;padding:18px;font-size:22px;text-align:center;color:var(--tx);outline:none;letter-spacing:2px;text-transform:uppercase}
+.kscan:focus{border-color:var(--or)}
+.khint{color:var(--mu);font-size:12px;margin-top:10px}
+.kbtns{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;width:100%;max-width:560px;margin-top:24px}
+.kbtn{padding:22px 10px;border-radius:16px;border:none;font-size:15px;font-weight:800;color:#fff;display:flex;flex-direction:column;align-items:center;gap:8px;line-height:1.2}
+.kbtn b{font-size:30px;font-weight:400}
+.kbtn.io{background:var(--gn)}
+.kbtn.so{background:var(--bl)}
+.kbtn.hs{background:var(--or)}
+.kadminlink{position:fixed;top:14px;right:16px;background:none;border:1px solid var(--bd);color:var(--mu);border-radius:8px;padding:7px 12px;font-size:12px}
+.kpresent{position:fixed;top:14px;left:16px;color:var(--mu);font-size:12px}
+
+/* overlay */
+.ov{position:fixed;inset:0;background:rgba(5,9,18,.82);display:flex;align-items:center;justify-content:center;padding:20px;z-index:50}
+.ovc{background:var(--c1);border:1px solid var(--bd);border-radius:18px;padding:28px;max-width:440px;width:100%;text-align:center;box-shadow:var(--shadow)}
+.ovc h3{font-size:20px;margin-bottom:6px}
+.ovc .who{color:var(--or);font-weight:800;font-size:22px;margin:4px 0 14px}
+.ovbtns{display:flex;flex-direction:column;gap:10px;margin-top:16px}
+.ovbtns button{padding:14px;border-radius:10px;border:none;font-size:15px;font-weight:700;color:#fff}
+.toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%);background:var(--gn);color:#fff;font-weight:700;padding:14px 26px;border-radius:30px;z-index:80;box-shadow:var(--shadow);font-size:15px}
+
+/* ── ADMIN ── */
+#admin{display:flex;min-height:100dvh}
+.side{width:210px;background:#070D18;border-right:1px solid var(--bd);padding:16px 0;flex-shrink:0}
+.brand{padding:0 18px 16px;font-size:20px;font-weight:900;border-bottom:1px solid var(--bd);margin-bottom:10px}
+.brand em{color:var(--or);font-style:normal}
+.brand .erp{font-size:9px;color:#475569;letter-spacing:.2em;font-weight:600}
+.snav{display:flex;flex-direction:column}
+.snav button{background:none;border:none;color:var(--mu);text-align:left;padding:12px 18px;font-size:14px;display:flex;align-items:center;gap:10px;border-left:3px solid transparent}
+.snav button.on{color:var(--tx);background:rgba(196,113,79,.08);border-left-color:var(--or)}
+.snav i{font-style:normal;font-size:16px}
+.main{flex:1;padding:24px;overflow-y:auto;max-height:100dvh}
+.h1{font-size:22px;font-weight:800;margin-bottom:2px}
+.sub{color:var(--mu);font-size:13px;margin-bottom:20px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:22px}
+.kpi{background:var(--c1);border:1px solid var(--bd);border-radius:12px;padding:14px 16px}
+.kpi .v{font-size:24px;font-weight:800;font-family:monospace}
+.kpi .l{color:var(--mu);font-size:11px;text-transform:uppercase;letter-spacing:.06em;margin-top:2px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--bd)}
+th{color:var(--mu);font-size:10px;text-transform:uppercase;letter-spacing:.06em}
+tr:hover td{background:rgba(255,255,255,.02)}
+.tag{font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;white-space:nowrap}
+.card{background:var(--c1);border:1px solid var(--bd);border-radius:12px;padding:18px;margin-bottom:16px}
+.btn{padding:10px 16px;border-radius:9px;border:none;background:var(--or);color:#fff;font-weight:700;font-size:13px}
+.btn.g{background:var(--gn)}.btn.r{background:var(--rd)}.btn.b{background:var(--bl)}.btn.gh{background:none;border:1px solid var(--bd);color:var(--mu)}
+.fld{margin-bottom:12px}
+.fld label{display:block;font-size:10px;font-weight:700;letter-spacing:.06em;color:var(--mu);text-transform:uppercase;margin-bottom:5px}
+.fld input,.fld select{width:100%;background:var(--c2);border:1.5px solid var(--bd);border-radius:8px;padding:10px 12px;color:var(--tx);font-size:14px;outline:none}
+.fld input:focus,.fld select:focus{border-color:var(--or)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.av{width:34px;height:34px;border-radius:50%;background:rgba(196,113,79,.2);color:var(--or);display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:700}
+.warn{background:rgba(241,196,15,.08);border:1px solid rgba(241,196,15,.3);color:var(--yl);border-radius:8px;padding:10px 14px;font-size:12px;margin-bottom:16px}
+
+/* login */
+#alogin{min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:20px}
+.lcard{width:100%;max-width:380px;background:var(--c1);border:1px solid var(--bd);border-radius:16px;padding:34px;box-shadow:var(--shadow)}
+</style>
+</head>
+<body>
+
+<!-- ══════════ POINTEUSE (KIOSK) ══════════ -->
+<div id="kiosk">
+  <button class="kadminlink" onclick="showLogin()">🔒 Admin</button>
+  <div class="kpresent" id="presentCount"></div>
+  <div class="klogo">CREA<em>JIT</em></div>
+  <div class="ksub">Pointeuse Atelier</div>
+  <div class="kclock" id="kclock">--:--:--</div>
+  <div class="kdate" id="kdate"></div>
+  <input id="scan" class="kscan" placeholder="Scanner badge — ex: CJ-W004" autocomplete="off" />
+  <div class="khint">Saisis ou scanne l'identifiant, puis choisis une action</div>
+  <div class="kbtns">
+    <button class="kbtn io" onclick="actScan('IO')"><b>⇄</b>ARRIVÉE / DÉPART</button>
+    <button class="kbtn so" onclick="actScan('SORTIE')"><b>↪</b>SORTIE<br>temporaire</button>
+    <button class="kbtn hs" onclick="actScan('HS')"><b>＋</b>DEMANDE<br>heures sup</button>
+  </div>
+</div>
+
+<!-- ══════════ LOGIN ADMIN ══════════ -->
+<div id="alogin" class="hidden">
+  <div class="lcard">
+    <div style="text-align:center;margin-bottom:22px">
+      <div style="font-size:30px;font-weight:900">CREA<em style="color:var(--or);font-style:normal">JIT</em></div>
+      <div style="color:var(--mu);font-size:12px;margin-top:4px">Espace administration RH</div>
+    </div>
+    <div class="fld"><label>Identifiant</label><input id="au" placeholder="utilisateur" autocomplete="off"/></div>
+    <div class="fld"><label>Mot de passe</label><input id="ap" type="password" placeholder="••••••••"/></div>
+    <div id="lerr" style="color:var(--rd);font-size:12px;text-align:center;min-height:16px;margin-bottom:8px"></div>
+    <button class="btn" style="width:100%;padding:13px" onclick="doAdminLogin()">Se connecter</button>
+    <button class="btn gh" style="width:100%;margin-top:10px" onclick="backToKiosk()">← Retour pointeuse</button>
+  </div>
+</div>
+
+<!-- ══════════ ADMIN ══════════ -->
+<div id="admin" class="hidden">
+  <div class="side">
+    <div class="brand">CREA<em>JIT</em><div class="erp">ERP · MES · RH</div></div>
+    <div class="snav" id="snav"></div>
+  </div>
+  <div class="main" id="amain"></div>
+</div>
+
+<div id="overlay"></div>
+<div id="toast"></div>
+
+<script>
+/* ════════ CONFIG (⚠️ secrets — à changer avant tout déploiement public) ════════ */
+const CONFIG = {
+  ADMIN_USER: 'creajitpointeuse',
+  ADMIN_PASS: 'creajit4995',
+  // Telegram — token réel NON inclus ; renseigner pour activer les notifications
+  TG_TOKEN: '',                 // ex: '1234:ABC...'
+  TG_BOT:   '@Creajitatalierbot',
+  TG_GROUP: '-5021841596',      // groupe Direction CREAJIT
+};
+
+/* plafonds horaires (minutes depuis minuit) */
+const FIN_JOURNEE = 1080;   // 18:00 — compteur plafonné
+const TOL_DEPART  = 1110;   // 18:30 — au-delà : motif obligatoire
+
+/* ════════ ATELIERS & TAUX (DH/h) ════════ */
+const ATELIERS = {
+  TAP:{n:'Tapisserie',t:26},  MEN:{n:'Menuiserie',t:26}, PEI:{n:'Peinture',t:22},
+  FER:{n:'Ferronnerie',t:25}, SOU:{n:'Soudure',t:25},    CUI:{n:'Cuivre',t:29},
+  CNC:{n:'Laser CNC',t:28},   POL:{n:'Polystyrène',t:24},PIE:{n:'Pierre',t:29},
+  // non productifs (taux 0)
+  CHA:{n:'Chantier',t:0}, LOG:{n:'Logistique',t:0}, ADM:{n:'Administration',t:0},
+  VEN:{n:'Vente',t:0}, FIN:{n:'Finance',t:0}, INF:{n:'Informatique',t:0},
+  SEC:{n:'Sécurité',t:0}, ENT:{n:'Entretien',t:0}, CUIS:{n:'Cuisine',t:0},
+  LIV:{n:'Livraison',t:0}, DIV:{n:'Divers',t:0},
+};
+
+/* ════════ VALIDATEURS HS (id → code) ════════ */
+const VALIDATEURS = {
+  'CJ-W049':{nom:'Fatima Ezzahra Sedky', code:'4949'},
+  'CJ-W053':{nom:'Mohamed Sabiri',       code:'5353'},
+  'CJ-W047':{nom:'Abdelaali Ouitjane',   code:'4747'},
+  'CJ-W044':{nom:'Hassan Laagouri',      code:'4444'},
+};
+
+/* ════════ SEED salariés (démo — 14 ; le fichier réel en contient 60) ════════ */
+const SEED = [
+  {id:'CJ-W049', nom:'Fatima Ezzahra Sedky', at:'ADM', sal:9000, cin:'BK112233', tel:'+212600000049', tarifJour:0,   regime:'NORMAL', cnss:true,  prime:0, archive:false},
+  {id:'CJ-W053', nom:'Mohamed Sabiri',       at:'MEN', sal:8000, cin:'EE889900', tel:'+212600000053', tarifJour:0,   regime:'NORMAL', cnss:true,  prime:0, archive:false},
+  {id:'CJ-W047', nom:'Abdelaali Ouitjane',   at:'PEI', sal:5500, cin:'AB445566', tel:'+212600000047', tarifJour:0,   regime:'NORMAL', cnss:true,  prime:0, archive:false},
+  {id:'CJ-W044', nom:'Hassan Laagouri',      at:'FER', sal:5500, cin:'CD778899', tel:'+212600000044', tarifJour:0,   regime:'NORMAL', cnss:true,  prime:0, archive:false},
+  {id:'CJ-W004', nom:'Abdelilah Dakhama',    at:'TAP', sal:6000, cin:'GA101112', tel:'+212603331438', tarifJour:0,   regime:'NORMAL', cnss:true,  prime:0, archive:false},
+  {id:'CJ-W007', nom:'Ahmed El Araji',       at:'TAP', sal:6000, cin:'GA131415', tel:null,            tarifJour:0,   regime:'NORMAL', cnss:true,  prime:0, archive:false},
+  {id:'CJ-W014', nom:'Ayoub Chair',          at:'MEN', sal:6000, cin:'GA161718', tel:'+212698578474', tarifJour:0,   regime:'NORMAL', cnss:true,  prime:0, archive:false},
+  {id:'CJ-W040', nom:'Said Chnitifa',        at:'MEN', sal:8000, cin:'GA192021', tel:'+212606394015', tarifJour:0,   regime:'NORMAL', cnss:true,  prime:0, archive:false},
+  {id:'CJ-W008', nom:'Mohamed Elkarmani',    at:'PEI', sal:5500, cin:'GA222324', tel:'+212697735992', tarifJour:0,   regime:'NORMAL', cnss:true,  prime:0, archive:false},
+  {id:'CJ-W020', nom:'Yassine Madidi',       at:'SOU', sal:5000, cin:'GA252627', tel:'+212677246864', tarifJour:0,   regime:'NORMAL', cnss:true,  prime:0, archive:false},
+  {id:'CJ-W006', nom:'Noureddine Ouzzat',    at:'CUI', sal:6000, cin:'GA282930', tel:'+212670560259', tarifJour:0,   regime:'NORMAL', cnss:true,  prime:0, archive:false},
+  {id:'CJ-W021', nom:'Mustapha Aababou',     at:'PIE', sal:8000, cin:'GA313233', tel:'+212667010127', tarifJour:0,   regime:'NORMAL', cnss:true,  prime:0, archive:false},
+  {id:'CJ-W056', nom:'Ettaib Bougatouch',    at:'CNC', sal:5000, cin:'GA343536', tel:null,            tarifJour:0,   regime:'ANAPEC', cnss:false, prime:0, archive:false},
+  {id:'CJ-W050', nom:'Rachid Ait Taleb',     at:'POL', sal:5000, cin:'GA373839', tel:null,            tarifJour:250, regime:'EXTRA',  cnss:false, prime:0, archive:false},
+];
+
+/* ════════ STORAGE ════════ */
+const K = { w:'cj2f_w', p:'cj2_p', s:'cj2_s', a:'cj2_a', t:'cj2_t', hs:'cj2_hs' };
+const load = (k,def)=>{ try{ return JSON.parse(localStorage.getItem(k)) ?? def }catch{ return def } };
+const save = (k,v)=> localStorage.setItem(k, JSON.stringify(v));
+
+let DB = {
+  w:  load(K.w, null) || SEED,
+  p:  load(K.p, []),     // punches
+  s:  load(K.s, []),     // sorties temporaires
+  a:  load(K.a, []),     // acomptes
+  hs: load(K.hs, []),    // demandes heures sup
+};
+if(!load(K.w,null)) save(K.w, DB.w);
+function persist(){ save(K.w,DB.w); save(K.p,DB.p); save(K.s,DB.s); save(K.a,DB.a); save(K.hs,DB.hs); }
+
+/* ════════ HELPERS ════════ */
+const pad=n=>String(n).padStart(2,'0');
+const today=()=> new Date().toISOString().slice(0,10);
+const nowMin=()=>{ const d=new Date(); return d.getHours()*60+d.getMinutes(); };
+const minToHHMM=m=>pad(Math.floor(m/60))+':'+pad(m%60);
+const emp=id=> DB.w.find(w=>w.id===id);
+const ini=n=>(n||'?').split(' ').map(x=>x[0]||'').join('').slice(0,2).toUpperCase();
+const atTaux=code=>(ATELIERS[code]?.t)||0;
+function toast(msg,color){ const t=document.getElementById('toast'); t.textContent=msg; t.className='toast'; if(color)t.style.background=color; t.style.display='block'; clearTimeout(window._tt); window._tt=setTimeout(()=>t.style.display='none',2600); }
+function tgLog(msg){ /* Notification Telegram — réelle si TG_TOKEN renseigné, sinon loggée */ if(CONFIG.TG_TOKEN){ fetch(`https://api.telegram.org/bot${CONFIG.TG_TOKEN}/sendMessage`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:CONFIG.TG_GROUP,text:msg})}).catch(()=>{}); } console.log('[TG]',msg); }
+
+/* présence du jour : un salarié est "présent" si dernier IN sans OUT aujourd'hui */
+function isPresent(wid){
+  const ev = DB.p.filter(p=>p.wid===wid && p.date===today() && (p.type==='IN'||p.type==='OUT')).sort((a,b)=>a.ts-b.ts);
+  let present=false; ev.forEach(e=> present = e.type==='IN');
+  return present;
+}
+function hasValidHS(wid,date){ return DB.hs.some(h=>h.wid===wid && h.date===date && h.statut==='VALIDE'); }
+
+/* ════════ HORLOGE ════════ */
+function tickClock(){
+  const d=new Date();
+  const c=document.getElementById('kclock'); if(c) c.textContent=pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds());
+  const dt=document.getElementById('kdate'); if(dt) dt.textContent=d.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  const pc=document.getElementById('presentCount'); if(pc){ const n=DB.w.filter(w=>!w.archive&&isPresent(w.id)).length; pc.textContent='● '+n+' présent(s)'; }
+}
+setInterval(tickClock,1000); tickClock();
+
+/* ════════ POINTEUSE — actions ════════ */
+function actScan(action){
+  const inp=document.getElementById('scan');
+  const id=(inp.value||'').trim().toUpperCase();
+  const w=emp(id);
+  if(!w){ toast('Badge inconnu : '+(id||'—'),'var(--rd)'); inp.focus(); return; }
+  if(w.archive){ toast('Salarié archivé','var(--rd)'); inp.value=''; return; }
+  inp.value='';
+  if(action==='IO')      return doArriveeDepart(w);
+  if(action==='SORTIE')  return askSortie(w);
+  if(action==='HS')      return askHS(w);
+}
+
+function doArriveeDepart(w){
+  const t=nowMin();
+  if(!isPresent(w.id)){
+    DB.p.push({wid:w.id, type:'IN', ts:t, countTs:t, date:today(), motifDepart:''});
+    persist(); tickClock();
+    toast('✅ Arrivée — '+w.nom+' à '+minToHHMM(t),'var(--gn)');
+    tgLog(`🟢 Arrivée : ${w.nom} (${w.id}) à ${minToHHMM(t)}`);
+    return;
+  }
+  // DÉPART → calcul countTs (plafond 18h sauf HS validée)
+  const valid = hasValidHS(w.id, today());
+  let countTs = t;
+  if(t > FIN_JOURNEE && !valid){ countTs = FIN_JOURNEE; } // plafonné à 18h
+  // départ après 18h30 → motif obligatoire
+  if(t > TOL_DEPART){
+    overlayMotifDepart(w, t, countTs, valid);
+    return;
+  }
+  registerDepart(w, t, countTs, valid, '');
+}
+function registerDepart(w,t,countTs,valid,motif){
+  DB.p.push({wid:w.id, type:'OUT', ts:t, countTs, date:today(), motifDepart:motif});
+  persist(); tickClock();
+  let extra = '';
+  if(t>FIN_JOURNEE && !valid) extra=' (compté jusqu\'à 18:00 — pas de HS validée)';
+  else if(t>FIN_JOURNEE && valid) extra=' (HS validée ✓)';
+  toast('👋 Départ — '+w.nom+' à '+minToHHMM(t)+extra, t>FIN_JOURNEE&&!valid?'var(--yl)':'var(--bl)');
+  tgLog(`🔴 Départ : ${w.nom} (${w.id}) à ${minToHHMM(t)}${motif?(' — motif: '+motif):''}${extra}`);
+}
+function overlayMotifDepart(w,t,countTs,valid){
+  const motifs=['Oubli de pointage','Client en retard','Heures supplémentaires'];
+  ov(`<h3>Départ après 18h30</h3><div class="who">${w.nom}</div>
+    <p style="color:var(--mu);font-size:13px">Motif obligatoire :</p>
+    <div class="ovbtns">${motifs.map((m,i)=>`<button style="background:var(--or)" onclick="window._mD(${i})">${m}</button>`).join('')}</div>`);
+  window._mD=(i)=>{ closeOv(); registerDepart(w,t,countTs,valid,motifs[i]); };
+}
+
+function askSortie(w){
+  const motifs=['Achat','RDV','Livraison'];
+  ov(`<h3>Sortie temporaire</h3><div class="who">${w.nom}</div>
+    <p style="color:var(--mu);font-size:13px">Motif de la sortie :</p>
+    <div class="ovbtns">${motifs.map((m,i)=>`<button style="background:var(--bl)" onclick="window._mS(${i})">${m}</button>`).join('')}
+    <button class="gh" style="background:none;border:1px solid var(--bd);color:var(--mu)" onclick="closeOv()">Annuler</button></div>`);
+  window._mS=(i)=>{ DB.s.push({wid:w.id, motif:motifs[i], ts:nowMin(), date:today()}); persist(); closeOv();
+    toast('↪ Sortie '+motifs[i]+' — '+w.nom,'var(--bl)'); tgLog(`↪ Sortie ${motifs[i]} : ${w.nom} (${w.id}) à ${minToHHMM(nowMin())}`); };
+}
+
+function askHS(w){
+  if(DB.hs.some(h=>h.wid===w.id && h.date===today() && h.statut==='EN_ATTENTE')){ toast('Demande HS déjà en attente','var(--yl)'); return; }
+  if(hasValidHS(w.id,today())){ toast('HS déjà validée pour aujourd\'hui','var(--gn)'); return; }
+  DB.hs.push({id:'hs'+Date.now(), wid:w.id, date:today(), statut:'EN_ATTENTE', ts:nowMin(), by:null});
+  persist();
+  toast('⏳ Demande heures sup envoyée — '+w.nom,'var(--or)');
+  tgLog(`⏳ Demande HEURES SUP : ${w.nom} (${w.id}) — à valider par un responsable`);
+}
+
+/* ════════ OVERLAY util ════════ */
+function ov(html){ document.getElementById('overlay').innerHTML=`<div class="ov"><div class="ovc">${html}</div></div>`; }
+function closeOv(){ document.getElementById('overlay').innerHTML=''; }
+
+/* ════════ NAV ADMIN / LOGIN ════════ */
+let ADMIN=false, CURTAB='dash';
+function showLogin(){ document.getElementById('kiosk').classList.add('hidden'); document.getElementById('alogin').classList.remove('hidden'); document.getElementById('au').focus(); }
+function backToKiosk(){ document.getElementById('alogin').classList.add('hidden'); document.getElementById('admin').classList.add('hidden'); document.getElementById('kiosk').classList.remove('hidden'); document.getElementById('scan').focus(); }
+function doAdminLogin(){
+  const u=document.getElementById('au').value.trim(), p=document.getElementById('ap').value;
+  if(u===CONFIG.ADMIN_USER && p===CONFIG.ADMIN_PASS){
+    ADMIN=true; document.getElementById('alogin').classList.add('hidden'); document.getElementById('admin').classList.remove('hidden'); renderAdmin();
+  } else { document.getElementById('lerr').textContent='Identifiants incorrects'; }
+}
+
+const ATABS=[
+  {id:'dash', ic:'📊', l:'Tableau de bord'},
+  {id:'point',ic:'⏱', l:'Pointage du jour'},
+  {id:'emps', ic:'👷', l:'Salariés'},
+  {id:'hs',   ic:'➕', l:'Heures sup'},
+  {id:'aco',  ic:'💵', l:'Acomptes'},
+  {id:'paie', ic:'🧾', l:'Paie'},
+];
+function renderAdmin(){
+  document.getElementById('snav').innerHTML = ATABS.map(t=>`<button class="${CURTAB===t.id?'on':''}" onclick="goTab('${t.id}')"><i>${t.ic}</i>${t.l}</button>`).join('')
+    + `<button onclick="backToKiosk()" style="margin-top:14px;color:var(--mu)"><i>🚪</i>Quitter</button>`;
+  const m=document.getElementById('amain');
+  if(CURTAB==='dash') m.innerHTML=viewDash();
+  else if(CURTAB==='point') m.innerHTML=viewPoint();
+  else if(CURTAB==='emps') m.innerHTML=viewEmps();
+  else if(CURTAB==='hs') m.innerHTML=viewHS();
+  else if(CURTAB==='aco') m.innerHTML=viewAco();
+  else if(CURTAB==='paie') m.innerHTML=viewPaie();
+}
+function goTab(t){ CURTAB=t; renderAdmin(); }
+
+/* calcul heures travaillées (jour) à partir des paires IN/OUT via countTs */
+function heuresJour(wid,date){
+  const ev=DB.p.filter(p=>p.wid===wid && p.date===date && (p.type==='IN'||p.type==='OUT')).sort((a,b)=>a.ts-b.ts);
+  let mins=0, lastIn=null;
+  ev.forEach(e=>{ if(e.type==='IN') lastIn=e.countTs; else if(e.type==='OUT'&&lastIn!=null){ mins+=Math.max(0,e.countTs-lastIn); lastIn=null; } });
+  return mins/60;
+}
+
+/* ════════ VUES ADMIN ════════ */
+function viewDash(){
+  const actifs=DB.w.filter(w=>!w.archive);
+  const present=actifs.filter(w=>isPresent(w.id)).length;
+  const hsPend=DB.hs.filter(h=>h.date===today()&&h.statut==='EN_ATTENTE').length;
+  const totH=actifs.reduce((s,w)=>s+heuresJour(w.id,today()),0);
+  const masse=actifs.reduce((s,w)=>s+(+w.sal||0),0);
+  return `<div class="h1">Tableau de bord RH</div><div class="sub">${today()} — pointeuse CREAJIT</div>
+  <div class="kpis">
+    <div class="kpi"><div class="v">${actifs.length}</div><div class="l">Salariés actifs</div></div>
+    <div class="kpi"><div class="v" style="color:var(--gn)">${present}</div><div class="l">Présents maintenant</div></div>
+    <div class="kpi"><div class="v" style="color:var(--or)">${totH.toFixed(1)}h</div><div class="l">Heures cumulées aujourd'hui</div></div>
+    <div class="kpi"><div class="v" style="color:${hsPend?'var(--yl)':'var(--mu)'}">${hsPend}</div><div class="l">Demandes HS en attente</div></div>
+    <div class="kpi"><div class="v" style="font-size:18px">${masse.toLocaleString('fr')} DH</div><div class="l">Masse salariale / mois</div></div>
+  </div>
+  <div class="card"><b>Présents en ce moment</b>
+  <table style="margin-top:10px"><thead><tr><th>Salarié</th><th>Atelier</th><th>Arrivée</th><th>Heures</th></tr></thead><tbody>
+  ${actifs.filter(w=>isPresent(w.id)).map(w=>{
+    const inEv=DB.p.filter(p=>p.wid===w.id&&p.date===today()&&p.type==='IN').sort((a,b)=>b.ts-a.ts)[0];
+    return `<tr><td><span class="av">${ini(w.nom)}</span> ${w.nom}</td><td>${ATELIERS[w.at]?.n||w.at}</td><td>${inEv?minToHHMM(inEv.ts):'—'}</td><td>${heuresJour(w.id,today()).toFixed(1)}h</td></tr>`;
+  }).join('')||'<tr><td colspan="4" style="color:var(--mu)">Personne pointé pour l\'instant</td></tr>'}
+  </tbody></table></div>`;
+}
+
+function viewPoint(){
+  const rows=DB.w.filter(w=>!w.archive).map(w=>{
+    const ev=DB.p.filter(p=>p.wid===w.id&&p.date===today()).sort((a,b)=>a.ts-b.ts);
+    const ins=ev.filter(e=>e.type==='IN'), outs=ev.filter(e=>e.type==='OUT');
+    const arr=ins[0]?minToHHMM(ins[0].ts):'—';
+    const dep=outs.length?minToHHMM(outs[outs.length-1].ts):(isPresent(w.id)?'<span style="color:var(--gn)">présent</span>':'—');
+    const h=heuresJour(w.id,today());
+    const motif=outs.map(o=>o.motifDepart).filter(Boolean).join(', ');
+    const hs=hasValidHS(w.id,today())?'<span class="tag" style="background:rgba(39,174,96,.15);color:var(--gn)">HS✓</span>':'';
+    return `<tr><td>${w.id}</td><td>${w.nom}</td><td>${ATELIERS[w.at]?.n||w.at}</td><td>${arr}</td><td>${dep}</td><td><b>${h.toFixed(1)}h</b> ${hs}</td><td style="color:var(--mu);font-size:11px">${motif}</td></tr>`;
+  }).join('');
+  return `<div class="h1">Pointage du jour</div><div class="sub">${today()}</div>
+  <div style="margin-bottom:14px"><button class="btn b" onclick="exportCSV()">⬇ Export CSV (paie)</button></div>
+  <div class="card"><table><thead><tr><th>ID</th><th>Salarié</th><th>Atelier</th><th>Arrivée</th><th>Départ</th><th>Heures</th><th>Motif</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+}
+
+function viewEmps(){
+  const rows=DB.w.map(w=>`<tr style="${w.archive?'opacity:.45':''}">
+    <td><span class="av">${ini(w.nom)}</span></td>
+    <td>${w.id}</td><td>${w.nom}${VALIDATEURS[w.id]?' <span class="tag" style="background:rgba(155,89,182,.15);color:var(--vi)">Validateur HS</span>':''}</td>
+    <td>${ATELIERS[w.at]?.n||w.at} <span style="color:var(--mu)">(${atTaux(w.at)} DH/h)</span></td>
+    <td>${(+w.sal||0).toLocaleString('fr')} DH</td>
+    <td><span class="tag" style="background:rgba(52,152,219,.12);color:var(--bl)">${w.regime}</span></td>
+    <td><button class="btn gh" onclick="editEmp('${w.id}')">Modifier</button></td></tr>`).join('');
+  return `<div class="h1">Salariés <span style="color:var(--mu);font-size:14px">(${DB.w.filter(w=>!w.archive).length} actifs)</span></div>
+  <div class="sub">Démo : 14 fiches — le fichier réel en contient 60 (21 avec photo)</div>
+  <div class="card"><table><thead><tr><th></th><th>ID</th><th>Nom</th><th>Atelier</th><th>Salaire</th><th>Régime</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>`;
+}
+function editEmp(id){
+  const w=emp(id);
+  ov(`<h3 style="text-align:left">Fiche salarié</h3>
+    <div style="text-align:left;margin-top:12px">
+    <div class="fld"><label>Nom</label><input id="fi-nom" value="${w.nom}"/></div>
+    <div class="grid2">
+      <div class="fld"><label>Atelier</label><select id="fi-at">${Object.entries(ATELIERS).map(([c,a])=>`<option value="${c}" ${c===w.at?'selected':''}>${a.n} (${a.t})</option>`).join('')}</select></div>
+      <div class="fld"><label>Régime</label><select id="fi-reg">${['NORMAL','ANAPEC','EXTRA'].map(r=>`<option ${r===w.regime?'selected':''}>${r}</option>`).join('')}</select></div>
+    </div>
+    <div class="grid2">
+      <div class="fld"><label>Salaire mensuel (DH)</label><input id="fi-sal" type="number" value="${w.sal}"/></div>
+      <div class="fld"><label>Tarif jour (EXTRA, DH)</label><input id="fi-tj" type="number" value="${w.tarifJour||0}"/></div>
+    </div>
+    <div class="grid2">
+      <div class="fld"><label>CIN</label><input id="fi-cin" value="${w.cin||''}"/></div>
+      <div class="fld"><label>Téléphone</label><input id="fi-tel" value="${w.tel||''}"/></div>
+    </div>
+    <div class="grid2">
+      <div class="fld"><label>Prime (saisie manuelle, DH)</label><input id="fi-prime" type="number" value="${w.prime||0}"/></div>
+      <div class="fld"><label>CNSS</label><select id="fi-cnss"><option value="1" ${w.cnss?'selected':''}>Oui (déclaré)</option><option value="0" ${!w.cnss?'selected':''}>Non</option></select></div>
+    </div>
+    </div>
+    <div class="ovbtns" style="margin-top:8px">
+      <button class="g" style="background:var(--gn)" onclick="saveEmp('${id}')">💾 Enregistrer</button>
+      <button style="background:${w.archive?'var(--gn)':'var(--rd)'}" onclick="toggleArchive('${id}')">${w.archive?'Réactiver':'Archiver'}</button>
+      <button class="gh" style="background:none;border:1px solid var(--bd);color:var(--mu)" onclick="closeOv()">Fermer</button>
+    </div>`);
+}
+function saveEmp(id){
+  const w=emp(id);
+  w.nom=document.getElementById('fi-nom').value.trim();
+  w.at=document.getElementById('fi-at').value;
+  w.regime=document.getElementById('fi-reg').value;
+  w.sal=+document.getElementById('fi-sal').value||0;
+  w.tarifJour=+document.getElementById('fi-tj').value||0;
+  w.cin=document.getElementById('fi-cin').value.trim();
+  w.tel=document.getElementById('fi-tel').value.trim();
+  w.prime=+document.getElementById('fi-prime').value||0;
+  w.cnss=document.getElementById('fi-cnss').value==='1';
+  persist(); closeOv(); renderAdmin(); toast('Fiche enregistrée','var(--gn)');
+}
+function toggleArchive(id){ const w=emp(id); w.archive=!w.archive; persist(); closeOv(); renderAdmin(); toast(w.archive?'Salarié archivé':'Salarié réactivé'); }
+
+function viewHS(){
+  const pend=DB.hs.filter(h=>h.statut==='EN_ATTENTE');
+  const done=DB.hs.filter(h=>h.statut!=='EN_ATTENTE').slice(-15).reverse();
+  const valTxt = Object.entries(VALIDATEURS).map(([id,v])=>`${v.nom} (${id})`).join(' · ');
+  return `<div class="h1">Heures supplémentaires</div>
+  <div class="sub">Validation réservée à 4 responsables : ${valTxt}</div>
+  <div class="warn">Les heures après 18:00 ne sont comptées que si la demande est <b>validée</b> par un responsable (code requis).</div>
+  <div class="card"><b>En attente (${pend.length})</b>
+  <table style="margin-top:10px"><thead><tr><th>Salarié</th><th>Date</th><th>Demandé à</th><th>Action</th></tr></thead><tbody>
+  ${pend.map(h=>{ const w=emp(h.wid); return `<tr><td>${w?w.nom:h.wid}</td><td>${h.date}</td><td>${minToHHMM(h.ts)}</td>
+    <td><button class="btn g" onclick="decideHS('${h.id}','VALIDE')">Valider</button>
+        <button class="btn r" onclick="decideHS('${h.id}','REFUSE')">Refuser</button></td></tr>`;}).join('')||'<tr><td colspan="4" style="color:var(--mu)">Aucune demande en attente</td></tr>'}
+  </tbody></table></div>
+  <div class="card"><b>Historique</b><table style="margin-top:10px"><thead><tr><th>Salarié</th><th>Date</th><th>Statut</th><th>Par</th></tr></thead><tbody>
+  ${done.map(h=>{const w=emp(h.wid);return `<tr><td>${w?w.nom:h.wid}</td><td>${h.date}</td><td><span class="tag" style="background:${h.statut==='VALIDE'?'rgba(39,174,96,.15)':'rgba(231,76,60,.15)'};color:${h.statut==='VALIDE'?'var(--gn)':'var(--rd)'}">${h.statut}</span></td><td>${h.by||'—'}</td></tr>`;}).join('')||'<tr><td colspan="4" style="color:var(--mu)">—</td></tr>'}
+  </tbody></table></div>`;
+}
+function decideHS(hid,statut){
+  ov(`<h3>${statut==='VALIDE'?'Valider':'Refuser'} les heures sup</h3>
+    <p style="color:var(--mu);font-size:13px;margin:8px 0">Code responsable requis (un des 4 validateurs)</p>
+    <div class="fld" style="text-align:left"><label>Identifiant validateur (CJ-Wxxx)</label><input id="v-id" placeholder="CJ-W049"/></div>
+    <div class="fld" style="text-align:left"><label>Code</label><input id="v-code" type="password"/></div>
+    <div id="v-err" style="color:var(--rd);font-size:12px;min-height:14px"></div>
+    <div class="ovbtns"><button style="background:${statut==='VALIDE'?'var(--gn)':'var(--rd)'}" onclick="confirmHS('${hid}','${statut}')">Confirmer</button>
+    <button class="gh" style="background:none;border:1px solid var(--bd);color:var(--mu)" onclick="closeOv()">Annuler</button></div>`);
+}
+function confirmHS(hid,statut){
+  const vid=document.getElementById('v-id').value.trim().toUpperCase();
+  const code=document.getElementById('v-code').value.trim();
+  const v=VALIDATEURS[vid];
+  if(!v || v.code!==code){ document.getElementById('v-err').textContent='Validateur ou code invalide'; return; }
+  const h=DB.hs.find(x=>x.id===hid); if(!h) return;
+  h.statut=statut; h.by=v.nom;
+  persist(); closeOv(); renderAdmin();
+  const w=emp(h.wid);
+  toast(`HS ${statut} — ${w?w.nom:h.wid}`, statut==='VALIDE'?'var(--gn)':'var(--rd)');
+  tgLog(`${statut==='VALIDE'?'✅':'❌'} HS ${statut} pour ${w?w.nom:h.wid} par ${v.nom}`);
+}
+
+function viewAco(){
+  return `<div class="h1">Acomptes</div><div class="sub">Déduits du net en paie</div>
+  <div class="card"><div class="grid2">
+    <div class="fld"><label>Salarié</label><select id="ac-w">${DB.w.filter(w=>!w.archive).map(w=>`<option value="${w.id}">${w.nom}</option>`).join('')}</select></div>
+    <div class="fld"><label>Montant (DH)</label><input id="ac-m" type="number" placeholder="0"/></div>
+  </div><button class="btn g" onclick="addAco()">＋ Ajouter l'acompte</button></div>
+  <div class="card"><b>Historique acomptes</b><table style="margin-top:10px"><thead><tr><th>Date</th><th>Salarié</th><th>Montant</th></tr></thead><tbody>
+  ${DB.a.slice().reverse().map(a=>{const w=emp(a.wid);return `<tr><td>${a.date}</td><td>${w?w.nom:a.wid}</td><td>${(+a.montant).toLocaleString('fr')} DH</td></tr>`;}).join('')||'<tr><td colspan="3" style="color:var(--mu)">Aucun acompte</td></tr>'}
+  </tbody></table></div>`;
+}
+function addAco(){ const wid=document.getElementById('ac-w').value, m=+document.getElementById('ac-m').value||0; if(!m){toast('Montant requis','var(--rd)');return;} DB.a.push({wid,montant:m,date:today()}); persist(); renderAdmin(); toast('Acompte ajouté','var(--gn)'); }
+
+function viewPaie(){
+  const month=today().slice(0,7);
+  const rows=DB.w.filter(w=>!w.archive).map(w=>{
+    const prime=+w.prime||0;
+    const aco=DB.a.filter(a=>a.wid===w.id && a.date.slice(0,7)===month).reduce((s,a)=>s+(+a.montant),0);
+    const base=+w.sal||0;
+    let cnss=0;
+    if(w.regime==='NORMAL' && w.cnss) cnss=Math.round(base*0.0448); // CNSS+AMO ≈4,48% (modifiable côté fiche)
+    const net=base+prime-cnss-aco;
+    return `<tr><td>${w.nom}</td><td><span class="tag" style="background:rgba(52,152,219,.12);color:var(--bl)">${w.regime}</span></td>
+      <td>${base.toLocaleString('fr')}</td><td>${prime?'+'+prime.toLocaleString('fr'):'—'}</td>
+      <td>${cnss?'−'+cnss.toLocaleString('fr'):'—'}</td><td>${aco?'−'+aco.toLocaleString('fr'):'—'}</td>
+      <td><b style="color:var(--gn)">${net.toLocaleString('fr')} DH</b></td></tr>`;
+  }).join('');
+  return `<div class="h1">Paie — ${month}</div><div class="sub">Net = salaire + prime − CNSS/AMO − acomptes (régime marocain). Prime saisie manuellement dans la fiche.</div>
+  <div class="warn">⚠️ Prime auto (marge × 0,5 %) : à brancher côté MES (rentabilité), pas dans la pointeuse.</div>
+  <div class="card"><table><thead><tr><th>Salarié</th><th>Régime</th><th>Salaire</th><th>Prime</th><th>CNSS/AMO</th><th>Acomptes</th><th>Net</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+}
+
+/* ════════ EXPORT CSV ════════ */
+function exportCSV(){
+  const rows=[['ID','Nom','Atelier','Date','Arrivee','Depart','Heures','HS_validee','Motif']];
+  DB.w.filter(w=>!w.archive).forEach(w=>{
+    const ev=DB.p.filter(p=>p.wid===w.id&&p.date===today()).sort((a,b)=>a.ts-b.ts);
+    const ins=ev.filter(e=>e.type==='IN'), outs=ev.filter(e=>e.type==='OUT');
+    rows.push([w.id,w.nom,ATELIERS[w.at]?.n||w.at,today(),
+      ins[0]?minToHHMM(ins[0].ts):'',outs.length?minToHHMM(outs[outs.length-1].ts):'',
+      heuresJour(w.id,today()).toFixed(2),hasValidHS(w.id,today())?'OUI':'NON',
+      outs.map(o=>o.motifDepart).filter(Boolean).join(' ')]);
+  });
+  const csv=rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(';')).join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'}));
+  a.download='pointage_'+today()+'.csv'; a.click();
+  toast('Export CSV généré','var(--bl)');
+}
+
+/* focus scan au démarrage */
+document.getElementById('scan').focus();
+document.getElementById('scan').addEventListener('keydown',e=>{ if(e.key==='Enter') actScan('IO'); });
+</script>
+</body>
+</html>
