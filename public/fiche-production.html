@@ -1,0 +1,437 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CREAJIT — Ordre de Fabrication / Fiche de Production Atelier</title>
+<style>
+/* ──────────────────────────────────────────────────────────────
+   CREAJIT — FICHE DE PRODUCTION ATELIER (Ordre de Fabrication)
+   Modèle imprimable A4. Conçu pour être pré-rempli par le logiciel
+   (les champs portent un id / data-field) OU rempli à la main.
+   ────────────────────────────────────────────────────────────── */
+:root{
+  --or:#C4714F;      /* orange CREAJIT */
+  --ink:#1A2233;     /* texte */
+  --mu:#64748B;      /* gris */
+  --bd:#94A3B8;      /* bordures */
+  --bdl:#CBD5E1;     /* bordures légères */
+  --bg:#F1F5F9;      /* fond doux */
+  --ok:#15803D;
+  --rd:#B91C1C;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;
+  color:var(--ink);background:#E2E8F0;font-size:11px;line-height:1.35;
+  -webkit-print-color-adjust:exact;print-color-adjust:exact;
+}
+
+/* ── Barre d'outils (écran uniquement) ── */
+.toolbar{position:sticky;top:0;z-index:50;background:var(--ink);color:#fff;
+  padding:10px 16px;display:flex;align-items:center;gap:12px;justify-content:center}
+.toolbar b{color:var(--or)}
+.toolbar button{background:var(--or);color:#fff;border:none;border-radius:6px;
+  padding:8px 16px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit}
+.toolbar .ghost{background:transparent;border:1px solid #475569}
+
+/* ── Feuille A4 ── */
+.sheet{
+  width:210mm;min-height:297mm;margin:14px auto;background:#fff;
+  padding:11mm 11mm 13mm;box-shadow:0 6px 24px rgba(0,0,0,.25);position:relative;
+}
+
+/* ── En-tête ── */
+.head{display:flex;justify-content:space-between;align-items:flex-start;
+  border-bottom:2.5px solid var(--ink);padding-bottom:8px;margin-bottom:8px}
+.brand{font-size:22px;font-weight:800;letter-spacing:-.5px}
+.brand em{color:var(--or);font-style:normal}
+.brand .sub{font-size:9px;font-weight:600;color:var(--mu);letter-spacing:.18em;margin-top:1px}
+.doc-title{text-align:right}
+.doc-title .t{font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.04em}
+.doc-title .of{font-size:20px;font-weight:800;color:var(--or);font-family:monospace;margin-top:2px}
+.doc-title .meta{font-size:9px;color:var(--mu);margin-top:2px}
+
+/* ── Sections ── */
+.sec{border:1px solid var(--bd);border-radius:6px;margin-bottom:7px;overflow:hidden}
+.sec-h{background:var(--ink);color:#fff;font-size:10px;font-weight:700;
+  text-transform:uppercase;letter-spacing:.07em;padding:5px 9px;display:flex;
+  align-items:center;gap:7px}
+.sec-h .n{background:var(--or);width:16px;height:16px;border-radius:50%;
+  display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:800}
+.sec-b{padding:8px 9px}
+
+/* ── Grilles de champs ── */
+.grid{display:grid;gap:7px 14px}
+.g2{grid-template-columns:1fr 1fr}
+.g3{grid-template-columns:1fr 1fr 1fr}
+.g4{grid-template-columns:repeat(4,1fr)}
+.fld label{display:block;font-size:8px;font-weight:700;color:var(--mu);
+  text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px}
+.fld .v{border-bottom:1px solid var(--bdl);min-height:16px;font-size:11px;
+  font-weight:600;padding:1px 2px 2px}
+.fld .v.box{border:1px solid var(--bdl);border-radius:4px;min-height:26px;padding:4px 6px;background:var(--bg)}
+.fld .v.fill{color:var(--or)}        /* valeur pré-remplie par le logiciel */
+.hint{color:var(--mu);font-weight:400;font-style:italic}
+
+/* ── Produit / visuel ── */
+.prod{display:grid;grid-template-columns:88px 1fr;gap:10px;align-items:start}
+.photo{width:88px;height:88px;border:1px dashed var(--bd);border-radius:6px;
+  display:flex;align-items:center;justify-content:center;color:var(--mu);
+  font-size:8px;text-align:center;background:var(--bg);overflow:hidden}
+.photo img{width:100%;height:100%;object-fit:cover}
+.prod-name{font-size:15px;font-weight:800;line-height:1.1}
+.tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:5px}
+.tag{font-size:8px;font-weight:700;padding:2px 8px;border-radius:20px;
+  background:var(--bg);border:1px solid var(--bdl);color:var(--ink)}
+.tag.or{background:#FBEAE1;border-color:var(--or);color:var(--or)}
+
+/* ── Cotes / dimensions ── */
+.dims{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-top:2px}
+.dim{border:1px solid var(--bdl);border-radius:5px;text-align:center;padding:5px 3px}
+.dim .lab{font-size:7.5px;font-weight:700;color:var(--mu);text-transform:uppercase}
+.dim .num{font-size:16px;font-weight:800;font-family:monospace;min-height:20px}
+.dim .u{font-size:8px;color:var(--mu)}
+
+/* ── Tables ── */
+table{width:100%;border-collapse:collapse;font-size:10px}
+th{background:var(--bg);font-size:8px;font-weight:700;color:var(--mu);
+  text-transform:uppercase;letter-spacing:.03em;text-align:left;padding:4px 6px;
+  border:1px solid var(--bdl)}
+td{border:1px solid var(--bdl);padding:4px 6px;vertical-align:middle;min-height:18px}
+td.c{text-align:center}
+.empty{color:var(--bd)}
+tr.fill td{height:22px}
+
+/* ── Étapes de fabrication (gamme opératoire) ── */
+.step{border:1px solid var(--bd);border-radius:6px;margin-bottom:6px;overflow:hidden;page-break-inside:avoid}
+.step-h{display:flex;align-items:center;gap:8px;padding:5px 8px;font-weight:700;color:#fff}
+.step-h .ic{font-size:14px}
+.step-h .nm{flex:1;font-size:11px}
+.step-h .est{font-size:8px;font-weight:700;background:rgba(255,255,255,.22);
+  padding:2px 8px;border-radius:20px}
+.step-b{padding:6px 8px;display:grid;grid-template-columns:1.4fr 1fr;gap:8px}
+.step-mat{font-size:9px}
+.step-mat .k{font-size:7.5px;font-weight:700;color:var(--mu);text-transform:uppercase;margin-bottom:1px}
+.track{display:grid;grid-template-columns:1fr 1fr;gap:4px 8px;font-size:8.5px}
+.track .row{display:flex;align-items:center;gap:4px}
+.track .row .k{font-size:7.5px;font-weight:700;color:var(--mu);text-transform:uppercase;min-width:46px}
+.track .line{flex:1;border-bottom:1px solid var(--bdl);min-height:13px}
+.chk{width:13px;height:13px;border:1.5px solid var(--ink);border-radius:3px;display:inline-block;flex-shrink:0}
+.step-foot{display:flex;align-items:center;gap:8px;padding:4px 8px;
+  border-top:1px solid var(--bdl);background:var(--bg);font-size:8.5px}
+.step-foot .ctrl{margin-left:auto;display:flex;align-items:center;gap:6px}
+
+/* atelier colors */
+.at-menuisier{background:#27AE60} .at-couturier{background:#E67E22}
+.at-tapissier{background:#9B59B6} .at-peinture{background:#E67E22}
+.at-ferronier{background:#7F8C8D} .at-pierre{background:#8D6748}
+.at-cnc{background:#4A90D9}        .at-cuivre{background:#D4A017}
+.at-resine{background:#1ABC9C}
+
+/* ── Checklist qualité ── */
+.qc{display:grid;grid-template-columns:1fr 1fr;gap:3px 16px}
+.qc .item{display:flex;align-items:center;gap:6px;font-size:9.5px;padding:1px 0}
+
+/* ── Signatures ── */
+.sign{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-top:4px}
+.sign .box{border:1px solid var(--bdl);border-radius:5px;height:54px;padding:4px 6px;
+  display:flex;flex-direction:column;justify-content:space-between}
+.sign .box .k{font-size:7.5px;font-weight:700;color:var(--mu);text-transform:uppercase}
+.sign .box .ln{font-size:8px;color:var(--bd)}
+
+/* ── Notes ── */
+.notes{border:1px solid var(--bdl);border-radius:5px;min-height:42px;background:repeating-linear-gradient(transparent,transparent 17px,var(--bdl) 17px,var(--bdl) 18px);padding:2px 6px}
+
+/* ── Pied de page ── */
+.foot{display:flex;justify-content:space-between;font-size:8px;color:var(--mu);
+  border-top:1px solid var(--bdl);margin-top:8px;padding-top:5px}
+
+.legend{font-size:8px;color:var(--mu);margin-top:3px;font-style:italic}
+
+@media print{
+  body{background:#fff}
+  .toolbar{display:none}
+  .sheet{margin:0;box-shadow:none;width:auto;min-height:auto;padding:8mm}
+  @page{size:A4 portrait;margin:0}
+}
+</style>
+</head>
+<body>
+
+<!-- ════════ BARRE D'OUTILS (écran) ════════ -->
+<div class="toolbar">
+  <span>📄 <b>Fiche de Production CREAJIT</b> — modèle imprimable A4 (Ordre de Fabrication)</span>
+  <button onclick="window.print()">🖨️ Imprimer / PDF</button>
+  <button class="ghost" onclick="document.body.classList.toggle('demo')">Aperçu rempli ↔ vierge</button>
+</div>
+
+<!-- ════════ FEUILLE ════════ -->
+<div class="sheet">
+
+  <!-- EN-TÊTE -->
+  <div class="head">
+    <div class="brand">CREA<em>JIT</em>
+      <div class="sub">MEUBLE SUR-MESURE · ATELIERS DE FABRICATION</div>
+    </div>
+    <div class="doc-title">
+      <div class="t">Ordre de Fabrication</div>
+      <div class="of" data-field="of">OF-2026-0000</div>
+      <div class="meta">Émis le <span data-field="dateEmission">__ / __ / 2026</span> · Page 1/1</div>
+    </div>
+  </div>
+
+  <!-- 1 · COMMANDE / CLIENT -->
+  <div class="sec">
+    <div class="sec-h"><span class="n">1</span> Commande &amp; client</div>
+    <div class="sec-b">
+      <div class="grid g4">
+        <div class="fld"><label>N° Commande</label><div class="v fill" data-field="ref">CMD-2026-148</div></div>
+        <div class="fld"><label>Client</label><div class="v fill" data-field="client">—</div></div>
+        <div class="fld"><label>Téléphone</label><div class="v" data-field="tel">—</div></div>
+        <div class="fld"><label>Commercial(e)</label><div class="v" data-field="commercial">—</div></div>
+      </div>
+      <div class="grid g4" style="margin-top:7px">
+        <div class="fld"><label>Date commande</label><div class="v" data-field="dateCmd">—</div></div>
+        <div class="fld"><label>Date livraison prévue</label><div class="v fill" data-field="dateLiv">—</div></div>
+        <div class="fld"><label>Priorité</label><div class="v">☐ Normale&nbsp;&nbsp;☐ Urgente</div></div>
+        <div class="fld"><label>Chantier / Adresse pose</label><div class="v" data-field="adresse">—</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2 · PRODUIT -->
+  <div class="sec">
+    <div class="sec-h"><span class="n">2</span> Produit à fabriquer</div>
+    <div class="sec-b">
+      <div class="prod">
+        <div class="photo" data-field="photo">PHOTO<br>MODÈLE</div>
+        <div>
+          <div class="prod-name" data-field="nom">Canapé d'angle BROOKLYN</div>
+          <div class="tags">
+            <span class="tag or" data-field="refCat">Réf. catalogue : BROOKLYN-3PL</span>
+            <span class="tag">Famille : Canapé / Banquette</span>
+            <span class="tag">Quantité : <b data-field="qte">1</b></span>
+            <span class="tag">Atelier pilote : Tapisserie</span>
+          </div>
+          <div class="grid g2" style="margin-top:8px">
+            <div class="fld"><label>Tissu / Revêtement (réf + coloris)</label><div class="v box fill" data-field="tissu">—</div></div>
+            <div class="fld"><label>Métrage tissu estimé</label><div class="v box" data-field="metrage">— ml</div></div>
+            <div class="fld"><label>Essence / Coloris bois</label><div class="v box fill" data-field="bois">—</div></div>
+            <div class="fld"><label>Finition</label><div class="v box" data-field="finition">☐ Mat&nbsp; ☐ Satiné&nbsp; ☐ Brillant&nbsp; ☐ Brut</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3 · COTES & SPÉCIFICATIONS -->
+  <div class="sec">
+    <div class="sec-h"><span class="n">3</span> Cotes de fabrication &amp; options
+      <span style="margin-left:auto;font-weight:600;font-size:8px;opacity:.85">⚠️ Vérifier les mesures avant découpe</span>
+    </div>
+    <div class="sec-b">
+      <div class="dims">
+        <div class="dim"><div class="lab">Longueur</div><div class="num fill" data-field="L">240</div><div class="u">cm</div></div>
+        <div class="dim"><div class="lab">Largeur / Prof.</div><div class="num fill" data-field="l">95</div><div class="u">cm</div></div>
+        <div class="dim"><div class="lab">Hauteur</div><div class="num fill" data-field="H">85</div><div class="u">cm</div></div>
+        <div class="dim"><div class="lab">H. assise</div><div class="num" data-field="Ha">45</div><div class="u">cm</div></div>
+        <div class="dim"><div class="lab">Tolérance</div><div class="num">±1</div><div class="u">cm</div></div>
+      </div>
+      <div class="grid g4" style="margin-top:8px">
+        <div class="fld"><label>Accoudoirs</label><div class="v">☐ Gauche ☐ Droit ☐ Les deux ☐ Sans</div></div>
+        <div class="fld"><label>Type couture</label><div class="v">☐ Standard ☐ Surpiqûre ☐ Capitonnage ☐ Spéciale</div></div>
+        <div class="fld"><label>Densité mousse assise</label><div class="v">______ kg/m³</div></div>
+        <div class="fld"><label>Nb. coussins</label><div class="v" data-field="coussins">______</div></div>
+      </div>
+      <div class="legend">Si « Couture spéciale » ou cote particulière, détailler en section 8 (Observations) ou joindre le plan / croquis coté.</div>
+    </div>
+  </div>
+
+  <!-- 4 · NOMENCLATURE MATIÈRES (BOM) -->
+  <div class="sec">
+    <div class="sec-h"><span class="n">4</span> Nomenclature matières &amp; quincaillerie</div>
+    <div class="sec-b">
+      <table>
+        <thead><tr>
+          <th style="width:14%">Réf.</th><th>Désignation matière</th>
+          <th style="width:10%" class="c">Qté</th><th style="width:9%" class="c">Unité</th>
+          <th style="width:11%" class="c">Atelier</th><th style="width:11%" class="c">Sortie stock</th>
+        </tr></thead>
+        <tbody>
+          <tr class="fill"><td>KY2N-D10</td><td>Mousse DOLENO 200×180×10mm</td><td class="c">2</td><td class="c">Pièce</td><td class="c">Tapisserie</td><td class="c">☐</td></tr>
+          <tr class="fill"><td></td><td>Bois / contreplaqué carcasse</td><td class="c"></td><td class="c">m²</td><td class="c">Menuiserie</td><td class="c">☐</td></tr>
+          <tr class="fill"><td></td><td>Sangles élastiques + ressorts zigzag</td><td class="c"></td><td class="c">ml</td><td class="c">Menuiserie</td><td class="c">☐</td></tr>
+          <tr class="fill"><td></td><td>Tissu (réf. coloris) + fil + fermetures</td><td class="c"></td><td class="c">ml</td><td class="c">Couture</td><td class="c">☐</td></tr>
+          <tr class="fill"><td></td><td>Ouate / molleton + passepoil</td><td class="c"></td><td class="c">ml</td><td class="c">Tapisserie</td><td class="c">☐</td></tr>
+          <tr class="fill"><td></td><td>Pieds + quincaillerie (vis, agrafes)</td><td class="c"></td><td class="c">jeu</td><td class="c">Menuiserie</td><td class="c">☐</td></tr>
+          <tr class="fill"><td></td><td></td><td class="c"></td><td class="c"></td><td class="c"></td><td class="c">☐</td></tr>
+        </tbody>
+      </table>
+      <div class="legend">Le magasinier coche « Sortie stock » à la délivrance. Toute rupture → signaler immédiatement au chef d'atelier (achat à déclencher).</div>
+    </div>
+  </div>
+
+  <!-- 5 · GAMME OPÉRATOIRE / ÉTAPES -->
+  <div class="sec">
+    <div class="sec-h"><span class="n">5</span> Gamme opératoire — circuit de fabrication
+      <span style="margin-left:auto;font-weight:600;font-size:8px;opacity:.85">Chaque atelier vise sa case avant de transmettre</span>
+    </div>
+    <div class="sec-b">
+
+      <!-- Étape 1 -->
+      <div class="step">
+        <div class="step-h at-menuisier"><span class="ic">🪵</span><span class="nm">1 · Carcasse bois — Menuiserie</span><span class="est">Estimé 10 h</span></div>
+        <div class="step-b">
+          <div class="step-mat"><div class="k">Matières / outillage</div>Bois, contreplaqué, colle, vis, agrafes · Sangles élastiques + ressorts zigzag</div>
+          <div class="track">
+            <div class="row"><span class="k">Ouvrier</span><span class="line"></span></div>
+            <div class="row"><span class="k">Visa</span><span class="line"></span></div>
+            <div class="row"><span class="k">Début</span><span class="line"></span></div>
+            <div class="row"><span class="k">Fin</span><span class="line"></span></div>
+            <div class="row"><span class="k">Tps réel</span><span class="line"></span></div>
+            <div class="row"><span class="k">Conforme</span><span class="chk"></span> oui &nbsp; <span class="chk"></span> non</div>
+          </div>
+        </div>
+        <div class="step-foot"><span class="chk"></span> Étape terminée
+          <span class="ctrl">Contrôle dimensionnel carcasse <span class="chk"></span> OK</span>
+        </div>
+      </div>
+
+      <!-- Étape 2 -->
+      <div class="step">
+        <div class="step-h at-couturier"><span class="ic">✂️</span><span class="nm">2 · Coupe &amp; couture tissu — Couture</span><span class="est">Estimé 5 h</span></div>
+        <div class="step-b">
+          <div class="step-mat"><div class="k">Matières / outillage</div>Tissu (ml), fil, fermetures, passepoil · Respecter sens du tissu &amp; raccord motif</div>
+          <div class="track">
+            <div class="row"><span class="k">Ouvrier</span><span class="line"></span></div>
+            <div class="row"><span class="k">Visa</span><span class="line"></span></div>
+            <div class="row"><span class="k">Début</span><span class="line"></span></div>
+            <div class="row"><span class="k">Fin</span><span class="line"></span></div>
+            <div class="row"><span class="k">Tps réel</span><span class="line"></span></div>
+            <div class="row"><span class="k">Conforme</span><span class="chk"></span> oui &nbsp; <span class="chk"></span> non</div>
+          </div>
+        </div>
+        <div class="step-foot"><span class="chk"></span> Étape terminée
+          <span class="ctrl">Coloris &amp; métrage conformes <span class="chk"></span> OK</span>
+        </div>
+      </div>
+
+      <!-- Étape 3 -->
+      <div class="step">
+        <div class="step-h at-tapissier"><span class="ic">🧵</span><span class="nm">3 · Garniture mousse &amp; habillage — Tapisserie</span><span class="est">Estimé 12 h</span></div>
+        <div class="step-b">
+          <div class="step-mat"><div class="k">Matières / outillage</div>Mousse HD, ouate, tissu posé · Tension homogène, angles nets, agrafage caché</div>
+          <div class="track">
+            <div class="row"><span class="k">Ouvrier</span><span class="line"></span></div>
+            <div class="row"><span class="k">Visa</span><span class="line"></span></div>
+            <div class="row"><span class="k">Début</span><span class="line"></span></div>
+            <div class="row"><span class="k">Fin</span><span class="line"></span></div>
+            <div class="row"><span class="k">Tps réel</span><span class="line"></span></div>
+            <div class="row"><span class="k">Conforme</span><span class="chk"></span> oui &nbsp; <span class="chk"></span> non</div>
+          </div>
+        </div>
+        <div class="step-foot"><span class="chk"></span> Étape terminée
+          <span class="ctrl">Finition habillage <span class="chk"></span> OK</span>
+        </div>
+      </div>
+
+      <div class="legend">Le circuit ci-dessus est généré automatiquement selon la famille produit (canapé, fauteuil, chaise bois/métal, table travertin/céramique, lit, cuivre, résine, pergola…). Une étape ne démarre qu'après visa « terminée » de la précédente.</div>
+    </div>
+  </div>
+
+  <!-- 6 · CONTRÔLE QUALITÉ -->
+  <div class="sec">
+    <div class="sec-h"><span class="n">6</span> Contrôle qualité final (avant emballage)</div>
+    <div class="sec-b">
+      <div class="qc">
+        <div class="item"><span class="chk"></span> Dimensions conformes à la fiche (±1 cm)</div>
+        <div class="item"><span class="chk"></span> Coloris tissu / bois conformes à la commande</div>
+        <div class="item"><span class="chk"></span> Aucune tache, fil tiré, rayure ou défaut visible</div>
+        <div class="item"><span class="chk"></span> Coutures droites, régulières, sans plis</div>
+        <div class="item"><span class="chk"></span> Solidité assise / dossier / accoudoirs testée</div>
+        <div class="item"><span class="chk"></span> Pieds / quincaillerie fixés &amp; alignés</div>
+        <div class="item"><span class="chk"></span> Stabilité (pas de bascule) vérifiée</div>
+        <div class="item"><span class="chk"></span> Nb. coussins &amp; accessoires complets</div>
+      </div>
+      <div class="grid g3" style="margin-top:8px">
+        <div class="fld"><label>Verdict</label><div class="v">☐ Conforme&nbsp;&nbsp; ☐ Retouche&nbsp;&nbsp; ☐ Refusé</div></div>
+        <div class="fld"><label>Contrôleur qualité</label><div class="v">—</div></div>
+        <div class="fld"><label>Date contrôle</label><div class="v">—</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7 · EMBALLAGE & LIVRAISON -->
+  <div class="sec">
+    <div class="sec-h"><span class="n">7</span> Emballage &amp; expédition</div>
+    <div class="sec-b">
+      <div class="grid g4">
+        <div class="fld"><label>Protection</label><div class="v">☐ Film ☐ Mousse ☐ Carton ☐ Housse</div></div>
+        <div class="fld"><label>Nb. colis</label><div class="v">______</div></div>
+        <div class="fld"><label>Étiquette pose</label><div class="v">☐ Oui ☐ Non</div></div>
+        <div class="fld"><label>Emballé par</label><div class="v">—</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 8 · OBSERVATIONS -->
+  <div class="sec">
+    <div class="sec-h"><span class="n">8</span> Observations / anomalies / retouches</div>
+    <div class="sec-b"><div class="notes"></div></div>
+  </div>
+
+  <!-- 9 · SIGNATURES -->
+  <div class="sec">
+    <div class="sec-h"><span class="n">9</span> Visas &amp; signatures</div>
+    <div class="sec-b">
+      <div class="sign">
+        <div class="box"><span class="k">Chef d'atelier</span><span class="ln">Nom + signature</span></div>
+        <div class="box"><span class="k">Contrôle qualité</span><span class="ln">Nom + signature</span></div>
+        <div class="box"><span class="k">Resp. production</span><span class="ln">Nom + signature</span></div>
+        <div class="box"><span class="k">Bon pour livraison</span><span class="ln">Date + visa</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PIED -->
+  <div class="foot">
+    <span>CREAJIT MES · Ordre de Fabrication — document atelier interne</span>
+    <span>Modèle FP-v1 · à conserver jusqu'à la livraison</span>
+  </div>
+
+</div>
+
+<script>
+/* ──────────────────────────────────────────────────────────────
+   INTÉGRATION LOGICIEL :
+   Appeler remplirFiche({...}) pour pré-remplir les champs data-field.
+   Les clés correspondent aux attributs data-field du HTML.
+   Exemple d'objet (issu du store : art + art.fiche + commande) :
+   ────────────────────────────────────────────────────────────── */
+function remplirFiche(d){
+  Object.entries(d||{}).forEach(([k,v])=>{
+    document.querySelectorAll('[data-field="'+k+'"]').forEach(el=>{
+      if(k==='photo' && v){ el.innerHTML='<img src="'+v+'" alt="">' ; return }
+      if(v!==undefined && v!==null && v!=='') el.textContent = v;
+    });
+  });
+}
+
+/* Démo : aperçu rempli (bouton « Aperçu rempli ↔ vierge ») */
+const DEMO = {
+  of:'OF-2026-0148', dateEmission:'04 / 06 / 2026',
+  ref:'CMD-2026-148', client:'Villa Anfa — M. Bennani', tel:'+212 6 61 00 00 00',
+  commercial:'Salma R.', dateCmd:'28 / 05 / 2026', dateLiv:'25 / 06 / 2026',
+  adresse:'Anfa Supérieur, Casablanca',
+  nom:"Canapé d'angle BROOKLYN", refCat:'Réf. catalogue : BROOKLYN-3PL', qte:'1',
+  tissu:'Velours côtelé — Vert sauge (réf. VLT-23)', metrage:'18 ml',
+  bois:'Hêtre massif — teinte noyer', coussins:'4',
+  L:'240', l:'95', H:'85', Ha:'45'
+};
+document.body.classList.contains('demo') && remplirFiche(DEMO);
+const obs=new MutationObserver(()=>{document.body.classList.contains('demo')&&remplirFiche(DEMO)});
+obs.observe(document.body,{attributes:true,attributeFilter:['class']});
+</script>
+</body>
+</html>
