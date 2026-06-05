@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fiche de production — CREAJIT</title>
+<style>
+  :root{ --or:#C4714F; --nv:#0F172A; --gn:#15803d; --bd:#cbd5e1; }
+  *{ box-sizing:border-box; }
+  body{ margin:0; background:#475569; font-family:system-ui,"Segoe UI",sans-serif; color:#0f172a; padding:14px 0; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  .bar{ max-width:210mm; margin:0 auto 12px; display:flex; gap:8px; flex-wrap:wrap; align-items:center; justify-content:center; }
+  .bar button,.bar select{ padding:9px 16px; border-radius:8px; border:1px solid #fff; background:#fff; font-weight:700; cursor:pointer; font-family:inherit; font-size:13px; }
+  .bar .print{ background:var(--or); color:#fff; border:none; }
+  .bar select{ min-width:200px; }
+  .fiche{ width:210mm; max-width:calc(100% - 16px); margin:0 auto; background:#fff; padding:12mm; box-shadow:0 8px 30px rgba(0,0,0,.3); }
+  .head{ background:var(--nv); color:#fff; font-size:11px; font-weight:700; padding:6px 10px; text-transform:uppercase; letter-spacing:.04em; display:flex; justify-content:space-between; align-items:center; }
+  .head .ar{ font-weight:400; opacity:.85; font-size:12px; }
+  .sec{ border:1px solid var(--bd); border-radius:8px; margin-bottom:10px; overflow:hidden; background:#fff; }
+  .bd{ padding:10px; }
+  .row{ display:flex; font-size:12px; padding:3px 0; border-bottom:1px dotted #e2e8f0; align-items:center; }
+  .row:last-child{ border-bottom:none; }
+  .lbl{ width:150px; color:#64748b; flex-shrink:0; }
+  .val{ font-weight:600; }
+  input.fld,select.fld{ font-family:inherit; font-size:12px; border:1px solid var(--bd); border-radius:6px; padding:4px 7px; width:100%; }
+  input.dim{ width:64px; text-align:center; font-weight:700; color:var(--or); }
+  th{ text-align:left; font-size:9px; color:#64748b; text-transform:uppercase; padding:5px 6px; border-bottom:1px solid var(--bd); }
+  td{ font-size:11px; padding:5px 6px; border-bottom:1px solid #eef2f7; }
+  .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:2px 18px; }
+  .grid3{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px 14px; }
+  /* photo */
+  .photoz{ height:170px; cursor:pointer; position:relative; background:#f8fafc; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; border-bottom:1px solid #e2e8f0; }
+  .photoz img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .photoz .hint{ background:var(--or); color:#fff; padding:6px 12px; border-radius:8px; font-size:12px; font-weight:700; }
+  .badge{ position:absolute; top:8px; right:8px; background:rgba(21,128,61,.85); color:#fff; font-size:9px; font-weight:700; padding:2px 7px; border-radius:20px; }
+  .chg{ position:absolute; bottom:8px; right:8px; background:rgba(255,255,255,.92); border:none; border-radius:6px; padding:4px 8px; font-size:10px; font-weight:700; cursor:pointer; font-family:inherit; }
+  /* direction */
+  .dirbtns{ display:flex; gap:8px; margin-bottom:8px; }
+  .dirbtns button{ flex:1; padding:7px; border:2px solid var(--bd); background:#fff; border-radius:8px; font-weight:700; font-size:13px; cursor:pointer; font-family:inherit; }
+  .dirbtns button.on{ border-color:var(--gn); background:#dcfce7; color:var(--gn); }
+  textarea.note{ width:100%; min-height:46px; border:1px solid #fde68a; background:#fffbeb; border-radius:6px; padding:7px; font-family:inherit; font-size:12px; resize:vertical; }
+  canvas#draw{ width:100%; height:150px; border:1px dashed #94a3b8; border-radius:6px; background:#fafafa; touch-action:none; display:block; }
+  @media print{
+    .bar,.hint,.sub,.chg,.clrbtn{ display:none !important; }
+    body{ background:#fff; padding:0; }
+    .fiche{ box-shadow:none; max-width:100%; padding:8mm; }
+    input.fld,select.fld,input.dim{ border:none; background:transparent; }
+    @page{ size:A4; margin:7mm; }
+  }
+</style>
+</head>
+<body>
+
+<div class="bar">
+  <select id="modelSel" onchange="loadModel()"></select>
+  <button class="print" onclick="window.print()">🖨️ Imprimer A4</button>
+</div>
+
+<div class="fiche">
+
+  <!-- ENTÊTE -->
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid var(--nv);padding-bottom:10px;margin-bottom:12px">
+    <div>
+      <div style="font-size:26px;font-weight:900;letter-spacing:-1px">CREA<span style="color:var(--or)">JIT</span></div>
+      <div style="font-size:12px;font-weight:700;letter-spacing:.08em;color:#475569">FICHE DE PRODUCTION · <span style="font-weight:400">ورقة الإنتاج</span></div>
+    </div>
+    <div style="text-align:right">
+      <div style="font-family:monospace;font-size:16px;font-weight:800;color:var(--or)">N° <span id="hRef">________</span></div>
+      <div style="font-size:11px;color:#475569">Éditée le <span id="hDate"></span></div>
+    </div>
+  </div>
+
+  <!-- PRODUIT (photo) + COMMANDE -->
+  <div style="display:flex;gap:10px;margin-bottom:10px">
+    <div class="sec" style="flex:1;margin:0">
+      <div class="head"><span id="hNom">Produit</span><span class="ar">المنتج</span></div>
+      <div style="padding:0">
+        <div class="photoz" id="pz" onclick="pickPhoto()">
+          <img id="pimg" style="display:none">
+          <span style="font-size:42px;opacity:.5" id="picon">🛋️</span>
+          <div class="hint">📷 Cliquer pour mettre la photo réelle</div>
+          <span class="sub" style="font-size:10px;color:#94a3b8">صورة المنتج الحقيقية</span>
+          <button class="chg" style="display:none" id="chgBtn" onclick="event.stopPropagation();pickPhoto()">✏️ Changer</button>
+        </div>
+        <div style="padding:8px 10px">
+          <div id="pNom" style="font-size:16px;font-weight:800">—</div>
+          <div id="pCat" style="font-size:11px;color:#475569;margin-top:2px">🛋️ Atelier Tapisserie</div>
+          <div id="pDimTxt" style="font-size:11px;color:var(--or);margin-top:2px;font-family:monospace"></div>
+        </div>
+      </div>
+    </div>
+    <div class="sec" style="flex:1;margin:0">
+      <div class="head"><span>Commande</span><span class="ar">الطلبية</span></div>
+      <div class="bd">
+        <div class="row"><span class="lbl">Client · الزبون</span><input class="fld" placeholder="Nom du client"></div>
+        <div class="row"><span class="lbl">Téléphone · الهاتف</span><input class="fld" placeholder="06 ___"></div>
+        <div class="row"><span class="lbl">Commerciale</span><input class="fld" placeholder="ex : Hanane"></div>
+        <div class="row"><span class="lbl">Quantité · الكمية</span><input class="fld" style="width:70px" placeholder="1"></div>
+        <div class="row"><span class="lbl">Livraison · التسليم</span><input class="fld" type="date"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DIMENSIONS -->
+  <div class="sec">
+    <div class="head"><span>Dimensions (cm) · المقاسات بالسنتيمتر</span><span class="ar"></span></div>
+    <div class="bd grid3">
+      <label class="row"><span class="lbl">Longueur · الطول</span><input class="fld dim" id="L"  oninput="draw()"></label>
+      <label class="row"><span class="lbl">Profondeur · العمق</span><input class="fld dim" id="P"  oninput="draw()"></label>
+      <label class="row"><span class="lbl">Hauteur · الارتفاع</span><input class="fld dim" id="H"  oninput="draw()"></label>
+      <label class="row"><span class="lbl">Haut. assise</span><input class="fld dim" id="HA" oninput="draw()"></label>
+      <label class="row"><span class="lbl">Prof. assise</span><input class="fld dim" id="PA" oninput="draw()"></label>
+      <label class="row"><span class="lbl">Haut. pied</span><input class="fld dim" id="HP" oninput="draw()"></label>
+      <label class="row"><span class="lbl">Épais. dossier</span><input class="fld dim" id="ED" oninput="draw()"></label>
+      <label class="row"><span class="lbl">Épais. accoudoir</span><input class="fld dim" id="EA" oninput="draw()"></label>
+      <label class="row"><span class="lbl">Nb coussins</span><input class="fld dim" id="NC"></label>
+    </div>
+  </div>
+
+  <!-- SCHEMA COTÉ 3 VUES -->
+  <div class="sec">
+    <div class="head"><span>📐 Schéma coté — 3 vues · الرسم التقني</span><span class="ar"></span></div>
+    <div class="bd"><div style="overflow-x:auto"><svg id="svg" width="470" height="330" style="display:block;margin:0 auto;max-width:100%"></svg></div>
+    <div style="text-align:center;font-size:10px;color:#94a3b8;margin-top:4px">Dessin généré automatiquement à partir des mesures · cotes en cm</div></div>
+  </div>
+
+  <!-- DIRECTION G/D (bonhomme main verte) -->
+  <div class="sec">
+    <div class="head"><span>👤 Sens de l'angle / accoudoir · الاتجاه</span><span class="ar">يسار / يمين</span></div>
+    <div class="bd">
+      <div class="dirbtns">
+        <button id="bG" class="on" onclick="setDir('G')">⬅️ GAUCHE · يسار</button>
+        <button id="bD" onclick="setDir('D')">DROITE · يمين ➡️</button>
+      </div>
+      <div style="display:flex;justify-content:center"><svg id="man" width="300" height="150"></svg></div>
+      <div style="text-align:center;font-size:11px;color:#475569;margin-top:4px">🟢 La <b>main verte</b> est posée sur l'accoudoir → c'est le côté de l'angle. (Vu de FACE, comme assis.)</div>
+    </div>
+  </div>
+
+  <!-- COUPE TECHNIQUE -->
+  <div class="sec">
+    <div class="head"><span>🔬 Coupe technique — construction · التركيب الداخلي</span><span class="ar"></span></div>
+    <div class="bd" style="display:flex;gap:12px;align-items:flex-start">
+      <svg id="cut" width="240" height="190" style="flex-shrink:0"></svg>
+      <div style="flex:1;font-size:11px;line-height:1.7">
+        <div>① <b>Revêtement</b> · الكسوة — tissu / cuir microfibre</div>
+        <div>② <b>Garnissage</b> · حشو — ouate synthétique + fibre / plumes</div>
+        <div>③ <b>Mousse dossier</b> · إسفنج الظهر — <b>PU 25 kg/m³</b></div>
+        <div>④ <b>Mousse assise</b> · إسفنج الجلسة — <b>PU 35 kg/m³ (2 couches)</b></div>
+        <div>⑤ <b>Suspension</b> · التعليق — sangles élastiques / ressorts zigzag</div>
+        <div>⑥ <b>Structure</b> · الهيكل — hêtre + sapin + panneaux MDF</div>
+        <div>⑦ <b>Piétement</b> · الأرجل — bois chêne ou métal</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MATIÈRES (BOM auto) -->
+  <div class="sec">
+    <div class="head"><span>🧾 Matières premières (calcul auto) · المواد الأولية</span><span class="ar"></span></div>
+    <table style="width:100%;border-collapse:collapse">
+      <thead><tr style="background:#f1f5f9"><th>Désignation · المادة</th><th>Qté estimée</th><th>Unité</th><th>✓ Sorti magasin</th></tr></thead>
+      <tbody id="bom"></tbody>
+    </table>
+    <div class="bd" style="padding-top:8px"><textarea class="note" placeholder="📝 Note matières (sur-mesure, remarque magasin)…"></textarea></div>
+  </div>
+
+  <!-- TISSU + CROQUIS -->
+  <div style="display:flex;gap:10px;margin-bottom:10px">
+    <div class="sec" style="flex:1;margin:0">
+      <div class="head"><span>🧵 Tissu & finition · القماش</span><span class="ar"></span></div>
+      <div class="bd">
+        <div class="row"><span class="lbl">Tissu / couleur</span><input class="fld" placeholder="ex : velours beige"></div>
+        <div class="row"><span class="lbl">Bois / pied</span><input class="fld" placeholder="ex : hêtre / métal noir"></div>
+        <div class="row"><span class="lbl">Couture / finition</span><input class="fld" placeholder="ex : surpiqûre"></div>
+        <div class="photoz" style="height:90px;border:1px dashed var(--bd);border-radius:6px;margin-top:8px" id="tz" onclick="pickTissu()">
+          <img id="timg" style="display:none">
+          <span class="hint" style="font-size:11px">🧵 Photo du tissu</span>
+        </div>
+      </div>
+    </div>
+    <div class="sec" style="flex:1;margin:0">
+      <div class="head"><span>✏️ Croquis à main levée · رسم يدوي</span><span class="ar"></span></div>
+      <div class="bd">
+        <canvas id="draw" width="540" height="150"></canvas>
+        <button class="clrbtn" onclick="clearDraw()" style="margin-top:4px;font-size:10px;border:1px solid var(--bd);background:#fff;border-radius:6px;padding:3px 8px;cursor:pointer;font-family:inherit">🗑️ Effacer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- QUALITÉ -->
+  <div class="sec">
+    <div class="head"><span>✅ Contrôle qualité · مراقبة الجودة</span><span class="ar"></span></div>
+    <div class="bd" style="display:flex;gap:20px">
+      <div style="flex:1">
+        <div style="font-weight:700;font-size:12px;margin-bottom:4px">① Carcasse — avant tapisserie · قبل التنجيد</div>
+        <div style="font-size:12px;color:#475569">Conforme : Oui ☐ &nbsp; Non ☐<br><br>Vérifié par : ____________</div>
+      </div>
+      <div style="flex:1;border-left:1px solid var(--bd);padding-left:20px">
+        <div style="font-weight:700;font-size:12px;margin-bottom:4px">② Final — après habillage · بعد التنجيد</div>
+        <div style="font-size:12px;color:#475569">Conforme : Oui ☐ &nbsp; Non ☐<br><br>Vérifié par : ____________</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NOTES LIBRES -->
+  <div class="sec">
+    <div class="head"><span>📝 Notes libres · ملاحظات</span><span class="ar"></span></div>
+    <div class="bd"><textarea class="note" style="min-height:60px" placeholder="Toute remarque utile à l'atelier…"></textarea></div>
+  </div>
+
+  <!-- SIGNATURES -->
+  <div style="display:flex;gap:20px;margin-top:14px;padding-top:10px;border-top:1px solid var(--bd)">
+    <div style="flex:1"><div style="height:38px;border-bottom:1px solid #94a3b8"></div><div style="font-size:10px;color:#64748b;margin-top:3px">Commerciale</div></div>
+    <div style="flex:1"><div style="height:38px;border-bottom:1px solid #94a3b8"></div><div style="font-size:10px;color:#64748b;margin-top:3px">Chef d'atelier</div></div>
+    <div style="flex:1"><div style="height:38px;border-bottom:1px solid #94a3b8"></div><div style="font-size:10px;color:#64748b;margin-top:3px">Contrôle final</div></div>
+  </div>
+
+</div>
+
+<script>
+// ─── MODÈLES CANAPÉ CREAJIT (dimensions de base, modifiables) ───────
+const MODELS = [
+  { nom:'PRESTIGE II',     ref:'9263d37c', cat:'Salon modulable',  L:320, P:95,  H:85, HA:42, PA:60, HP:10, ED:18, EA:28, NC:5 },
+  { nom:'VAGUE ORGANIQUE', ref:'avant03b05', cat:'Canapé organique', L:200, P:100, H:75, HA:40, PA:62, HP:8,  ED:16, EA:24, NC:3 },
+  { nom:'NUAGE',           ref:'9df34119', cat:'Salon d\'angle capitonné', L:300, P:160, H:85, HA:42, PA:64, HP:10, ED:20, EA:30, NC:6 },
+  { nom:'LUNA SOFT',       ref:'e99754ab', cat:'Salon d\'angle arrondi', L:340, P:180, H:85, HA:42, PA:64, HP:10, ED:20, EA:28, NC:6 },
+  { nom:'EDDEN',           ref:'f271297c', cat:'Salon d\'angle + pouf', L:280, P:160, H:85, HA:43, PA:60, HP:12, ED:18, EA:26, NC:4 },
+  { nom:'SALON ELARA',     ref:'elara001', cat:'Salon d\'angle',   L:280, P:95,  H:90, HA:42, PA:58, HP:12, ED:18, EA:26, NC:5 },
+  { nom:'ARCUS',           ref:'arcus001', cat:'Canapé droit',     L:240, P:95,  H:80, HA:42, PA:58, HP:10, ED:16, EA:24, NC:3 },
+  { nom:'BROOKLYN',        ref:'brook001', cat:'Salon d\'angle',   L:260, P:100, H:85, HA:42, PA:60, HP:10, ED:18, EA:26, NC:4 },
+  { nom:'EGO L',           ref:'egol001',  cat:'Salon d\'angle L',  L:300, P:170, H:80, HA:42, PA:62, HP:10, ED:18, EA:28, NC:5 },
+];
+
+const $ = id => document.getElementById(id);
+let dir = 'G';
+const photoStore = JSON.parse(localStorage.getItem('creajit-fiche-photos')||'{}');
+
+// remplir le sélecteur
+$('modelSel').innerHTML = '<option value="">— Choisir un modèle —</option>' +
+  MODELS.map((m,i)=>`<option value="${i}">${m.nom}</option>`).join('');
+$('hDate').textContent = new Date().toLocaleDateString('fr');
+
+function loadModel(){
+  const i = $('modelSel').value;
+  if(i==='') return;
+  const m = MODELS[i];
+  ['L','P','H','HA','PA','HP','ED','EA','NC'].forEach(k=>$(k).value=m[k]);
+  $('hRef').textContent = m.ref;
+  $('hNom').textContent = m.nom;
+  $('pNom').textContent = m.nom;
+  $('pCat').textContent = '🛋️ ' + m.cat;
+  // photo enregistrée pour ce modèle ?
+  const saved = photoStore[m.nom];
+  setPhoto(saved||null);
+  draw();
+}
+
+// ─── PHOTO PRODUIT ──────────────────────────────────────────────
+function setPhoto(src){
+  if(src){
+    $('pimg').src=src; $('pimg').style.display='block';
+    $('picon').style.display='none';
+    $('pz').querySelector('.hint').style.display='none';
+    $('pz').querySelector('.sub').style.display='none';
+    $('chgBtn').style.display='block';
+    if(!$('pz').querySelector('.badge')){
+      const b=document.createElement('div'); b.className='badge'; b.textContent='📷 Photo réelle';
+      $('pz').appendChild(b);
+    }
+  }
+}
+function pickPhoto(){
+  const inp=document.createElement('input'); inp.type='file'; inp.accept='image/*';
+  inp.onchange=e=>{ const f=e.target.files[0]; if(!f)return;
+    const r=new FileReader(); r.onload=ev=>{ setPhoto(ev.target.result);
+      const i=$('modelSel').value; if(i!==''){ photoStore[MODELS[i].nom]=ev.target.result; localStorage.setItem('creajit-fiche-photos',JSON.stringify(photoStore)); }
+    }; r.readAsDataURL(f);
+  }; inp.click();
+}
+function pickTissu(){
+  const inp=document.createElement('input'); inp.type='file'; inp.accept='image/*';
+  inp.onchange=e=>{ const f=e.target.files[0]; if(!f)return;
+    const r=new FileReader(); r.onload=ev=>{ $('timg').src=ev.target.result; $('timg').style.display='block'; $('tz').querySelector('.hint').style.display='none'; }; r.readAsDataURL(f);
+  }; inp.click();
+}
+
+// ─── DIRECTION (bonhomme main verte) ────────────────────────────
+function setDir(d){ dir=d; $('bG').classList.toggle('on',d==='G'); $('bD').classList.toggle('on',d==='D'); drawMan(); }
+function drawMan(){
+  const flip = dir==='D';
+  const t = flip ? 'translate(300,0) scale(-1,1)' : '';
+  $('man').innerHTML = `<g transform="${t}">
+    <!-- assise + dossier -->
+    <rect x="90" y="80" width="120" height="14" rx="3" fill="#bfdbfe" stroke="#3b82f6"/>
+    <rect x="190" y="30" width="16" height="64" rx="3" fill="#93c5fd" stroke="#3b82f6"/>
+    <!-- accoudoir gauche (côté angle) -->
+    <rect x="70" y="48" width="22" height="46" rx="4" fill="#86efac" stroke="#15803d" stroke-width="2"/>
+    <text x="81" y="112" font-size="9" text-anchor="middle" fill="#15803d" font-weight="700">accoudoir</text>
+    <!-- personne assise -->
+    <circle cx="150" cy="44" r="13" fill="#fcd9b8" stroke="#b08968"/>
+    <path d="M150,57 q-18,4 -18,26 l36,0 q0,-22 -18,-26" fill="#475569"/>
+    <!-- jambes -->
+    <rect x="138" y="82" width="9" height="34" rx="3" fill="#334155"/>
+    <rect x="153" y="82" width="9" height="34" rx="3" fill="#334155"/>
+    <!-- bras + main verte sur accoudoir -->
+    <path d="M138,70 q-30,-2 -45,-18" stroke="#fcd9b8" stroke-width="7" fill="none" stroke-linecap="round"/>
+    <circle cx="82" cy="50" r="8" fill="#22c55e" stroke="#15803d" stroke-width="2"/>
+  </g>`;
+}
+
+// ─── COUPE TECHNIQUE ────────────────────────────────────────────
+function drawCut(){
+  $('cut').innerHTML = `
+    <rect x="10" y="20" width="220" height="150" fill="#fafaf9" stroke="#cbd5e1"/>
+    <!-- structure bois (base + dossier) -->
+    <rect x="20" y="140" width="200" height="20" fill="#d6a96a" stroke="#92400e"/>      <!-- ⑥ base -->
+    <rect x="20" y="40" width="20" height="120" fill="#d6a96a" stroke="#92400e"/>        <!-- ⑥ dossier bois -->
+    <!-- ⑤ suspension sangles -->
+    <line x1="42" y1="132" x2="218" y2="132" stroke="#15803d" stroke-width="2" stroke-dasharray="5,3"/>
+    <line x1="42" y1="138" x2="218" y2="138" stroke="#15803d" stroke-width="2" stroke-dasharray="5,3"/>
+    <!-- ④ mousse assise 35 -->
+    <rect x="42" y="108" width="176" height="22" fill="#fde68a" stroke="#d97706"/>
+    <!-- ③ mousse dossier 25 -->
+    <rect x="40" y="40" width="22" height="92" fill="#fef3c7" stroke="#d97706"/>
+    <!-- ② garnissage ouate -->
+    <rect x="42" y="100" width="176" height="9" fill="#e2e8f0" stroke="#94a3b8"/>
+    <!-- ① revêtement -->
+    <rect x="42" y="95" width="176" height="6" fill="#c4714f"/>
+    <rect x="62" y="40" width="6" height="92" fill="#c4714f"/>
+    <!-- ⑦ pied -->
+    <rect x="40" y="160" width="10" height="20" fill="#334155"/>
+    <rect x="190" y="160" width="10" height="20" fill="#334155"/>
+    <!-- repères -->
+    <text x="120" y="14" font-size="9" text-anchor="middle" fill="#64748b">Coupe profil — intérieur</text>
+    <text x="225" y="100" font-size="11" fill="#d97706" font-weight="700">④</text>
+    <text x="30" y="90" font-size="11" fill="#d97706" font-weight="700">③</text>
+    <text x="120" y="128" font-size="10" fill="#15803d" font-weight="700">⑤</text>
+    <text x="120" y="155" font-size="11" fill="#92400e" font-weight="700">⑥</text>`;
+}
+
+// ─── SCHÉMA COTÉ 3 VUES ─────────────────────────────────────────
+function num(id){ return parseFloat($(id).value)||0; }
+function draw(){
+  const L=num('L'),P=num('P'),H=num('H'),HA=num('HA'),PA=num('PA'),HP=num('HP'),EA=num('EA'),ED=num('ED');
+  $('pDimTxt').textContent = (L&&P&&H)? `${L} × ${P} × ${H} cm` : '';
+  drawMan(); drawCut(); buildBom();
+  if(!L||!P||!H){ $('svg').innerHTML=`<text x="235" y="160" text-anchor="middle" font-size="13" fill="#94a3b8">Renseigne Longueur, Profondeur et Hauteur</text>`; return; }
+
+  const defs=`<defs>
+    <marker id="a" markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#0f172a"/></marker>
+    <marker id="a2" markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto-start-reverse"><path d="M0,0 L7,3.5 L0,7 Z" fill="#0f172a"/></marker>
+  </defs>`;
+  const cote=(x1,y1,x2,y2,t,col='#0f172a',vert=false)=>{
+    const mx=(x1+x2)/2,my=(y1+y2)/2;
+    const tx = vert? `<text x="${mx-7}" y="${my}" font-size="9" font-family="monospace" font-weight="700" fill="${col}" text-anchor="middle" transform="rotate(-90,${mx-7},${my})">${t}</text>`
+                   : `<text x="${mx}" y="${my+11}" font-size="9" font-family="monospace" font-weight="700" fill="${col}" text-anchor="middle">${t}</text>`;
+    return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${col}" stroke-width="1" marker-end="url(#a)" marker-start="url(#a2)"/>${tx}`;
+  };
+
+  // VUE FACE
+  const fOx=34,fOy=34, fW=170, sf=fW/L, fH=H*sf, accW=EA*sf, pied=HP*sf, asH=HA*sf;
+  let face=`<text x="${fOx}" y="${fOy-20}" font-size="10" font-weight="700" fill="#475569">VUE DE FACE</text>`;
+  face+=`<rect x="${fOx+accW}" y="${fOy+fH-pied}" width="${fW-2*accW}" height="${pied}" fill="#d1d5db" stroke="#6b7280"/>`;
+  face+=`<rect x="${fOx+accW}" y="${fOy+fH-pied-asH}" width="${fW-2*accW}" height="${asH}" fill="#bfdbfe" stroke="#3b82f6" stroke-width="1.5"/>`;
+  face+=`<rect x="${fOx+accW}" y="${fOy}" width="${fW-2*accW}" height="${fH-pied-asH}" fill="#93c5fd" stroke="#3b82f6" stroke-width="1.5"/>`;
+  face+=`<rect x="${fOx}" y="${fOy}" width="${accW}" height="${fH-pied}" fill="#bfdbfe" stroke="#3b82f6" stroke-width="1.5"/>`;
+  face+=`<rect x="${fOx+fW-accW}" y="${fOy}" width="${accW}" height="${fH-pied}" fill="#bfdbfe" stroke="#3b82f6" stroke-width="1.5"/>`;
+  face+=cote(fOx,fOy+fH+16,fOx+fW,fOy+fH+16,L+' cm');
+  face+=cote(fOx-16,fOy,fOx-16,fOy+fH,H+' cm','#0f172a',true);
+  face+=cote(fOx+fW+10,fOy+fH-pied,fOx+fW+10,fOy+fH-pied-asH,HA,'#C4714F',true);
+
+  // VUE PROFIL
+  const pOx=fOx+fW+70,pOy=34, pW=110, sp=Math.min(pW/P,fH/H), ppW=P*sp, ppH=H*sp, pdos=ED*sp, ppied=HP*sp, pas=PA*sp, pasH=HA*sp;
+  let prof=`<text x="${pOx}" y="${pOy-20}" font-size="10" font-weight="700" fill="#475569">VUE DE PROFIL</text>`;
+  prof+=`<rect x="${pOx+pdos}" y="${pOy+ppH-ppied}" width="${ppW-pdos}" height="${ppied}" fill="#d1d5db" stroke="#6b7280"/>`;
+  prof+=`<rect x="${pOx+pdos}" y="${pOy+ppH-ppied-pasH}" width="${pas}" height="${pasH}" fill="#bfdbfe" stroke="#3b82f6" stroke-width="1.5"/>`;
+  prof+=`<rect x="${pOx}" y="${pOy}" width="${pdos}" height="${ppH-ppied}" fill="#93c5fd" stroke="#3b82f6" stroke-width="1.5"/>`;
+  prof+=cote(pOx,pOy+ppH+16,pOx+ppW,pOy+ppH+16,P+' cm');
+  prof+=cote(pOx+pdos,pOy+ppH-ppied-pasH-10,pOx+pdos+pas,pOy+ppH-ppied-pasH-10,PA,'#C4714F');
+
+  // VUE DESSUS
+  const dOx=fOx,dOy=fOy+fH+60, dW=170, sd=dW/L, dP=P*sd, dacc=EA*sd, ddos=ED*sd;
+  let top=`<text x="${dOx}" y="${dOy-8}" font-size="10" font-weight="700" fill="#475569">VUE DE DESSUS</text>`;
+  top+=`<text x="${dOx+dW/2}" y="${dOy-8}" font-size="8" text-anchor="middle" fill="#94a3b8">← avant →</text>`;
+  top+=`<rect x="${dOx+dacc}" y="${dOy}" width="${dW-2*dacc}" height="${ddos}" fill="#93c5fd" stroke="#3b82f6" stroke-width="1.5"/>`;
+  top+=`<rect x="${dOx+dacc}" y="${dOy+ddos}" width="${dW-2*dacc}" height="${dP-ddos}" fill="#bfdbfe" stroke="#3b82f6" stroke-width="1.5"/>`;
+  top+=`<rect x="${dOx}" y="${dOy}" width="${dacc}" height="${dP}" fill="#bfdbfe" stroke="#3b82f6" stroke-width="1.5"/>`;
+  top+=`<rect x="${dOx+dW-dacc}" y="${dOy}" width="${dacc}" height="${dP}" fill="#bfdbfe" stroke="#3b82f6" stroke-width="1.5"/>`;
+  top+=cote(dOx,dOy+dP+16,dOx+dW,dOy+dP+16,L+' cm');
+  top+=cote(dOx-16,dOy,dOx-16,dOy+dP,P+' cm','#0f172a',true);
+
+  $('svg').setAttribute('height', Math.max(330, dOy+dP+40));
+  $('svg').innerHTML = defs+face+prof+top;
+}
+
+// ─── BOM AUTO (calcul matières depuis dimensions) ───────────────
+function buildBom(){
+  const L=num('L'),P=num('P'),H=num('H'),NC=num('NC');
+  if(!L||!P||!H){ $('bom').innerHTML='<tr><td colspan="4" style="color:#94a3b8">Renseigne les dimensions pour le calcul</td></tr>'; return; }
+  const surf = ((L*H*2 + L*P + P*H*2)/10000)*1.35;          // m² tissu (+35% pertes)
+  const moussA = (L*P*6/1000000).toFixed(3);                 // m³ assise ~6cm
+  const moussD = (L*H*0.5*5/1000000).toFixed(3);             // m³ dossier ~5cm
+  const bois = ((2*L+4*P+2*H)/100*1.1).toFixed(1);           // ml bois châssis
+  const sangle = ((L*Math.ceil(P/15))/100).toFixed(1);       // ml sangles
+  const ouate = (((L*H + L*P)/10000)*1.2).toFixed(2);        // m² ouate
+  const rows=[
+    ['Tissu / revêtement', surf.toFixed(2),'m²'],
+    ['Mousse assise PU 35 kg/m³', moussA,'m³'],
+    ['Mousse dossier PU 25 kg/m³', moussD,'m³'],
+    ['Ouate synthétique', ouate,'m²'],
+    ['Bois hêtre/sapin (châssis)', bois,'ml'],
+    ['Sangles élastiques', sangle,'ml'],
+    ['Coussins déco', NC||'—','u'],
+    ['Pieds bois/métal', '4','u'],
+  ];
+  $('bom').innerHTML = rows.map(r=>`<tr><td>${r[0]}</td><td><b>${r[1]}</b></td><td>${r[2]}</td><td>☐</td></tr>`).join('');
+}
+
+// ─── CANVAS CROQUIS ─────────────────────────────────────────────
+(function(){
+  const c=$('draw'), ctx=c.getContext('2d'); ctx.lineWidth=2; ctx.lineCap='round'; ctx.strokeStyle='#0f172a';
+  let drawing=false;
+  const pos=e=>{ const r=c.getBoundingClientRect(), s=e.touches?e.touches[0]:e; return {x:(s.clientX-r.left)*(c.width/r.width), y:(s.clientY-r.top)*(c.height/r.height)}; };
+  const down=e=>{ e.preventDefault(); drawing=true; const p=pos(e); ctx.beginPath(); ctx.moveTo(p.x,p.y); };
+  const move=e=>{ if(!drawing)return; e.preventDefault(); const p=pos(e); ctx.lineTo(p.x,p.y); ctx.stroke(); };
+  const up=()=>drawing=false;
+  c.addEventListener('pointerdown',down); c.addEventListener('pointermove',move);
+  c.addEventListener('pointerup',up); c.addEventListener('pointerleave',up);
+  window.clearDraw=()=>ctx.clearRect(0,0,c.width,c.height);
+})();
+
+// init
+drawMan(); drawCut(); draw();
+</script>
+</body>
+</html>
