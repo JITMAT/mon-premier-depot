@@ -80,8 +80,8 @@ export default function Admin() {
   const stats = {
     orders: orders.length,
     retards: orders.filter(o => o.late).length,
-    totalCA: orders.reduce((s, o) => s + o.tot, 0),
-    totalSol: orders.reduce((s, o) => s + o.sol, 0),
+    totalCA: orders.reduce((s, o) => s + (o.tot || 0), 0),
+    totalSol: orders.reduce((s, o) => s + (o.sol || 0), 0),
     articles: Object.keys(arts).length,
     sessions: sessions.filter(s => s.st === 'run').length,
     users: users.filter(u => u.actif).length,
@@ -137,8 +137,8 @@ export default function Admin() {
           </div>
           {['Kenza','Ikram','Laila'].map(com => {
             const ords = orders.filter(o => o.com === com)
-            const ca = ords.reduce((s,o) => s+o.tot, 0)
-            const sol = ords.reduce((s,o) => s+o.sol, 0)
+            const ca = ords.reduce((s,o) => s+(o.tot||0), 0)
+            const sol = ords.reduce((s,o) => s+(o.sol||0), 0)
             return (
               <div key={com} style={{ background: 'var(--c1)', border: '1px solid var(--bd)', borderRadius: 10, padding: '12px 14px', marginBottom: 8 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>

@@ -49,7 +49,7 @@ export default function Rentabilite() {
   // ── Calculs ──────────────────────────────────────────────────
   const totalChargesFixes = charges.reduce((s, c) => s + c.montant, 0)
   const totalCharges = totalChargesFixes + MASSE_SAL_TOTALE
-  const caMonth = orders.reduce((s, o) => s + o.tot, 0)
+  const caMonth = orders.reduce((s, o) => s + (o.tot || 0), 0)
   const resultat = caMonth - totalCharges
   const seuil = totalCharges
   const progSeuil = Math.min(100, pct(caMonth, OBJECTIF_CA))

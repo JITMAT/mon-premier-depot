@@ -1,13 +1,30 @@
 import React, { useState } from 'react'
 import { EMP, AT, atI, ini } from '../data/employees'
 import { TX_DEFAUT, CHARGE_PAR_ARTICLE } from '../data/constants'
-import { useApp } from '../store'
+import { useApp, useAuth } from '../store'
 import { WORKFLOWS, ATELIERS_MAP, PEINTURE_ROLES, detectWorkflow, initSteps } from '../data/workflows'
 
 const dh = n => Math.round(n || 0).toLocaleString('fr') + ' DH'
 const fD = ms => { if (!ms || ms <= 0) return '00:00:00'; const s = Math.floor(ms/1000); return [Math.floor(s/3600),Math.floor(s%3600/60),s%60].map(v=>String(v).padStart(2,'0')).join(':') }
 const fHM = iso => { if (!iso) return '--:--'; const d = new Date(iso); return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0') }
 function gid() { return Math.random().toString(36).slice(2,9) }
+
+// Sanitisation minimale du SVG renvoyé par l'IA avant injection (anti-XSS) :
+// on retire les balises script, les gestionnaires d'évènements inline (on*)
+// et les URI javascript:. N'injecter QUE du contenu commençant par <svg>.
+function sanitizeSvg(raw) {
+  if (!raw || typeof raw !== 'string') return ''
+  const start = raw.indexOf('<svg')
+  if (start === -1) return ''
+  let svg = raw.slice(start)
+  const end = svg.lastIndexOf('</svg>')
+  if (end !== -1) svg = svg.slice(0, end + 6)
+  return svg
+    .replace(/<script[\s\S]*?<\/script>/gi, '')
+    .replace(/<foreignObject[\s\S]*?<\/foreignObject>/gi, '')
+    .replace(/\son\w+\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/gi, '')
+    .replace(/(href|xlink:href)\s*=\s*("javascript:[^"]*"|'javascript:[^']*')/gi, '')
+}
 
 // AT, atI imported from employees.js
 
@@ -192,6 +209,7 @@ export function ArtDetail() {
     completeStep, pauseStep, resumeStep, setStepEstimate,
     pauseSession, resumeSession2, finishSession
   } = useApp()
+  const { token } = useAuth()
 
   // ─── Local state ───────────────────────────────────────────────
   const [modal, setModal] = useState(null) // null | 'mat' | 'qual' | 'pause' | 'sur_mesure'
@@ -278,33 +296,10 @@ export function ArtDetail() {
     }, 0)
   }
 
-  function openLaunch(stepIdx) {
-    const step = steps[stepIdx]
-    setActiveStep(stepIdx)
-    setEstH(step.totalEstimatedH || step.estH || 4)
-    setSelWorker('')
-    setModal('estimate')
-  }
-
-  function openAddWorker(stepIdx) {
-    setActiveStep(stepIdx)
-    setSelWorker('')
-    setModal('workers')
-  }
-
   function openPause(stepIdx) {
     setActiveStep(stepIdx)
     setPauseReason('')
     setModal('pause')
-  }
-
-  function doLaunch() {
-    if (!selWorker) return
-    const emp = EMP.find(e => e.id === selWorker)
-    if (!emp) return
-    const session = { id: Math.random().toString(36).slice(2), eId: selWorker, empN: emp.n, t0: new Date().toISOString(), end: null, estimatedH: estH }
-    startStep(art.id, activeStep, session)
-    setModal(null); setSelWorker(''); setActiveStep(null)
   }
 
   function doPause() {
@@ -336,18 +331,20 @@ export function ArtDetail() {
     updateArt(art.id, { fiche: nf })
   }
 
+  // Les appels IA passent par le backend (/api/ai/*) qui détient la clé
+  // Anthropic — jamais exposée côté navigateur. Le token d'auth est transmis.
   async function genererSketch() {
     setSketchLoading(true)
     const ctx = `${art.nom}. L=${ficheData.longueur||'?'}cm l=${ficheData.largeur||'?'}cm H=${ficheData.hauteur||'?'}cm. Tissu:${ficheData.couleurTissu||'beige'}. Bois:${ficheData.couleurBois||'naturel'}. Accoudoirs:${ficheData.accoudoirs||'les deux'}.`
     try {
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
-        method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:1200,
-          messages:[{role:'user',content:`Génère un SVG vue de face de: ${ctx}. Fond #1F1F26, texte blanc, viewBox 0 0 400 300. Retourne UNIQUEMENT le SVG.`}]
-        })
+      const res = await fetch('/api/ai/sketch', {
+        method:'POST',
+        headers:{ 'Content-Type':'application/json', ...(token ? { 'Authorization': `Bearer ${token}` } : {}) },
+        body: JSON.stringify({ artId: art.id, context: ctx })
       })
+      if (!res.ok) throw new Error('sketch')
       const d = await res.json()
-      setSketchSvg(d.content?.[0]?.text || '')
+      setSketchSvg(d.svg || d.text || '')
     } catch(e) { setSketchSvg('') }
     setSketchLoading(false)
   }
@@ -356,14 +353,14 @@ export function ArtDetail() {
     setSketchLoading(true)
     const ctx = `Article:${art.nom}. Atelier:${at.n}. CoutRevient:${Math.round(totCost)}DH. PrixVente:${prixVente}DH. Marge:${margePct}%. Matières:${matieresDispo?'ok':'MANQUANTES'}. Validation:${valComm?valCommNom:'NON'} / ${valChef?valChefNom:'NON'}.`
     try {
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
-        method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:400,
-          messages:[{role:'user',content:`Tu es agent qualité CREAJIT. Analyse et liste les risques en 5 points max: ${ctx}`}]
-        })
+      const res = await fetch('/api/ai/analyze', {
+        method:'POST',
+        headers:{ 'Content-Type':'application/json', ...(token ? { 'Authorization': `Bearer ${token}` } : {}) },
+        body: JSON.stringify({ artId: art.id, context: ctx })
       })
+      if (!res.ok) throw new Error('analyze')
       const d = await res.json()
-      setSketchSvg('ANALYSE:' + (d.content?.[0]?.text || ''))
+      setSketchSvg('ANALYSE:' + (d.text || ''))
     } catch(e) { setSketchSvg('ANALYSE:Erreur') }
     setSketchLoading(false)
   }
@@ -605,7 +602,7 @@ export function ArtDetail() {
               <button onClick={genererSketch} disabled={sketchLoading} style={{ padding:'4px 9px', borderRadius:6, border:'none', cursor:'pointer', fontFamily:'inherit', fontSize:10, fontWeight:700, background:'rgba(52,152,219,.12)', color:'var(--bl)' }}>{sketchLoading?'⟳':'✏️ Dessiner'}</button>
               <button onClick={analyserArticle} disabled={sketchLoading} style={{ padding:'4px 9px', borderRadius:6, border:'none', cursor:'pointer', fontFamily:'inherit', fontSize:10, fontWeight:700, background:'rgba(231,76,60,.08)', color:'var(--rd)' }}>{sketchLoading?'⟳':'🔍 Analyser'}</button>
             </div>
-            {sketchSvg && !sketchSvg.startsWith('ANALYSE:') && <div style={{ background:'#1F1F26', borderRadius:8, padding:8, marginTop:8, overflow:'hidden' }} dangerouslySetInnerHTML={{__html:sketchSvg}}/>}
+            {sketchSvg && !sketchSvg.startsWith('ANALYSE:') && <div style={{ background:'#1F1F26', borderRadius:8, padding:8, marginTop:8, overflow:'hidden' }} dangerouslySetInnerHTML={{__html:sanitizeSvg(sketchSvg)}}/>}
             {sketchSvg && sketchSvg.startsWith('ANALYSE:') && <div style={{ background:'rgba(231,76,60,.06)', border:'1px solid rgba(231,76,60,.2)', borderRadius:8, padding:10, marginTop:8, fontSize:12, lineHeight:1.6, whiteSpace:'pre-wrap' }}>{sketchSvg.replace('ANALYSE:','')}</div>}
           </div>
         )}
@@ -1218,65 +1215,6 @@ export function ArtDetail() {
         <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,.92)', zIndex:50, display:'flex', flexDirection:'column', justifyContent:'flex-end' }}>
           <div style={{ background:'var(--c1)', borderRadius:'14px 14px 0 0', padding:20, maxHeight:'90vh', overflowY:'auto' }}>
             <div style={{ width:32, height:3, background:'var(--bd)', borderRadius:2, margin:'0 auto 14px' }}/>
-
-            {/* ── MODAL ESTIMATION ── */}
-            {modal === 'estimate' && activeStep !== null && (() => {
-              const step = steps[activeStep]
-              if (!step) return null
-              return <>
-                <div style={{ fontSize:14, fontWeight:700, marginBottom:4 }}>⏱ Estimer le temps — {step.nom}</div>
-                <div style={{ fontSize:11, color:'var(--mu)', marginBottom:12 }}>Historique moyen : <b style={{ color:'var(--yw)' }}>{step.estH}h</b> pour ce type d'article</div>
-                <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:6, marginBottom:10 }}>
-                  {[1,2,4,6,8,12,16,24].map(h => (
-                    <button key={h} onClick={() => setEstH(h)} style={{ padding:'10px', borderRadius:8, border:`2px solid ${estH===h?'var(--or)':'var(--bd)'}`, background:estH===h?'rgba(196,113,79,.15)':'var(--c2)', color:estH===h?'var(--or)':'var(--tx)', cursor:'pointer', fontFamily:'inherit', fontSize:13, fontWeight:700 }}>{h}h</button>
-                  ))}
-                </div>
-                <div style={{ background:'rgba(46,204,113,.08)', border:'1px solid rgba(46,204,113,.2)', borderRadius:8, padding:'8px 12px', marginBottom:14 }}>
-                  <div style={{ fontSize:11, color:'var(--mu)' }}>Fin estimée si démarrage maintenant</div>
-                  <div style={{ fontSize:16, fontWeight:700, color:'var(--gn)' }}>
-                    {(() => { const f=new Date(Date.now()+estH*3600000); return f.getHours()+':'+String(f.getMinutes()).padStart(2,'0') })()}
-                  </div>
-                </div>
-                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8 }}>
-                  <button onClick={() => setModal(null)} style={{ padding:11, borderRadius:8, border:'1px solid var(--bd)', background:'var(--c2)', color:'var(--tx)', cursor:'pointer', fontFamily:'inherit', fontWeight:700 }}>Annuler</button>
-                  <button onClick={() => { setStepEstimate(art.id, activeStep, estH); setModal('workers') }} style={{ padding:11, borderRadius:8, border:'none', background:'var(--gn)', color:'#fff', cursor:'pointer', fontFamily:'inherit', fontWeight:700 }}>Valider → Choisir ouvrier</button>
-                </div>
-              </>
-            })()}
-
-            {/* ── MODAL OUVRIERS ── */}
-            {modal === 'workers' && activeStep !== null && (() => {
-              const step = steps[activeStep]
-              if (!step) return null
-              const atFilt = step.at
-              const empsFilt = EMP.filter(e => {
-                if (atFilt === 'tapissier') return e.at === 'tapissier'
-                if (atFilt === 'couturier') return e.at === 'tapissier'
-                if (atFilt === 'menuisier') return e.at === 'menuisier'
-                if (atFilt === 'ferronier') return e.at === 'ferronier'
-                if (atFilt === 'peinture') return e.at === 'peinture'
-                if (atFilt === 'pierre') return e.at === 'pierre'
-                return true
-              })
-              return <>
-                <div style={{ fontSize:14, fontWeight:700, marginBottom:4 }}>{step.icon} {step.nom}</div>
-                {step.totalEstimatedH && <div style={{ fontSize:11, color:'var(--mu)', marginBottom:12 }}>Estimation validée : {step.totalEstimatedH}h · Fin prévue {(() => { const f=new Date(Date.now()+step.totalEstimatedH*3600000); return f.getHours()+':'+String(f.getMinutes()).padStart(2,'0') })()}</div>}
-                <div style={{ display:'flex', flexWrap:'wrap', gap:5, marginBottom:16 }}>
-                  {empsFilt.map(e => {
-                    const busy = Object.values(stepProgress).some(sps => sps && sps.some(sp => sp.sessions && sp.sessions.some(ses => ses.eId===e.id && !ses.end)))
-                    return (
-                      <button key={e.id} onClick={() => setSelWorker(selWorker===e.id?'':e.id)} style={{ padding:'6px 11px', borderRadius:20, border:'none', background:selWorker===e.id?atI(e.at).c:busy?'rgba(231,76,60,.1)':'var(--c2)', color:selWorker===e.id?'#fff':busy?'var(--rd)':'var(--mu)', cursor:'pointer', fontSize:11, fontWeight:700, fontFamily:'inherit' }}>
-                        {atI(e.at).e} {e.n.split(' ')[0]} {busy?'🔴':''}
-                      </button>
-                    )
-                  })}
-                </div>
-                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8 }}>
-                  <button onClick={() => { setModal(null); setSelWorker(''); setActiveStep(null) }} style={{ padding:11, borderRadius:8, border:'1px solid var(--bd)', background:'var(--c2)', color:'var(--tx)', cursor:'pointer', fontFamily:'inherit', fontWeight:700 }}>Annuler</button>
-                  <button disabled={!selWorker} onClick={doLaunch} style={{ padding:11, borderRadius:8, border:'none', background:'var(--gn)', color:'#fff', cursor:'pointer', fontFamily:'inherit', fontWeight:700, opacity:selWorker?1:.5 }}>🔨 Lancer</button>
-                </div>
-              </>
-            })()}
 
             {/* ── MODAL PAUSE ── */}
             {modal === 'pause' && (
