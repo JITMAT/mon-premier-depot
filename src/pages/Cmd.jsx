@@ -3,6 +3,7 @@ import { EMP, AT, atI, ini } from '../data/employees'
 import { TX_DEFAUT, CHARGE_PAR_ARTICLE } from '../data/constants'
 import { useApp, useAuth } from '../store'
 import { WORKFLOWS, ATELIERS_MAP, PEINTURE_ROLES, detectWorkflow, initSteps } from '../data/workflows'
+import FicheProduction from './FicheProduction'
 
 const dh = n => Math.round(n || 0).toLocaleString('fr') + ' DH'
 const fD = ms => { if (!ms || ms <= 0) return '00:00:00'; const s = Math.floor(ms/1000); return [Math.floor(s/3600),Math.floor(s%3600/60),s%60].map(v=>String(v).padStart(2,'0')).join(':') }
@@ -212,6 +213,7 @@ export function ArtDetail() {
   const { token } = useAuth()
 
   // ─── Local state ───────────────────────────────────────────────
+  const [showFicheProd, setShowFicheProd] = useState(false) // fiche de production imprimable
   const [modal, setModal] = useState(null) // null | 'mat' | 'qual' | 'pause' | 'sur_mesure'
   const [workerSearch, setWorkerSearch] = useState('')
   const [pausingSession, setPausingSession] = useState(null)  // { stepIdx, sesId }
@@ -372,7 +374,11 @@ export function ArtDetail() {
       <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:12 }}>
         <button onClick={() => setTab('cmd')} style={{ padding:'7px 12px', background:'var(--c2)', border:'1px solid var(--bd)', borderRadius:8, color:'var(--tx)', cursor:'pointer', fontFamily:'inherit', fontWeight:700, fontSize:12 }}>← Retour</button>
         <span style={{ fontSize:10, fontWeight:700, padding:'3px 10px', borderRadius:12, background:st.bg, color:st.c }}>{st.l}</span>
+        <button onClick={() => setShowFicheProd(true)} style={{ marginLeft:'auto', padding:'7px 14px', background:'var(--or)', border:'none', borderRadius:8, color:'#fff', cursor:'pointer', fontFamily:'inherit', fontWeight:700, fontSize:12 }}>📄 Fiche de production</button>
       </div>
+
+      {/* ── FICHE DE PRODUCTION (plein écran, imprimable) ── */}
+      {showFicheProd && <FicheProduction artId={art.id} onClose={() => setShowFicheProd(false)} />}
 
       {/* ── DATE LIVRAISON ── */}
       {daysLeft !== null && (
