@@ -1,7 +1,278 @@
-import React from 'react'
+import React, { useRef, useState, useEffect, useCallback } from 'react'
 import { useApp } from '../store'
 import { EMP, atI } from '../data/employees'
 import { ATELIERS_MAP, WORKFLOWS } from '../data/workflows'
+
+// ─── SCHÉMA COTÉ SVG ─────────────────────────────────────────────
+// Dessine 3 vues (face / profil / dessus) à partir des dimensions
+// saisies dans la fiche technique. Flèches de cote automatiques.
+
+function Arrow({ x1, y1, x2, y2, label, labelOffset = [0, 0], stroke = '#0f172a' }) {
+  const mx = (x1 + x2) / 2 + labelOffset[0]
+  const my = (y1 + y2) / 2 + labelOffset[1]
+  return (
+    <g>
+      <defs>
+        <marker id="ah" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6 Z" fill={stroke} />
+        </marker>
+        <marker id="ah2" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto-start-reverse">
+          <path d="M0,0 L6,3 L0,6 Z" fill={stroke} />
+        </marker>
+      </defs>
+      <line x1={x1} y1={y1} x2={x2} y2={y2} stroke={stroke} strokeWidth={1} markerEnd="url(#ah)" markerStart="url(#ah2)" />
+      {label && <text x={mx} y={my} textAnchor="middle" fontSize={9} fill={stroke} fontFamily="monospace" fontWeight="700">{label}</text>}
+    </g>
+  )
+}
+
+function SchemaCote({ f }) {
+  const L  = parseFloat(f.longueur)  || 0  // largeur totale
+  const P  = parseFloat(f.largeur)   || 0  // profondeur totale
+  const H  = parseFloat(f.hauteur)   || 0  // hauteur totale
+  const hP = parseFloat(f.hauteurPied)    || Math.round(H * 0.10)
+  const pA = parseFloat(f.profAssise)     || Math.round(P * 0.6)
+  const eD = parseFloat(f.largeurDossier) || Math.round(P * 0.18)
+  const hA = Math.round(H * 0.40)  // hauteur assise estimée
+
+  if (!L || !P || !H) return (
+    <div style={{ textAlign: 'center', color: '#94a3b8', fontSize: 12, padding: 20, border: '1px dashed #cbd5e1', borderRadius: 6 }}>
+      ✏️ Renseignez Longueur + Largeur + Hauteur pour générer le schéma coté automatiquement.
+    </div>
+  )
+
+  const PAD = 34  // marge pour flèches
+
+  // ── Vue FACE (L × H) ──
+  const F_W = 180, F_H = 120
+  const sfx = F_W / L, sfy = F_H / H
+  const sf  = Math.min(sfx, sfy)
+  const fW  = L * sf, fH = H * sf
+  const fOx = PAD, fOy = PAD
+  const fAcc = Math.round(L * 0.10) * sf     // largeur accoudoir en px
+  const fDos = Math.round(H * 0.62) * sf     // hauteur dossier en px
+  const fPied= hP * sf                        // hauteur pied en px
+  const fHas = hA * sf                        // hauteur assise en px
+
+  // ── Vue PROFIL (P × H) ──
+  const P_W = 120, P_H = 120
+  const ppx = P_W / P, ppy = P_H / H
+  const sp  = Math.min(ppx, ppy)
+  const pW  = P * sp, pH = H * sp
+  const pOx = fOx + fW + PAD + 20, pOy = PAD
+  const pDos = eD * sp                        // épaisseur dossier en px
+  const pAs  = pA * sp                        // profondeur assise en px
+  const pPied= hP * sp
+  const pHas = hA * sp
+
+  // ── Vue DESSUS (L × P) ──
+  const D_W = 180, D_H = 100
+  const dx = D_W / L, dy = D_H / P
+  const sd  = Math.min(dx, dy)
+  const dW  = L * sd, dH = P * sd
+  const dOx = fOx, dOy = fOy + fH + PAD + 30
+  const dAcc = Math.round(L * 0.10) * sd
+  const dDos = eD * sd
+
+  const svgW = pOx + pW + PAD + 10
+  const svgH = dOy + dH + PAD + 10
+
+  return (
+    <div style={{ overflowX: 'auto' }}>
+      <svg width={svgW} height={svgH} style={{ display: 'block', margin: '0 auto', maxWidth: '100%' }}>
+
+        {/* ───── VUE FACE ───── */}
+        <text x={fOx} y={fOy - 18} fontSize={10} fontWeight={700} fill="#475569" fontFamily="sans-serif">VUE DE FACE</text>
+
+        {/* Pieds */}
+        <rect x={fOx + fAcc} y={fOy + fH - fPied} width={fW - 2*fAcc} height={fPied} fill="#d1d5db" stroke="#6b7280" strokeWidth={1} />
+        {/* Assise */}
+        <rect x={fOx + fAcc} y={fOy + fH - fPied - fHas} width={fW - 2*fAcc} height={fHas} fill="#bfdbfe" stroke="#3b82f6" strokeWidth={1.5} />
+        {/* Dossier */}
+        <rect x={fOx + fAcc} y={fOy} width={fW - 2*fAcc} height={fH - fPied - fHas} fill="#93c5fd" stroke="#3b82f6" strokeWidth={1.5} />
+        {/* Accoudoir gauche */}
+        <rect x={fOx} y={fOy} width={fAcc} height={fH - fPied} fill="#bfdbfe" stroke="#3b82f6" strokeWidth={1.5} />
+        {/* Accoudoir droit */}
+        <rect x={fOx + fW - fAcc} y={fOy} width={fAcc} height={fH - fPied} fill="#bfdbfe" stroke="#3b82f6" strokeWidth={1.5} />
+
+        {/* Flèche largeur (bas) */}
+        <line x1={fOx} y1={fOy + fH + 16} x2={fOx + fW} y2={fOy + fH + 16} stroke="#0f172a" strokeWidth={1} markerEnd="url(#ah)" markerStart="url(#ah2)" />
+        <text x={fOx + fW/2} y={fOy + fH + 28} textAnchor="middle" fontSize={9} fill="#0f172a" fontFamily="monospace" fontWeight={700}>{L} cm</text>
+        {/* Flèche hauteur (gauche) */}
+        <line x1={fOx - 16} y1={fOy} x2={fOx - 16} y2={fOy + fH} stroke="#0f172a" strokeWidth={1} markerEnd="url(#ah)" markerStart="url(#ah2)" />
+        <text x={fOx - 28} y={fOy + fH/2} textAnchor="middle" fontSize={9} fill="#0f172a" fontFamily="monospace" fontWeight={700} transform={`rotate(-90,${fOx-28},${fOy + fH/2})`}>{H} cm</text>
+        {/* Cote hauteur assise */}
+        <line x1={fOx + fW + 8} y1={fOy + fH - fPied} x2={fOx + fW + 8} y2={fOy + fH - fPied - fHas} stroke="#C4714F" strokeWidth={1} strokeDasharray="3,2" markerEnd="url(#ah)" markerStart="url(#ah2)" />
+        <text x={fOx + fW + 20} y={fOy + fH - fPied - fHas/2} textAnchor="start" fontSize={8} fill="#C4714F" fontFamily="monospace">{hA}cm</text>
+
+        {/* Légende */}
+        <rect x={fOx} y={fOy + fH + 36} width={8} height={8} fill="#bfdbfe" stroke="#3b82f6" strokeWidth={1} />
+        <text x={fOx + 12} y={fOy + fH + 44} fontSize={8} fill="#475569" fontFamily="sans-serif">Assise / dossier</text>
+        <text x={fOx + 90} y={fOy + fH + 44} fontSize={8} fill="#C4714F" fontFamily="monospace" fontWeight={700}>↕ Haut. assise</text>
+
+        {/* ───── VUE PROFIL ───── */}
+        <text x={pOx} y={pOy - 18} fontSize={10} fontWeight={700} fill="#475569" fontFamily="sans-serif">VUE DE PROFIL</text>
+
+        {/* Pied */}
+        <rect x={pOx + pDos} y={pOy + pH - pPied} width={pW - pDos} height={pPied} fill="#d1d5db" stroke="#6b7280" strokeWidth={1} />
+        {/* Assise */}
+        <rect x={pOx + pDos} y={pOy + pH - pPied - pHas} width={pAs} height={pHas} fill="#bfdbfe" stroke="#3b82f6" strokeWidth={1.5} />
+        {/* Dossier */}
+        <rect x={pOx} y={pOy} width={pDos} height={pH - pPied} fill="#93c5fd" stroke="#3b82f6" strokeWidth={1.5} />
+
+        {/* Flèche profondeur */}
+        <line x1={pOx} y1={pOy + pH + 16} x2={pOx + pW} y2={pOy + pH + 16} stroke="#0f172a" strokeWidth={1} markerEnd="url(#ah)" markerStart="url(#ah2)" />
+        <text x={pOx + pW/2} y={pOy + pH + 28} textAnchor="middle" fontSize={9} fill="#0f172a" fontFamily="monospace" fontWeight={700}>{P} cm</text>
+        {/* Flèche hauteur */}
+        <line x1={pOx - 16} y1={pOy} x2={pOx - 16} y2={pOy + pH} stroke="#0f172a" strokeWidth={1} markerEnd="url(#ah)" markerStart="url(#ah2)" />
+        <text x={pOx - 28} y={pOy + pH/2} textAnchor="middle" fontSize={9} fill="#0f172a" fontFamily="monospace" fontWeight={700} transform={`rotate(-90,${pOx-28},${pOy + pH/2})`}>{H} cm</text>
+        {/* Cote profondeur assise */}
+        <line x1={pOx + pDos} y1={pOy + pH - pPied - pHas - 10} x2={pOx + pDos + pAs} y2={pOy + pH - pPied - pHas - 10} stroke="#C4714F" strokeWidth={1} strokeDasharray="3,2" markerEnd="url(#ah)" markerStart="url(#ah2)" />
+        <text x={pOx + pDos + pAs/2} y={pOy + pH - pPied - pHas - 16} textAnchor="middle" fontSize={8} fill="#C4714F" fontFamily="monospace">{pA}cm</text>
+
+        {/* ───── VUE DESSUS ───── */}
+        <text x={dOx} y={dOy - 6} fontSize={10} fontWeight={700} fill="#475569" fontFamily="sans-serif">VUE DE DESSUS</text>
+
+        {/* Dossier */}
+        <rect x={dOx + dAcc} y={dOy} width={dW - 2*dAcc} height={dDos} fill="#93c5fd" stroke="#3b82f6" strokeWidth={1.5} />
+        {/* Assise */}
+        <rect x={dOx + dAcc} y={dOy + dDos} width={dW - 2*dAcc} height={dH - dDos} fill="#bfdbfe" stroke="#3b82f6" strokeWidth={1.5} />
+        {/* Accoudoir gauche */}
+        <rect x={dOx} y={dOy} width={dAcc} height={dH} fill="#bfdbfe" stroke="#3b82f6" strokeWidth={1.5} />
+        {/* Accoudoir droit */}
+        <rect x={dOx + dW - dAcc} y={dOy} width={dAcc} height={dH} fill="#bfdbfe" stroke="#3b82f6" strokeWidth={1.5} />
+
+        {/* Flèche largeur */}
+        <line x1={dOx} y1={dOy + dH + 16} x2={dOx + dW} y2={dOy + dH + 16} stroke="#0f172a" strokeWidth={1} markerEnd="url(#ah)" markerStart="url(#ah2)" />
+        <text x={dOx + dW/2} y={dOy + dH + 28} textAnchor="middle" fontSize={9} fill="#0f172a" fontFamily="monospace" fontWeight={700}>{L} cm</text>
+        {/* Flèche profondeur */}
+        <line x1={dOx - 16} y1={dOy} x2={dOx - 16} y2={dOy + dH} stroke="#0f172a" strokeWidth={1} markerEnd="url(#ah)" markerStart="url(#ah2)" />
+        <text x={dOx - 28} y={dOy + dH/2} textAnchor="middle" fontSize={9} fill="#0f172a" fontFamily="monospace" fontWeight={700} transform={`rotate(-90,${dOx-28},${dOy + dH/2})`}>{P} cm</text>
+
+        {/* Indicateur Nord (haut = face avant) */}
+        <text x={dOx + dW/2} y={dOy - 6} textAnchor="middle" fontSize={8} fill="#94a3b8" fontFamily="sans-serif">← avant →</text>
+
+      </svg>
+      <div style={{ textAlign: 'center', fontSize: 10, color: '#94a3b8', marginTop: 4 }}>
+        Schéma généré automatiquement · cotes en centimètres · non contractuel
+      </div>
+    </div>
+  )
+}
+
+// ─── CANVAS CROQUIS MAIN ─────────────────────────────────────────
+function CanvasCroquis({ height = 160 }) {
+  const ref = useRef(null)
+  const drawing = useRef(false)
+  const last = useRef(null)
+
+  useEffect(() => {
+    const c = ref.current
+    if (!c) return
+    const ctx = c.getContext('2d')
+    ctx.lineWidth = 2
+    ctx.lineCap = 'round'
+    ctx.strokeStyle = '#0f172a'
+  }, [])
+
+  const pos = (e, c) => {
+    const r = c.getBoundingClientRect()
+    const src = e.touches ? e.touches[0] : e
+    return { x: src.clientX - r.left, y: src.clientY - r.top }
+  }
+
+  const down = useCallback(e => {
+    const c = ref.current; if (!c) return
+    e.preventDefault()
+    drawing.current = true
+    last.current = pos(e, c)
+    const ctx = c.getContext('2d')
+    ctx.beginPath()
+    ctx.moveTo(last.current.x, last.current.y)
+  }, [])
+
+  const move = useCallback(e => {
+    if (!drawing.current) return
+    const c = ref.current; if (!c) return
+    e.preventDefault()
+    const ctx = c.getContext('2d')
+    const p = pos(e, c)
+    ctx.lineTo(p.x, p.y)
+    ctx.stroke()
+    last.current = p
+  }, [])
+
+  const up = useCallback(() => { drawing.current = false }, [])
+
+  const clear = () => {
+    const c = ref.current; if (!c) return
+    c.getContext('2d').clearRect(0, 0, c.width, c.height)
+  }
+
+  return (
+    <div style={{ position: 'relative' }}>
+      <canvas
+        ref={ref}
+        width={560} height={height}
+        onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerLeave={up}
+        style={{ width: '100%', height, border: '1px dashed #94a3b8', borderRadius: 6, cursor: 'crosshair', touchAction: 'none', background: '#fafafa', display: 'block' }}
+      />
+      <button onClick={clear} className="no-print" style={{ position: 'absolute', top: 4, right: 4, background: 'rgba(255,255,255,.85)', border: '1px solid #e2e8f0', borderRadius: 6, padding: '2px 8px', fontSize: 10, cursor: 'pointer', fontFamily: 'inherit' }}>🗑️ Effacer</button>
+      <div style={{ fontSize: 9, color: '#94a3b8', marginTop: 2 }}>✏️ Dessiner à main levée (doigt ou stylet)</div>
+    </div>
+  )
+}
+
+// ─── UPLOAD PHOTO TISSU ──────────────────────────────────────────
+function PhotoTissu() {
+  const [photos, setPhotos] = useState([])
+  const inp = useRef(null)
+
+  const onFile = e => {
+    const files = Array.from(e.target.files || [])
+    files.forEach(f => {
+      const r = new FileReader()
+      r.onload = ev => setPhotos(prev => [...prev, ev.target.result])
+      r.readAsDataURL(f)
+    })
+    e.target.value = ''
+  }
+
+  const drop = e => {
+    e.preventDefault()
+    const files = Array.from(e.dataTransfer.files || [])
+    files.forEach(f => {
+      const r = new FileReader()
+      r.onload = ev => setPhotos(prev => [...prev, ev.target.result])
+      r.readAsDataURL(f)
+    })
+  }
+
+  return (
+    <div>
+      <div
+        onDrop={drop} onDragOver={e => e.preventDefault()}
+        onClick={() => inp.current?.click()}
+        style={{ border: '2px dashed #cbd5e1', borderRadius: 8, padding: '14px 10px', textAlign: 'center', cursor: 'pointer', background: '#f8fafc', marginBottom: 8 }}
+      >
+        <div style={{ fontSize: 22 }}>🧵</div>
+        <div style={{ fontSize: 11, color: '#475569', marginTop: 2 }}>Cliquer ou glisser une photo de tissu / cuir</div>
+        <input ref={inp} type="file" accept="image/*" multiple onChange={onFile} style={{ display: 'none' }} />
+      </div>
+      {photos.length > 0 && (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+          {photos.map((src, i) => (
+            <div key={i} style={{ position: 'relative' }}>
+              <img src={src} alt="" style={{ width: 72, height: 72, objectFit: 'cover', borderRadius: 6, border: '1px solid #e2e8f0' }} />
+              <button onClick={() => setPhotos(p => p.filter((_, j) => j !== i))} className="no-print"
+                style={{ position: 'absolute', top: 2, right: 2, width: 16, height: 16, background: 'rgba(0,0,0,.6)', color: '#fff', border: 'none', borderRadius: '50%', fontSize: 9, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
 
 // ─────────────────────────────────────────────────────────────────
 //  FICHE DE PRODUCTION — vue ouvrier (tablette) + impression A4
@@ -99,16 +370,23 @@ export default function FicheProduction({ artId, onClose }) {
             </div>
           </div>
           <div style={{ ...S.section, flex: 1, marginBottom: 0 }}>
-            <div style={S.head}>Article</div>
-            <div style={{ ...S.body, display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+            <div style={S.head}>Article · صورة المنتج</div>
+            <div style={{ ...S.body, padding: 0 }}>
+              {/* Photo produit réelle — grande et centrale */}
               {art.photo
-                ? <img src={art.photo} alt="" style={{ width: 80, height: 80, objectFit: 'cover', borderRadius: 6, border: '1px solid #cbd5e1', flexShrink: 0 }} />
-                : <div style={{ width: 80, height: 80, borderRadius: 6, border: '1px dashed #cbd5e1', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 30, flexShrink: 0 }}>{at.e}</div>}
-              <div>
+                ? <img src={art.photo} alt={art.nom}
+                    style={{ width: '100%', height: 140, objectFit: 'cover', display: 'block', borderBottom: '1px solid #e2e8f0' }}
+                  />
+                : <div style={{ height: 110, background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 4, borderBottom: '1px solid #e2e8f0' }}>
+                    <span style={{ fontSize: 42 }}>{at.e}</span>
+                    <span style={{ fontSize: 10, color: '#94a3b8' }}>Photo non disponible</span>
+                  </div>
+              }
+              <div style={{ padding: '8px 10px' }}>
                 <div style={{ fontSize: 15, fontWeight: 800 }}>{fmt(art.nom)}</div>
-                <div style={{ fontSize: 12, color: '#475569', marginTop: 2 }}>{at.e} Atelier {at.n}</div>
+                <div style={{ fontSize: 11, color: '#475569', marginTop: 2 }}>{at.e} Atelier {at.n}</div>
                 {wf && <div style={{ fontSize: 11, color: '#64748b', marginTop: 2 }}>{wf.icon} {wf.nom}</div>}
-                {art.dim && <div style={{ fontSize: 11, color: '#C4714F', marginTop: 2 }}>{art.dim}</div>}
+                {art.dim && <div style={{ fontSize: 11, color: '#C4714F', marginTop: 3, fontFamily: 'monospace' }}>{art.dim}</div>}
               </div>
             </div>
           </div>
@@ -172,15 +450,39 @@ export default function FicheProduction({ artId, onClose }) {
           </div>
         </div>
 
-        {/* SCHÉMA / PLAN */}
+        {/* SCHÉMA COTÉ — 3 VUES AUTOMATIQUES */}
         <div style={S.section}>
-          <div style={S.head}>Schéma / Croquis</div>
+          <div style={S.head}>📐 Schéma coté — 3 vues · الرسم التقني</div>
           <div style={S.body}>
-            {f.ficheMesureUrl
-              ? <img src={f.ficheMesureUrl} alt="schéma" style={{ maxWidth: '100%', maxHeight: 260, borderRadius: 6, border: '1px solid #cbd5e1' }} />
-              : <div style={{ height: 120, border: '1px dashed #cbd5e1', borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8', fontSize: 12 }}>Zone schéma / croquis — à compléter</div>}
+            <SchemaCote f={f} />
           </div>
         </div>
+
+        {/* CROQUIS + PHOTO TISSU côte à côte */}
+        <div style={{ display: 'flex', gap: 10, marginBottom: 10 }}>
+          <div style={{ ...S.section, flex: 2, marginBottom: 0 }}>
+            <div style={S.head}>✏️ Croquis à main levée · رسم يدوي</div>
+            <div style={S.body}>
+              <CanvasCroquis height={150} />
+            </div>
+          </div>
+          <div style={{ ...S.section, flex: 1, marginBottom: 0 }}>
+            <div style={S.head}>🧵 Photo tissu / cuir · صورة القماش</div>
+            <div style={S.body}>
+              <PhotoTissu />
+            </div>
+          </div>
+        </div>
+
+        {/* Photo schéma mesuré si uploadée */}
+        {f.ficheMesureUrl && (
+          <div style={S.section}>
+            <div style={S.head}>📎 Fiche mesures jointe</div>
+            <div style={S.body}>
+              <img src={f.ficheMesureUrl} alt="schéma" style={{ maxWidth: '100%', maxHeight: 260, borderRadius: 6, border: '1px solid #cbd5e1' }} />
+            </div>
+          </div>
+        )}
 
         {/* GAMME DE FABRICATION */}
         <div style={S.section}>

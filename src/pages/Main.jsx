@@ -7,16 +7,18 @@ import Achat from './Achat'
 import Rentabilite from './Rentabilite'
 import Planning from './Planning'
 import Devis from './Devis'
+import Catalogue from './Catalogue'
 
 const TABS = [
-  { id: 'orders',   ic: '📋', l: 'Commandes', roles: ['admin','production','commercial','livraison'] },
-  { id: 'devis',    ic: '📝', l: 'Devis',     roles: ['admin','commercial','production','livraison','magasin'] },
-  { id: 'team',     ic: '👷', l: 'Equipe',    roles: ['admin','production'] },
-  { id: 'achat',    ic: '🛒', l: 'Achats',    roles: ['admin','production','magasin'] },
-  { id: 'rent',     ic: '📊', l: 'Rentab.',   roles: ['admin'] },
-  { id: 'planning', ic: '🗓️', l: 'Planning',  roles: ['admin','production'] },
-  { id: 'alerts',   ic: '🔔', l: 'Alertes',   roles: ['admin','production','commercial','livraison','magasin'] },
-  { id: 'admin',    ic: '⚙️', l: 'Admin',     roles: ['admin'] },
+  { id: 'orders',    ic: '📋', l: 'Commandes', roles: ['admin','production','commercial','livraison'] },
+  { id: 'catalogue', ic: '🛋️', l: 'Catalogue', roles: ['admin','production','commercial','livraison','magasin'] },
+  { id: 'devis',     ic: '📝', l: 'Devis',     roles: ['admin','commercial','production','livraison','magasin'] },
+  { id: 'team',      ic: '👷', l: 'Equipe',    roles: ['admin','production'] },
+  { id: 'achat',     ic: '🛒', l: 'Achats',    roles: ['admin','production','magasin'] },
+  { id: 'rent',      ic: '📊', l: 'Rentab.',   roles: ['admin'] },
+  { id: 'planning',  ic: '🗓️', l: 'Planning',  roles: ['admin','production'] },
+  { id: 'alerts',    ic: '🔔', l: 'Alertes',   roles: ['admin','production','commercial','livraison','magasin'] },
+  { id: 'admin',     ic: '⚙️', l: 'Admin',     roles: ['admin'] },
 ]
 
 function Clock() {
@@ -41,7 +43,7 @@ export default function Main() {
   // pas de second intervalle ici pour éviter les requêtes en double sans token.
 
   const visibleTabs = TABS.filter(t => t.roles.includes(user?.role))
-  const activeTab = ['cmd','art'].includes(tab) ? 'orders' : tab
+  const activeTab = ['cmd','art'].includes(tab) ? 'orders' : tab === 'catalogue' ? 'catalogue' : tab
 
   const syncAgo = ordersLastSync
     ? Math.floor((Date.now() - new Date(ordersLastSync)) / 60000) + 'min'
@@ -65,16 +67,17 @@ export default function Main() {
 
       {/* PAGE */}
       <div className="body">
-        {tab === 'orders'   && <Orders />}
-        {tab === 'cmd'      && <Cmd />}
-        {tab === 'art'      && <ArtDetail />}
-        {tab === 'team'     && <Team />}
-        {tab === 'achat'    && <Achat />}
-        {tab === 'rent'     && user?.role === 'admin' && <Rentabilite />}
-        {tab === 'planning' && <Planning />}
-        {tab === 'devis'    && <Devis />}
-        {tab === 'alerts'   && <Alertes />}
-        {tab === 'admin'    && user?.role === 'admin' && <Admin />}
+        {tab === 'orders'    && <Orders />}
+        {tab === 'catalogue' && <Catalogue />}
+        {tab === 'cmd'       && <Cmd />}
+        {tab === 'art'       && <ArtDetail />}
+        {tab === 'team'      && <Team />}
+        {tab === 'achat'     && <Achat />}
+        {tab === 'rent'      && user?.role === 'admin' && <Rentabilite />}
+        {tab === 'planning'  && <Planning />}
+        {tab === 'devis'     && <Devis />}
+        {tab === 'alerts'    && <Alertes />}
+        {tab === 'admin'     && user?.role === 'admin' && <Admin />}
       </div>
 
       {/* NAV BAS NOIRE */}
