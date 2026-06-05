@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
 import { useApp } from '../store'
 import { atI } from '../data/employees'
 import FicheProduction from './FicheProduction'
@@ -8,7 +8,7 @@ import FicheProduction from './FicheProduction'
 // fetchOrders → art.photo). Un clic ouvre la fiche de production A4.
 
 export default function Catalogue() {
-  const { arts, orders } = useApp()
+  const { arts, orders, modelPhotos, setModelPhoto } = useApp()
   const [search, setSearch]       = useState('')
   const [ficheProd, setFicheProd] = useState(null)
   const [filterAt, setFilterAt]   = useState('all')
@@ -82,6 +82,7 @@ export default function Catalogue() {
         {models.map(([nomModel, artsList]) => {
           const rep = artsList.find(a => a.photo) || artsList[0]
           const at  = atI(rep.at)
+          const photo = rep.photo || modelPhotos[nomModel] || ''
 
           return (
             <ModelCard
@@ -90,8 +91,11 @@ export default function Catalogue() {
               rep={rep}
               artsList={artsList}
               at={at}
+              photo={photo}
+              fromCreajit={!!rep.photo}
               orders={orders}
               onOpenFiche={setFicheProd}
+              onSetPhoto={dataUrl => setModelPhoto(nomModel, dataUrl)}
             />
           )
         })}
@@ -108,51 +112,76 @@ export default function Catalogue() {
 }
 
 // ─── Carte modèle ─────────────────────────────────────────────────
-function ModelCard({ nomModel, rep, artsList, at, orders, onOpenFiche }) {
+function ModelCard({ nomModel, rep, artsList, at, photo, fromCreajit, orders, onOpenFiche, onSetPhoto }) {
   const [expanded, setExpanded] = useState(false)
+  const inp = useRef(null)
+
+  const handleFile = e => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const r = new FileReader()
+    r.onload = ev => onSetPhoto(ev.target.result)
+    r.readAsDataURL(file)
+    e.target.value = ''
+  }
+  const handleDrop = e => {
+    e.preventDefault()
+    const file = e.dataTransfer.files?.[0]
+    if (!file) return
+    const r = new FileReader()
+    r.onload = ev => onSetPhoto(ev.target.result)
+    r.readAsDataURL(file)
+  }
 
   return (
     <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 12, overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,.06)', display: 'flex', flexDirection: 'column' }}>
 
+      <input ref={inp} type="file" accept="image/*" onChange={handleFile} style={{ display: 'none' }} />
+
       {/* Photo ─ occupe 60% de la carte */}
-      <div
-        style={{ position: 'relative', height: 190, background: '#f8fafc', cursor: 'pointer', overflow: 'hidden' }}
-        onClick={() => onOpenFiche(rep.id)}
-      >
-        {rep.photo
-          ? <img src={rep.photo} alt={nomModel}
-              style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-              onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex' }}
-            />
-          : null
-        }
-        {/* Fallback si photo absente ou erreur */}
-        <div style={{
-          display: rep.photo ? 'none' : 'flex',
-          width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center',
-          flexDirection: 'column', gap: 6, color: '#94a3b8'
-        }}>
-          <span style={{ fontSize: 52 }}>{at.e}</span>
-          <span style={{ fontSize: 11 }}>{at.n}</span>
-        </div>
-        {/* Badge catégorie */}
-        <div style={{ position: 'absolute', top: 8, left: 8, background: 'rgba(0,0,0,.55)', color: '#fff', fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 20, backdropFilter: 'blur(4px)' }}>
-          {at.e} {at.n}
-        </div>
-        {/* Indicateur photo présente */}
-        {rep.photo && (
-          <div style={{ position: 'absolute', top: 8, right: 8, background: 'rgba(21,128,61,.8)', color: '#fff', fontSize: 9, fontWeight: 700, padding: '2px 7px', borderRadius: 20 }}>
-            📷 Photo réelle
+      {photo ? (
+        <div
+          style={{ position: 'relative', height: 190, background: '#f8fafc', cursor: 'pointer', overflow: 'hidden' }}
+          onClick={() => onOpenFiche(rep.id)}
+        >
+          <img src={photo} alt={nomModel} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+          {/* Badge catégorie */}
+          <div style={{ position: 'absolute', top: 8, left: 8, background: 'rgba(0,0,0,.55)', color: '#fff', fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 20 }}>
+            {at.e} {at.n}
           </div>
-        )}
-        {/* Overlay clic */}
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,.45) 0%, transparent 50%)', display: 'flex', alignItems: 'flex-end', padding: 10 }}>
-          <div>
-            <div style={{ color: '#fff', fontSize: 15, fontWeight: 800, textShadow: '0 1px 3px rgba(0,0,0,.6)' }}>{nomModel}</div>
-            {rep.dim && <div style={{ color: '#fbbf24', fontSize: 11, fontFamily: 'monospace' }}>{rep.dim}</div>}
+          {/* Indicateur source photo */}
+          <div style={{ position: 'absolute', top: 8, right: 8, background: 'rgba(21,128,61,.85)', color: '#fff', fontSize: 9, fontWeight: 700, padding: '2px 7px', borderRadius: 20 }}>
+            📷 {fromCreajit ? 'Photo CreaJit' : 'Photo ajoutée'}
+          </div>
+          {/* Bouton changer photo */}
+          <button
+            onClick={e => { e.stopPropagation(); inp.current?.click() }}
+            style={{ position: 'absolute', bottom: 8, right: 8, background: 'rgba(255,255,255,.9)', border: 'none', borderRadius: 6, padding: '4px 8px', fontSize: 10, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}
+          >✏️ Changer</button>
+          {/* Overlay nom */}
+          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,.45) 0%, transparent 45%)', display: 'flex', alignItems: 'flex-end', padding: 10, pointerEvents: 'none' }}>
+            <div>
+              <div style={{ color: '#fff', fontSize: 15, fontWeight: 800, textShadow: '0 1px 3px rgba(0,0,0,.6)' }}>{nomModel}</div>
+              {rep.dim && <div style={{ color: '#fbbf24', fontSize: 11, fontFamily: 'monospace' }}>{rep.dim}</div>}
+            </div>
           </div>
         </div>
-      </div>
+      ) : (
+        /* Pas de photo → zone de dépôt cliquable */
+        <div
+          onClick={() => inp.current?.click()}
+          onDrop={handleDrop} onDragOver={e => e.preventDefault()}
+          style={{ position: 'relative', height: 190, background: '#f8fafc', cursor: 'pointer', overflow: 'hidden', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, border: '2px dashed #cbd5e1' }}
+        >
+          <span style={{ fontSize: 40, opacity: .5 }}>{at.e}</span>
+          <div style={{ background: '#C4714F', color: '#fff', borderRadius: 8, padding: '7px 14px', fontSize: 12, fontWeight: 700 }}>📷 Ajouter la photo</div>
+          <span style={{ fontSize: 10, color: '#94a3b8' }}>cliquer ou glisser une image</span>
+          <div style={{ position: 'absolute', top: 8, left: 8, background: 'rgba(0,0,0,.55)', color: '#fff', fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 20 }}>
+            {at.e} {at.n}
+          </div>
+          <div style={{ position: 'absolute', bottom: 6, left: 0, right: 0, textAlign: 'center', fontSize: 13, fontWeight: 800, color: '#475569' }}>{nomModel}</div>
+        </div>
+      )}
 
       {/* Infos + commandes ─────────────────────────────────────── */}
       <div style={{ padding: '10px 12px', flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>

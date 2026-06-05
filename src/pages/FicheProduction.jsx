@@ -294,9 +294,12 @@ function stepWorkedMs(step) {
 }
 
 export default function FicheProduction({ artId, onClose }) {
-  const { arts, orders, stepProgress, mats, quals } = useApp()
+  const { arts, orders, stepProgress, mats, quals, modelPhotos } = useApp()
   const art = arts[artId]
   if (!art) return null
+
+  // Photo : CreaJit en priorité, sinon photo déposée à la main pour ce modèle
+  const photoUrl = art.photo || modelPhotos[(art.nom || '').trim().toUpperCase()] || ''
 
   const o = orders.find(x => x.ref === art.ref) || {}
   const f = art.fiche || {}
@@ -373,13 +376,13 @@ export default function FicheProduction({ artId, onClose }) {
             <div style={S.head}>Article · صورة المنتج</div>
             <div style={{ ...S.body, padding: 0 }}>
               {/* Photo produit réelle — grande et centrale */}
-              {art.photo
-                ? <img src={art.photo} alt={art.nom}
+              {photoUrl
+                ? <img src={photoUrl} alt={art.nom}
                     style={{ width: '100%', height: 140, objectFit: 'cover', display: 'block', borderBottom: '1px solid #e2e8f0' }}
                   />
                 : <div style={{ height: 110, background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 4, borderBottom: '1px solid #e2e8f0' }}>
                     <span style={{ fontSize: 42 }}>{at.e}</span>
-                    <span style={{ fontSize: 10, color: '#94a3b8' }}>Photo non disponible</span>
+                    <span style={{ fontSize: 10, color: '#94a3b8' }}>Ajouter la photo dans le Catalogue</span>
                   </div>
               }
               <div style={{ padding: '8px 10px' }}>
