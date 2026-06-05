@@ -1,15 +1,13 @@
 import React, { useState, useRef, useCallback } from 'react'
 import { EMP, AT, atI } from '../data/employees'
+import { CHARGES_FIXES_MENSUELLES, ART_PAR_MOIS as ART_PAR_MOIS_DEF, CHARGE_PAR_ARTICLE, MASSE_SAL_ATELIERS, NB_OUVRIERS_ATELIER } from '../data/constants'
 import { WORKFLOWS, ATELIERS_MAP, detectWorkflow, initSteps } from '../data/workflows'
 
-// ─── CONSTANTES CREAJIT ─────────────────────────────────────────────────────
-const CHARGES_FIXES = 157430.83   // DH/mois
-const MASSE_SAL_ATELIERS = 202800  // DH/mois
-const MASSE_SAL_TOTAL = 308300     // DH/mois
-const ART_PAR_MOIS = 40           // estimation articles produits/mois
-
-const CHARGE_PAR_ART = CHARGES_FIXES / ART_PAR_MOIS   // ~3935 DH/article
-const SAL_ATELIER_H  = MASSE_SAL_ATELIERS / (37 * 22 * 8)  // ~32 DH/h moyen
+// ─── CONSTANTES CREAJIT (source partagée: data/constants.js) ─────────────────
+const CHARGES_FIXES = CHARGES_FIXES_MENSUELLES   // DH/mois
+const ART_PAR_MOIS  = ART_PAR_MOIS_DEF           // estimation articles produits/mois
+const CHARGE_PAR_ART = CHARGE_PAR_ARTICLE        // ~3935 DH/article
+const SAL_ATELIER_H  = MASSE_SAL_ATELIERS / (NB_OUVRIERS_ATELIER * 22 * 8)  // DH/h moyen
 
 const dh = n => Math.round(n||0).toLocaleString('fr') + ' DH'
 const pct = (a,b) => b > 0 ? Math.round(a/b*100) : 0
@@ -609,7 +607,7 @@ Réponds en JSON UNIQUEMENT dans ce format exact :
           <div style={{ background:'var(--c2)', borderRadius:10, padding:12, fontSize:10, color:'var(--mu)', lineHeight:1.7 }}>
             <div style={{ fontWeight:700, marginBottom:4 }}>Contexte fourni à Claude IA :</div>
             <div>Charges fixes : {dh(CHARGES_FIXES)}/mois · {artMois} articles → {dh(CHARGES_FIXES/artMois)}/article</div>
-            <div>37 ouvriers ateliers · taux moyen {SAL_ATELIER_H.toFixed(0)} DH/h</div>
+            <div>{NB_OUVRIERS_ATELIER} ouvriers ateliers · taux moyen {SAL_ATELIER_H.toFixed(0)} DH/h</div>
             {wfId && WORKFLOWS[wfId] && <div>Famille : {WORKFLOWS[wfId].nom}</div>}
             {nomArt && <div>Article : {nomArt}</div>}
             {(fiche.l||fiche.la||fiche.h) && <div>Dimensions : L={fiche.l||'?'} la={fiche.la||'?'} H={fiche.h||'?'} cm</div>}

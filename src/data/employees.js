@@ -1,12 +1,12 @@
 // Base de données complète salariés ateliers CREAJIT
 // Source: Liste officielle 60 salariés — Mai 2026
-// 37 ouvriers de production · 208h/mois
+// 38 ouvriers de production · 208h/mois
 
 export const AT = [
   {id:'tapissier',  n:'Tapisserie',     e:'🧵', c:'#9B59B6'},
-  {id:'menuiserie', n:'Menuiserie',     e:'🪵', c:'#27AE60'},
+  {id:'menuisier',  n:'Menuiserie',     e:'🪵', c:'#27AE60'},
   {id:'peinture',   n:'Peinture',       e:'🎨', c:'#E67E22'},
-  {id:'ferroniere', n:'Ferronnerie',    e:'🔧', c:'#7F8C8D'},
+  {id:'ferronier',  n:'Ferronnerie',    e:'🔧', c:'#7F8C8D'},
   {id:'cuivre',     n:'Cuivre/Laiton',  e:'🟡', c:'#D4A017'},
   {id:'pierre',     n:'Pierre',         e:'🪨', c:'#8D6748'},
   {id:'resine',     n:'Polystyrène',    e:'💧', c:'#1ABC9C'},
@@ -28,16 +28,16 @@ export const EMP = [
   {id:'e38', num:38, n:'Mustapha Aourik',           at:'tapissier',  tx:24.0, sal:5000, poste:'Tapissier',                  paiement:'mois',    tel:null},
   {id:'e60', num:60, n:'Mohamad Marhoub',           at:'tapissier',  tx:28.8, sal:6000, poste:'Chef Tapissier',             paiement:'mois',    tel:'+212696188040'},
   // ─── MENUISERIE (10) ─────────────────────────────────────────
-  {id:'e14', num:14, n:'Ayoub Chair',               at:'menuiserie', tx:28.8, sal:6000, poste:'Chef Atelier Menuiserie',    paiement:'mois',    tel:'+212698578474'},
-  {id:'e25', num:25, n:'Khalid El Boudy',           at:'menuiserie', tx:26.4, sal:5500, poste:'Menuisier',                  paiement:'mois',    tel:null},
-  {id:'e35', num:35, n:'Souhail Sakat',             at:'menuiserie', tx:24.0, sal:5000, poste:'Menuisier',                  paiement:'mois',    tel:null},
-  {id:'e37', num:37, n:'Mourad Zemit',              at:'menuiserie', tx:24.0, sal:5000, poste:'Menuisier',                  paiement:'semaine', tel:null},
-  {id:'e39', num:39, n:'Abdelhadi Bouchfer',        at:'menuiserie', tx:24.0, sal:5000, poste:'Menuisier',                  paiement:'semaine', tel:null},
-  {id:'e40', num:40, n:'Said Chnitifa',             at:'menuiserie', tx:38.5, sal:8000, poste:'Menuisier',                  paiement:'mois',    tel:'+212606394015'},
-  {id:'e46', num:46, n:'Khalid Houfati',            at:'menuiserie', tx:24.0, sal:5000, poste:'Menuisier',                  paiement:'semaine', tel:null},
-  {id:'e49', num:49, n:'Abdelaati Lafdili',         at:'menuiserie', tx:24.0, sal:5000, poste:'Menuisier',                  paiement:'semaine', tel:null},
-  {id:'e51', num:51, n:'Redouan Houfati',           at:'menuiserie', tx:24.0, sal:5000, poste:'Menuisier',                  paiement:'semaine', tel:null},
-  {id:'e57', num:57, n:'El Mahdi Bahaj',            at:'menuiserie', tx:24.0, sal:5000, poste:'Menuisier',                  paiement:'semaine', tel:null},
+  {id:'e14', num:14, n:'Ayoub Chair',               at:'menuisier', tx:28.8, sal:6000, poste:'Chef Atelier Menuiserie',    paiement:'mois',    tel:'+212698578474'},
+  {id:'e25', num:25, n:'Khalid El Boudy',           at:'menuisier', tx:26.4, sal:5500, poste:'Menuisier',                  paiement:'mois',    tel:null},
+  {id:'e35', num:35, n:'Souhail Sakat',             at:'menuisier', tx:24.0, sal:5000, poste:'Menuisier',                  paiement:'mois',    tel:null},
+  {id:'e37', num:37, n:'Mourad Zemit',              at:'menuisier', tx:24.0, sal:5000, poste:'Menuisier',                  paiement:'semaine', tel:null},
+  {id:'e39', num:39, n:'Abdelhadi Bouchfer',        at:'menuisier', tx:24.0, sal:5000, poste:'Menuisier',                  paiement:'semaine', tel:null},
+  {id:'e40', num:40, n:'Said Chnitifa',             at:'menuisier', tx:38.5, sal:8000, poste:'Menuisier',                  paiement:'mois',    tel:'+212606394015'},
+  {id:'e46', num:46, n:'Khalid Houfati',            at:'menuisier', tx:24.0, sal:5000, poste:'Menuisier',                  paiement:'semaine', tel:null},
+  {id:'e49', num:49, n:'Abdelaati Lafdili',         at:'menuisier', tx:24.0, sal:5000, poste:'Menuisier',                  paiement:'semaine', tel:null},
+  {id:'e51', num:51, n:'Redouan Houfati',           at:'menuisier', tx:24.0, sal:5000, poste:'Menuisier',                  paiement:'semaine', tel:null},
+  {id:'e57', num:57, n:'El Mahdi Bahaj',            at:'menuisier', tx:24.0, sal:5000, poste:'Menuisier',                  paiement:'semaine', tel:null},
   // ─── PEINTURE (5) ────────────────────────────────────────────
   {id:'e08', num:8,  n:'Mohamed Elkarmani',         at:'peinture',   tx:26.4, sal:5500, poste:'Peintre',                   paiement:'mois',    tel:'+212697735992'},
   {id:'e15', num:15, n:'Youssef Ben Elarradia',     at:'peinture',   tx:26.4, sal:5500, poste:'Peintre',                   paiement:'mois',    tel:null},
@@ -45,10 +45,10 @@ export const EMP = [
   {id:'e47', num:47, n:'Abdelaaziz Ben Amer',       at:'peinture',   tx:24.0, sal:5000, poste:'Peintre',                   paiement:'mois',    tel:null},
   {id:'e48', num:48, n:'Mouad Elmaamlem',           at:'peinture',   tx:19.2, sal:4000, poste:'Peintre',                   paiement:'mois',    tel:null},
   // ─── FERRONNERIE & SOUDURE (4) ──────────────────────────────
-  {id:'e19', num:19, n:'Mohamed Boualili',          at:'ferroniere', tx:26.4, sal:5500, poste:'Ferronier',                  paiement:'mois',    tel:null},
-  {id:'e30', num:30, n:'Abdelghani Malih',          at:'ferroniere', tx:24.0, sal:5000, poste:'Ferronier',                  paiement:'mois',    tel:null},
-  {id:'e20', num:20, n:'Yassine Madidi',            at:'ferroniere', tx:24.0, sal:5000, poste:'Soudeur',                    paiement:'mois',    tel:'+212677246864'},
-  {id:'e59', num:59, n:'Adil Rehaimine',            at:'ferroniere', tx:24.0, sal:5000, poste:'Soudeur',                    paiement:'mois',    tel:'+212699029233'},
+  {id:'e19', num:19, n:'Mohamed Boualili',          at:'ferronier', tx:26.4, sal:5500, poste:'Ferronier',                  paiement:'mois',    tel:null},
+  {id:'e30', num:30, n:'Abdelghani Malih',          at:'ferronier', tx:24.0, sal:5000, poste:'Ferronier',                  paiement:'mois',    tel:null},
+  {id:'e20', num:20, n:'Yassine Madidi',            at:'ferronier', tx:24.0, sal:5000, poste:'Soudeur',                    paiement:'mois',    tel:'+212677246864'},
+  {id:'e59', num:59, n:'Adil Rehaimine',            at:'ferronier', tx:24.0, sal:5000, poste:'Soudeur',                    paiement:'mois',    tel:'+212699029233'},
   // ─── CUIVRE (1) ──────────────────────────────────────────────
   {id:'e06', num:6,  n:'Noureddine Ouzzat',         at:'cuivre',     tx:28.8, sal:6000, poste:'Chef Atelier Cuivre',        paiement:'mois',    tel:'+212670560259'},
   // ─── PIERRE (3) ──────────────────────────────────────────────
@@ -65,6 +65,5 @@ export const EMP = [
 export const atI = (id) => AT.find(a => a.id === id) || AT[0]
 export const ini = (n) => (n || '?').split(' ').map(w => w[0] || '').join('').slice(0, 2).toUpperCase()
 
-// Totaux masse salariale atelier
+// Totaux masse salariale atelier (calculé depuis la liste réelle ci-dessus)
 export const MASSE_SALARIALE_ATELIER = EMP.reduce((s, e) => s + e.sal, 0)
-// → 197 900 DH/mois

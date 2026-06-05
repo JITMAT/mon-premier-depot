@@ -53,6 +53,7 @@ export const useApp = create(persist(
     achats: {},      // { artId: [ { id, nom, ... } ] }
     valRecep: {},    // { key: { validePar, date } }
     stepProgress: {}, // { artId: [ step1, step2, ... ] }
+    modelPhotos: {}, // { 'NOM MODELE': dataURL }  — photos déposées à la main, partagées par tous les articles du même modèle
 
     // UI state
     tab: 'orders',
@@ -272,6 +273,27 @@ export const useApp = create(persist(
       const arts = { ...get().arts, [id]: { ...get().arts[id], ...changes } }
       set({ arts })
     },
+
+    // Photo modèle déposée à la main (persistée, partagée par tous les articles du même nom)
+    setModelPhoto: (nomModel, dataUrl) => {
+      const key = (nomModel || '').trim().toUpperCase()
+      if (!key) return
+      const modelPhotos = { ...get().modelPhotos, [key]: dataUrl }
+      set({ modelPhotos })
+    },
+    delModelPhoto: (nomModel) => {
+      const key = (nomModel || '').trim().toUpperCase()
+      const modelPhotos = { ...get().modelPhotos }
+      delete modelPhotos[key]
+      set({ modelPhotos })
+    },
+    // Récupère la meilleure photo pour un article : photo CreaJit > photo modèle déposée
+    photoFor: (art) => {
+      if (!art) return ''
+      if (art.photo) return art.photo
+      const key = (art.nom || '').trim().toUpperCase()
+      return get().modelPhotos[key] || ''
+    },
     deleteArt: (id) => {
       const arts = { ...get().arts }
       delete arts[id]
@@ -327,6 +349,8 @@ export const useApp = create(persist(
       quals: state.quals,
       achats: state.achats,
       valRecep: state.valRecep,
+      stepProgress: state.stepProgress,
+      modelPhotos: state.modelPhotos,
       ordersLastSync: state.ordersLastSync,
     })
   }

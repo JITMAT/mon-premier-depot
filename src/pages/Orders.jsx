@@ -27,12 +27,12 @@ export default function Orders() {
   const [showFilters, setShowFilters] = useState(false)
 
   const retards = orders.filter(o => o.late).length
-  const totalSol = orders.reduce((s, o) => s + o.sol, 0)
+  const totalSol = orders.reduce((s, o) => s + (o.sol || 0), 0)
 
   const filtered = useMemo(() => {
     let list = orders.filter(o => {
       const q = search.toLowerCase()
-      if (q && !o.cl.toLowerCase().includes(q) && !o.ref.includes(q) && !o.com.toLowerCase().includes(q)) return false
+      if (q && !(o.cl||'').toLowerCase().includes(q) && !(o.ref||'').includes(q) && !(o.com||'').toLowerCase().includes(q)) return false
       if (filterStatus === 'late' && !o.late) return false
       if (filterStatus === 'confirmed' && o.status !== 'confirmed') return false
       if (filterStatus === 'ready' && o.status !== 'ready') return false
@@ -61,9 +61,9 @@ export default function Orders() {
         if (!b.liv) return -1
         return new Date(a.liv) - new Date(b.liv)
       }
-      if (sortBy === 'retard') return b.j - a.j
-      if (sortBy === 'com') return a.com.localeCompare(b.com)
-      if (sortBy === 'total') return b.tot - a.tot
+      if (sortBy === 'retard') return (b.j||0) - (a.j||0)
+      if (sortBy === 'com') return (a.com||'').localeCompare(b.com||'')
+      if (sortBy === 'total') return (b.tot||0) - (a.tot||0)
       return 0
     })
 

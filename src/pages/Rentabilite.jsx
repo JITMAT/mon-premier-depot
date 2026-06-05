@@ -30,6 +30,7 @@ const HORS_ATELIERS = [
   { cat:'Livreur',          noms:'Abdelhakim El Harti',                                 nb:1, total:5000,  ic:'🚚' },
 ]
 const MASSE_SAL_HORS = HORS_ATELIERS.reduce((s, c) => s + c.total, 0)
+const NB_HORS = HORS_ATELIERS.reduce((s, c) => s + c.nb, 0)
 const MASSE_SAL_TOTALE = MASSE_SAL_ATELIERS + MASSE_SAL_HORS
 const OBJECTIF_CA = 550000
 const JOURS_OUVR = 22
@@ -48,7 +49,7 @@ export default function Rentabilite() {
   // ── Calculs ──────────────────────────────────────────────────
   const totalChargesFixes = charges.reduce((s, c) => s + c.montant, 0)
   const totalCharges = totalChargesFixes + MASSE_SAL_TOTALE
-  const caMonth = orders.reduce((s, o) => s + o.tot, 0)
+  const caMonth = orders.reduce((s, o) => s + (o.tot || 0), 0)
   const resultat = caMonth - totalCharges
   const seuil = totalCharges
   const progSeuil = Math.min(100, pct(caMonth, OBJECTIF_CA))
@@ -155,7 +156,7 @@ export default function Rentabilite() {
           {/* Barre progression objectif */}
           <div style={{ background: 'var(--c1)', border: '1px solid var(--bd)', borderRadius: 10, padding: '12px 14px', marginBottom: 12 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6, fontSize: 12 }}>
-              <span style={{ fontWeight: 700 }}>Progression vers objectif 450k DH</span>
+              <span style={{ fontWeight: 700 }}>Progression vers objectif {Math.round(OBJECTIF_CA / 1000)}k DH</span>
               <span style={{ fontFamily: 'monospace', color: progSeuil >= 100 ? 'var(--gn)' : 'var(--yw)', fontWeight: 700 }}>{progSeuil}%</span>
             </div>
             <div style={{ height: 10, background: 'var(--bd)', borderRadius: 5, overflow: 'hidden', marginBottom: 6 }}>
@@ -172,7 +173,7 @@ export default function Rentabilite() {
           <div style={{ background: 'var(--c1)', border: '1px solid var(--bd)', borderRadius: 10, padding: '12px 14px', marginBottom: 12 }}>
             <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 10 }}>Décomposition des charges</div>
             {[
-              { l: 'Masse sal. ateliers (37)', v: MASSE_SAL_ATELIERS, c: '#9B59B6', pct2: pct(MASSE_SAL_ATELIERS, totalCharges) },
+              { l: `Masse sal. ateliers (${EMP.length})`, v: MASSE_SAL_ATELIERS, c: '#9B59B6', pct2: pct(MASSE_SAL_ATELIERS, totalCharges) },
               { l: 'Masse sal. hors ateliers (20)', v: MASSE_SAL_HORS, c: '#3498DB', pct2: pct(MASSE_SAL_HORS, totalCharges) },
               { l: 'Charges fixes', v: totalChargesFixes, c: '#C4714F', pct2: pct(totalChargesFixes, totalCharges) },
             ].map(r => (
@@ -187,7 +188,7 @@ export default function Rentabilite() {
               </div>
             ))}
             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8, paddingTop: 8, borderTop: '1px solid var(--bd)', fontSize: 12, fontWeight: 700 }}>
-              <span>TOTAL ({57 + 20} personnes)</span>
+              <span>TOTAL ({EMP.length + NB_HORS} personnes)</span>
               <span style={{ fontFamily: 'monospace', color: 'var(--rd)' }}>{dh(totalCharges)}</span>
             </div>
           </div>
