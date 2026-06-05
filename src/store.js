@@ -327,6 +327,7 @@ export const useApp = create(persist(
       quals: state.quals,
       achats: state.achats,
       valRecep: state.valRecep,
+      stepProgress: state.stepProgress,
       ordersLastSync: state.ordersLastSync,
     })
   }

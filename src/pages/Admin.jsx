@@ -260,7 +260,7 @@ export default function Admin() {
             <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--gn)', marginBottom: 8 }}>✅ API Connectée</div>
             <div style={{ fontSize: 11, color: 'var(--mu)', lineHeight: 1.6 }}>
               • Sync auto toutes les 5 minutes<br/>
-              • 11 ateliers surveillés<br/>
+              • 8 ateliers surveillés<br/>
               • Articles + photos + dimensions chargés<br/>
               • Noms clients réels depuis CreaJit
             </div>

@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { EMP, AT, atI, ini } from '../data/employees'
+import { TX_DEFAUT, CHARGE_PAR_ARTICLE } from '../data/constants'
 import { useApp } from '../store'
 import { WORKFLOWS, ATELIERS_MAP, PEINTURE_ROLES, detectWorkflow, initSteps } from '../data/workflows'
 
@@ -44,7 +45,7 @@ export function Cmd() {
 
   const artsList = Object.values(arts).filter(a => a.ref === o.ref)
   const done = artsList.filter(a => a.st === 'ok').length
-  const totC = artsList.reduce((s,a) => { const ss = (sessions || []).filter(s2 => s2.aId === a.id && s2.end); const mo = ss.reduce((sm,s2) => sm+(+new Date(s2.end)-+new Date(s2.t0))/3600000*24, 0); const mat = (mats[a.id]||[]).reduce((sm,m) => sm+m.q*m.p, 0); return s+mo+mat }, 0)
+  const totC = artsList.reduce((s,a) => { const ss = (sessions || []).filter(s2 => s2.aId === a.id && s2.end); const mo = ss.reduce((sm,s2) => sm+(+new Date(s2.end)-+new Date(s2.t0))/3600000*(EMP.find(e=>e.id===s2.eId)?.tx||TX_DEFAUT), 0); const mat = (mats[a.id]||[]).reduce((sm,m) => sm+m.q*m.p, 0); return s+mo+mat }, 0)
 
   const addArtLocal = () => {
     if (!fNom.trim()) return
@@ -117,7 +118,7 @@ export function Cmd() {
         const run = (sessions||[]).find(s => s.aId === art.id && s.st === 'run')
         const sessDone = (sessions||[]).filter(s => s.aId === art.id && s.end)
         const totMs = sessDone.reduce((a,s) => a + (+new Date(s.end) - +new Date(s.t0)), 0)
-        const c = (sessions||[]).filter(s=>s.aId===art.id&&s.end).reduce((a,s)=>a+(+new Date(s.end)-+new Date(s.t0))/3600000*24,0) + (mats[art.id]||[]).reduce((a,m)=>a+m.q*m.p,0)
+        const c = (sessions||[]).filter(s=>s.aId===art.id&&s.end).reduce((a,s)=>a+(+new Date(s.end)-+new Date(s.t0))/3600000*(EMP.find(e=>e.id===s.eId)?.tx||TX_DEFAUT),0) + (mats[art.id]||[]).reduce((a,m)=>a+m.q*m.p,0)
         const at = atI(art.at)
         return (
           <div key={art.id} onClick={() => { setSelArt(art.id); setTab('art') }}
@@ -232,7 +233,7 @@ export function ArtDetail() {
   const moH = done.reduce((a,s) => a + (+new Date(s.end) - +new Date(s.t0))/3600000, 0)
   const moCost = done.reduce((a,s) => {
     const emp = EMP.find(e => e.id === s.eId)
-    return a + (+new Date(s.end) - +new Date(s.t0))/3600000 * (emp ? emp.tx : 24)
+    return a + (+new Date(s.end) - +new Date(s.t0))/3600000 * (emp ? emp.tx : TX_DEFAUT)
   }, 0)
   const matCost = (mats[art.id]||[]).reduce((a,m) => a+m.q*m.p, 0)
   const achatCost = (achats[art.id]||[]).filter(a=>a.dateR).reduce((a,x)=>a+(x.prix||0)*(x.q||1),0)
@@ -807,7 +808,7 @@ export function ArtDetail() {
           // Coût MO de cette étape (temps réel)
           const stepCoutMO = step.sessions.reduce((acc, ses) => {
             const emp = EMP.find(e => e.id === ses.eId)
-            const rate = emp ? emp.tx : 28
+            const rate = emp ? emp.tx : TX_DEFAUT
             let pMs = ses.totalPauseMs||0
             let raw = 0
             if (ses.end) raw = new Date(ses.end) - new Date(ses.t0) - pMs
@@ -865,7 +866,7 @@ export function ArtDetail() {
 
                   {/* Filtre atelier */}
                   <div style={{ display:'flex', gap:3, flexWrap:'wrap', margin:'6px 0' }}>
-                    {['','tapissier','menuisier','ferronier','peinture','pierre','cuivre','cnc'].map(k => (
+                    {['','tapissier','menuisier','ferronier','peinture','pierre','cuivre','cnc','resine'].map(k => (
                       <button key={k} onClick={() => setWorkerAtFilter(k)} style={{ padding:'2px 7px', borderRadius:20, border:'none', cursor:'pointer', fontFamily:'inherit', fontSize:9, fontWeight:700, background:workerAtFilter===k?'var(--or)':'var(--c1)', color:workerAtFilter===k?'#fff':'var(--mu)' }}>
                         {k===''?'Tous':(ATELIERS_MAP[k]?.nom||k)}
                       </button>
@@ -922,7 +923,7 @@ export function ArtDetail() {
               {/* ── LIGNES PAR OUVRIER ── */}
               {step.sessions.map((ses) => {
                 const emp = EMP.find(e => e.id === ses.eId)
-                const rate = emp ? emp.tx : 28
+                const rate = emp ? emp.tx : TX_DEFAUT
                 const initials = ses.empN.split(' ').map(p=>p[0]||'').join('').toUpperCase().slice(0,2)
                 const empAt2 = emp ? atI(emp.at) : { c:'#888', e:'👷', n:'' }
 
@@ -1100,7 +1101,7 @@ export function ArtDetail() {
           const totalMO = steps.reduce((acc, step) => {
             return acc + step.sessions.reduce((a2, ses) => {
               const emp = EMP.find(e => e.id === ses.eId)
-              const rate = emp ? emp.tx : 28
+              const rate = emp ? emp.tx : TX_DEFAUT
               let pMs = ses.totalPauseMs||0
               let raw = ses.end ? new Date(ses.end)-new Date(ses.t0)-pMs
                 : ses.pausedAt ? new Date(ses.pausedAt)-new Date(ses.t0)-pMs
@@ -1109,7 +1110,7 @@ export function ArtDetail() {
             }, 0)
           }, 0)
           const totalMat = (mats[art.id]||[]).reduce((a,m)=>a+m.q*m.p,0)
-          const chargesArt = 157430.83/40
+          const chargesArt = CHARGE_PAR_ARTICLE
           const coutRevient = totalMO + totalMat + chargesArt
           const margePct = art.prix > 0 ? Math.round((art.prix-coutRevient)/art.prix*100) : null
 
@@ -1147,7 +1148,7 @@ export function ArtDetail() {
 
       {/* ── 3 BOUTONS PRINCIPAUX ── */}
       <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8, marginBottom:12 }}>
-        <button onClick={() => setModal('timer')} style={{ padding:'10px', borderRadius:10, border:'none', background:run?'#081A0E':'var(--gn)', color:'#fff', cursor:'pointer', fontFamily:'inherit', fontWeight:700, fontSize:11, border:run?'2px solid var(--gn)':'none' }}>
+        <button onClick={() => setModal('timer')} style={{ padding:'10px', borderRadius:10, border:run?'2px solid var(--gn)':'none', background:run?'#081A0E':'var(--gn)', color:'#fff', cursor:'pointer', fontFamily:'inherit', fontWeight:700, fontSize:11 }}>
           {run ? '⏱ Timer actif' : '▶ Timer libre'}
         </button>
         <button onClick={() => !matieresDispo ? setModal('matieres') : null}

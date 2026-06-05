@@ -35,13 +35,10 @@ function Clock() {
 
 export default function Main() {
   const { user, logout } = useAuth()
-  const { fetchOrders, tab, setTab, orders, ordersLastSync, selRef, selArt } = useApp()
+  const { tab, setTab, orders, ordersLastSync } = useApp()
 
-  useEffect(() => {
-    fetchOrders()
-    const i = setInterval(fetchOrders, 5 * 60 * 1000)
-    return () => clearInterval(i)
-  }, [])
+  // La synchronisation des commandes (avec le token) est gérée dans App.jsx —
+  // pas de second intervalle ici pour éviter les requêtes en double sans token.
 
   const visibleTabs = TABS.filter(t => t.roles.includes(user?.role))
   const activeTab = ['cmd','art'].includes(tab) ? 'orders' : tab

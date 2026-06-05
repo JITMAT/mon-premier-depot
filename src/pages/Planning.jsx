@@ -1,39 +1,18 @@
 import React, { useState, useMemo } from 'react'
+import { useApp } from '../store'
+import { EMP, AT } from '../data/employees'
 
-// ─── Données réelles CreaJit 21/05/2026 ─────────────────────────────────────
-const ORDERS_REAL = [
-  { ref:'26040026', client:'Mr Soufiane',       liv:'2026-05-04', estJ:3, color:'#DC2626', late:16 },
-  { ref:'26040045', client:'Mr Yazid',           liv:'2026-05-04', estJ:3, color:'#DC2626', late:16 },
-  { ref:'26040019', client:'2A WEDDING',         liv:'2026-05-05', estJ:4, color:'#DC2626', late:15 },
-  { ref:'26040052', client:'Mr Benjamin',        liv:'2026-05-08', estJ:3, color:'#EA580C', late:12 },
-  { ref:'26040048', client:'AZZOZI RELAX',       liv:'2026-05-08', estJ:2, color:'#EA580C', late:12 },
-  { ref:'26040053', client:'Expresse Beuty',     liv:'2026-05-08', estJ:2, color:'#EA580C', late:12 },
-  { ref:'26040008', client:'Mr Youssef AJDIR',   liv:'2026-05-09', estJ:3, color:'#EA580C', late:11 },
-  { ref:'26040058', client:'Mr Rehal',           liv:'2026-05-15', estJ:3, color:'#D97706', late:5  },
-  { ref:'26040022', client:'Mme Ilhame',         liv:'2026-05-15', estJ:3, color:'#D97706', late:5  },
-  { ref:'26040024', client:'Mme Anisa',          liv:'2026-05-16', estJ:2, color:'#D97706', late:4  },
-  { ref:'26040060', client:'Mme Laila',          liv:'2026-05-20', estJ:3, color:'#CA8A04', late:0  },
-  { ref:'26040043', client:'2A WEDDING (2)',     liv:'2026-05-21', estJ:4, color:'#CA8A04', late:0  },
-  { ref:'26050007', client:'Mr Maliki',          liv:'2026-05-25', estJ:3, color:'#16A34A', late:0  },
-  { ref:'26040016', client:'Mme PEREZ',          liv:'2026-05-30', estJ:3, color:'#16A34A', late:0  },
-  { ref:'26050030', client:'Mme Daniela',        liv:null,         estJ:3, color:'#64748B', late:0  },
-  { ref:'26040025', client:'SHOWROOM (1)',        liv:null,         estJ:2, color:'#64748B', late:0  },
-  { ref:'26040059', client:'Mme Zaki Nadia',     liv:null,         estJ:2, color:'#64748B', late:0  },
-  { ref:'26050010', client:'Mme Soumali',        liv:null,         estJ:2, color:'#64748B', late:0  },
-  { ref:'express2', client:'Expresse Beuty (2)', liv:null,         estJ:2, color:'#64748B', late:0  },
-  { ref:'showroom2',client:'SHOWROOM (2)',        liv:null,         estJ:2, color:'#64748B', late:0  },
-]
-
-const ATELIERS = [
-  { id:'men', nom:'Menuiserie', icon:'🪵', c:'#3498DB', workers:['Ayoub El Yagiz','Said Chnitifa','Hassan Labiad'] },
-  { id:'tap', nom:'Tapisserie', icon:'🧵', c:'#9B59B6', workers:['Mouad El Mansouri','Youssef Bouchaib','Abdessamie'] },
-  { id:'cut', nom:'Couturier',  icon:'✂️', c:'#E67E22', workers:['Fatima Zahra','Rachida Ait Hammou'] },
-  { id:'pei', nom:'Peinture',   icon:'🎨', c:'#F39C12', workers:['Karim Tachfine','Noureddine Achraf'] },
-  { id:'fer', nom:'Ferronnerie',icon:'🔧', c:'#E74C3C', workers:['Noureddine Ouzzat','Mohamed Elkarmani'] },
-]
-
-const TODAY = new Date(2026,4,21) // 21 mai 2026
+const TODAY = (() => { const d = new Date(); d.setHours(0, 0, 0, 0); return d })()
 const JOURS = ['Lun','Mar','Mer','Jeu','Ven','Sam']
+
+// Couleur d'urgence à partir du retard / de la date de livraison
+function orderColor(late, daysLeft) {
+  if (late > 0) return '#DC2626'
+  if (daysLeft === null) return '#64748B'
+  if (daysLeft <= 3) return '#EA580C'
+  if (daysLeft <= 7) return '#D97706'
+  return '#16A34A'
+}
 
 function monday(d) {
   const r = new Date(d)
@@ -50,11 +29,28 @@ function isWeekend(d) { return d.getDay()===0||d.getDay()===6 }
 function ini(n) { return n.split(' ').map(p=>p[0]).join('').slice(0,2).toUpperCase() }
 
 export default function Planning() {
+  const { orders } = useApp()
   const [weekStart, setWeekStart] = useState(() => monday(TODAY))
   const [plan, setPlan]           = useState([]) // [{id,ref,client,estJ,color,workerName,startDate,status}]
   const [adding, setAdding]       = useState(null) // {workerName, date} — cellule qu'on est en train de remplir
   const [selRef, setSelRef]       = useState('')   // commande sélectionnée dans dropdown
   const [showTwoWeeks, setShowTwoWeeks] = useState(true)
+
+  // Commandes réelles issues du store (et non plus une liste figée)
+  const orderList = useMemo(() => orders.map(o => {
+    const late = o.j || 0
+    const daysLeft = o.liv ? Math.ceil((new Date(o.liv) - TODAY) / 86400000) : null
+    return {
+      ref: o.ref, client: o.cl || o.ref, liv: o.liv || null,
+      estJ: o.estJ || 3, late, color: orderColor(late, daysLeft),
+    }
+  }), [orders])
+
+  // Ateliers + ouvriers réels issus de la base employés
+  const ATELIERS = useMemo(() => AT.map(at => ({
+    id: at.id, nom: at.n, icon: at.e, c: at.c,
+    workers: EMP.filter(e => e.at === at.id).map(e => e.n),
+  })).filter(a => a.workers.length), [])
 
   // Jours affichés (6 par semaine, lun-sam)
   const days = useMemo(() => {
@@ -67,8 +63,8 @@ export default function Planning() {
 
   // Commandes non encore planifiées
   const nonPlan = useMemo(() =>
-    ORDERS_REAL.filter(o => !plan.some(p => p.ref===o.ref))
-  , [plan])
+    orderList.filter(o => !plan.some(p => p.ref===o.ref))
+  , [plan, orderList])
 
   // Toutes les workers (flat)
   const allWorkers = ATELIERS.flatMap(at => at.workers.map(w => ({name:w, at})))
@@ -111,7 +107,7 @@ export default function Planning() {
 
   function doAssign() {
     if (!adding || !selRef) return
-    const ord = ORDERS_REAL.find(o => o.ref===selRef)
+    const ord = orderList.find(o => o.ref===selRef)
     if (!ord) return
     // Trouver le premier jour libre depuis la date sélectionnée
     let startDay = new Date(adding.date)
